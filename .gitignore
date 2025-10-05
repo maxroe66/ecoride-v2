@@ -1,0 +1,16 @@
+.env
+.env.local
+.env.*.local
+# Node
+node_modules/
+# Logs
+*.log
+# Docker
+**/db_data/
+**/mongo_data/
+# IDE
+.vscode/
+.idea/
+# OS
+.DS_Store
+Thumbs.db
