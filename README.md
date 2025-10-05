@@ -70,9 +70,9 @@ Ce document décrit toutes les étapes réalisées pour configurer un environnem
 
 ## 🐳 11. Mise en place de l'environnement Docker pour EcoRide V2
 
-**Services inclus dans le fichier `docker-compose.yml` :**
-- Nginx (serveur web)
-- PHP-FPM (exécution du code PHP)
+**Services inclus dans le fichier `docker-compose.yml` (fichiers Docker désormais à la racine) :**
+- Nginx (serveur web) — configuration: `nginx.conf` à la racine
+- PHP-FPM (exécution du code PHP) — Dockerfile à la racine
 - MySQL (base de données relationnelle)
 - MongoDB (base de données non relationnelle)
 - phpMyAdmin (interface web pour MySQL)
@@ -87,7 +87,7 @@ Ce document décrit toutes les étapes réalisées pour configurer un environnem
 - Le dossier du projet est monté dans les conteneurs web (modifications HTML/CSS/PHP prises en compte en temps réel).
 - Les données MySQL et MongoDB sont persistées via des volumes Docker.
 
-**Lancement des services en mode détaché :**
+**Lancement des services en mode détaché (depuis la racine du projet) :**
 ```bash
 docker compose up -d
 ```

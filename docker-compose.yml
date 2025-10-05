@@ -6,12 +6,12 @@ services:
       - "8080:80"
     volumes:
       - .:/var/www/html
-      - ./docker/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
     depends_on:
       - php-fpm
   php-fpm:
     build:
-      context: ./docker
+      context: .
     container_name: php-fpm
     volumes:
       - .:/var/www/html
