@@ -68,77 +68,171 @@ Ce document décrit toutes les étapes réalisées pour configurer un environnem
 `docker --version`
 `docker run hello-world`
 
-## 🐳 11. Mise en place de l'environnement Docker pour EcoRide V2
+## 🐳 11. Environnement Docker (Architecture actuelle EcoRide V2)
 
-**Services inclus dans le fichier `docker-compose.yml` (fichiers Docker désormais à la racine) :**
-- Nginx (serveur web) — configuration: `nginx.conf` à la racine
-- PHP-FPM (exécution du code PHP) — Dockerfile à la racine
-- MySQL (base de données relationnelle)
-- MongoDB (base de données non relationnelle)
-- phpMyAdmin (interface web pour MySQL)
-- mongo-express (interface web pour MongoDB)
+### 11.1 Objectifs
+Fournir un environnement de développement performant, modulaire et prêt pour une future industrialisation (CI/CD, images reproductibles, séparation front/back).
 
-**Ports utilisés :**
-- Nginx : http://localhost:8080
+### 11.2 Services (`docker-compose.yml`)
+- `nginx` : reverse proxy + serveur web (racine : `src/backend/public`).
+- `php-fpm` : exécution PHP 8.2 (image multi-stage avec vendor pré-installé).
+- `composer` : utilitaire (profil `tools`) pour ajouter des dépendances sans polluer le conteneur principal.
+- `db` : MySQL 8.0.
+- `phpmyadmin` : interface MySQL.
+- `mongodb` : base NoSQL.
+- `mongo-express` : interface MongoDB.
+
+### 11.3 Ports
+- Application : http://localhost:8080
 - phpMyAdmin : http://localhost:8081
 - mongo-express : http://localhost:8082
 
-**Volumes :**
-- Le dossier du projet est monté dans les conteneurs web (modifications HTML/CSS/PHP prises en compte en temps réel).
-- Les données MySQL et MongoDB sont persistées via des volumes Docker.
+### 11.4 Structure backend attendue
+```
+src/
+  backend/
+    app/               # Code applicatif (PSR-4: App\\)
+    public/            # Fichiers accessibles (index.php, assets publics)
+    composer.json
+    composer.lock
+    vendor/            # (Généré par build ou composer require) – pas commit
+```
+Squelette minimal EN PLACE :
+- `app/Example.php` (classe statique de test)
+- `public/index.php` (autoload + affichage message + version PHP)
+Vous pouvez déjà accéder à http://localhost:8080 et voir le message de santé.
 
-**Lancement des services en mode détaché (depuis la racine du projet) :**
+### 11.5 Dockerfile (résumé)
+Multi-stage :
+1. `composer_base` (image `composer:2.8`)
+2. `vendor_builder` (installation des dépendances à partir de `composer.json`/`composer.lock`)
+3. `runtime` (image finale `php:8.2-fpm` + vendor copié)
+
+Avantages :
+- Couches mises en cache → builds plus rapides.
+- `vendor` figé par `composer.lock` → reproductible.
+- Possibilité de build prod (sans dev deps) via `APP_ENV=prod`.
+
+### 11.6 Montages & volumes
+- Code backend monté : `./src/backend:/var/www/html/src/backend` (mode dev).
+- `vendor` utilisé : celui de l'image (non monté) → meilleures performances I/O.
+- Cache Composer : volume nommé `composer_cache` (`/tmp/composer`).
+- Données MySQL : `db_data`.
+- Données MongoDB : `mongo_data`.
+
+### 11.7 Variables importantes
+- `APP_ENV=dev|prod` (contrôle installation dépendances).
+- Identifiants MySQL / MongoDB / phpMyAdmin / mongo-express (définis dans `.env`).
+
+### 11.8 Démarrer l'environnement
 ```bash
 docker compose up -d
 ```
 
-**Bonnes pratiques :**
-- Les fichiers web sont synchronisés automatiquement.
-- Les scripts SQL doivent être importés manuellement (via phpMyAdmin ou commande Docker).
-- Pour le développement, tout est regroupé dans un seul fichier pour simplifier la gestion.
-- En production, il est recommandé de séparer les services pour plus de sécurité et de scalabilité.
+### 11.9 Ajouter une dépendance Composer
+```bash
+docker compose run --rm composer require psr/log
+```
+Explications :
+- Le service `composer` monte le code local.
+- Met à jour `composer.json` + `composer.lock` dans `src/backend/`.
+- Pour "figer" la dépendance dans une image (CI ou déploiement) :
+```bash
+docker compose build php-fpm
+docker compose up -d
+```
 
-**Accès aux interfaces :**
-- Application web : http://localhost:8080
-- phpMyAdmin : http://localhost:8081
-- mongo-express : http://localhost:8082
+### 11.10 Vérifier Composer / PHP
+```bash
+docker compose run --rm composer --version
+docker compose exec php-fpm php -v
+```
 
-**Arrêt des services :**
+### 11.11 Mode production (exclure dépendances de dev)
+```bash
+APP_ENV=prod docker compose build php-fpm
+APP_ENV=prod docker compose up -d
+```
+Dans ce mode : `composer install --no-dev --optimize-autoloader`.
+
+### 11.12 Logs & debug
+```bash
+docker compose logs -f nginx
+docker compose logs -f php-fpm
+```
+
+### 11.13 Arrêt & nettoyage
 ```bash
 docker compose down
+docker compose down -v   # (ATTENTION: supprime les données MySQL/Mongo)
+```
+
+### 11.14 Prochaines améliorations possibles
+- Ajout d’un Makefile (aliases : `make up`, `make deps`).
+- Intégration d’un framework (Laravel / Slim / Symfony).
+- Ajout de tests automatisés (PHPUnit) + service dédié.
+
+### 11.15 Test rapide du bootstrap actuel
+Commande (depuis l’hôte) :
+```bash
+curl -s http://localhost:8080
+```
+Sortie attendue (exemple) :
+```
+EcoRide backend opérationnel ✅
+PHP version: 8.2.29
+APP_ENV=dev (si ajouté plus tard via dotenv)
+```
+
+Si vous ne voyez pas ce message :
+1. Vérifiez que le conteneur `php-fpm` est "Up" : `docker compose ps`
+2. Vérifiez les logs Nginx : `docker compose logs -f nginx`
+3. Vérifiez que `public/index.php` existe bien.
+
+---
+## 🔒 12. Sécurisation & configuration des variables d'environnement
+
+### 12.1 Fichier `.env`
+Placé à la racine (non versionné). Exemple :
+```env
+APP_ENV=dev
+MYSQL_ROOT_PASSWORD=your_root_password
+MYSQL_DATABASE=ecoride
+MYSQL_USER=ecoride
+MYSQL_PASSWORD=your_user_password
+PMA_HOST=db
+PMA_USER=ecoride
+PMA_PASSWORD=your_user_password
+MONGO_INITDB_ROOT_USERNAME=ecoride_admin
+MONGO_INITDB_ROOT_PASSWORD=your_mongo_pwd
+ME_CONFIG_MONGODB_ADMINUSERNAME=ecoride_admin
+ME_CONFIG_MONGODB_ADMINPASSWORD=your_mongo_pwd
+ME_CONFIG_MONGODB_SERVER=mongodb
+```
+
+### 12.2 Fichier `.env.example`
+Fournir le même schéma sans valeurs sensibles → à copier / adapter.
+
+### 12.3 `.gitignore` (extrait recommandé)
+```gitignore
+.env
+.env.local
+.env.*.local
+vendor/
+db_data/
+mongo_data/
+composer_cache/
+```
+
+### 12.4 Bonnes pratiques
+- Ne jamais commit de secrets.
+- Toujours committer `composer.lock` (garantit reproductibilité).
+- Utiliser `APP_ENV=prod` pour les builds destinés à un déploiement.
+
+### 12.5 Vérification de cohérence
+```bash
+docker compose config    # Vérifie la résolution des variables
 ```
 
 ---
-## 🔒 12. Sécurisation des variables d'environnement
-
-**Utilisation du fichier `.env` :**
-- Les identifiants et mots de passe sensibles sont placés dans le fichier `.env` à la racine du projet.
-- Le fichier `.env` n'est pas versionné (voir `.gitignore`).
-- Exemple de contenu :
-	```env
-	MYSQL_ROOT_PASSWORD=your_root_password
-	MYSQL_DATABASE=ecoride
-	MYSQL_USER=ecoride
-	MYSQL_PASSWORD=your_user_password
-	...
-	```
-
-**Fichier `.env.example` :**
-- Fournit un modèle des variables à renseigner, sans valeurs sensibles.
-- À copier en `.env` et à compléter pour chaque environnement.
-
-**Fichier `.gitignore` :**
-- Empêche le commit du fichier `.env` et des données sensibles ou locales.
-- Exemple :
-	```gitignore
-	.env
-	.env.local
-	.env.*.local
-	db_data/
-	mongo_data/
-	...
-	```
-
-**Bonnes pratiques :**
-- Ne jamais exposer de vrais mots de passe ou secrets dans le code versionné.
-- Toujours fournir un `.env.example` pour faciliter la configuration par les collaborateurs.
+Fin de la section mise à jour.

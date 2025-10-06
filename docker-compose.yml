@@ -1,6 +1,6 @@
 services:
   nginx:
-    image: nginx:latest
+    image: nginx:1.29.1
     container_name: nginx
     ports:
       - "8080:80"
@@ -12,9 +12,18 @@ services:
   php-fpm:
     build:
       context: .
+      args:
+        APP_ENV: ${APP_ENV:-dev}
     container_name: php-fpm
     volumes:
-      - .:/var/www/html
+      - ./src/backend:/var/www/html/src/backend:delegated
+      # Cache Composer (uniquement pour accélérer requêtes si usage direct dans ce conteneur)
+      - composer_cache:/tmp/composer
+    working_dir: /var/www/html/src/backend
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+    depends_on:
+      - db
   db:
     image: mysql:8.0
     container_name: db
@@ -49,7 +58,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: ${MONGO_INITDB_ROOT_USERNAME}
       MONGO_INITDB_ROOT_PASSWORD: ${MONGO_INITDB_ROOT_PASSWORD}
   mongo-express:
-    image: mongo-express:latest
+    image: mongo-express:1.0
     container_name: mongo-express
     ports:
       - "8082:8081"
@@ -59,6 +68,20 @@ services:
       ME_CONFIG_MONGODB_SERVER: ${ME_CONFIG_MONGODB_SERVER}
     depends_on:
       - mongodb
+  composer:
+    image: ecoride-v2-php-fpm:latest
+    container_name: composer
+    working_dir: /var/www/html/src/backend
+    entrypoint: ["composer"]
+    command: ["--version"]
+    volumes:
+      - ./src/backend:/var/www/html/src/backend:delegated
+      - composer_cache:/tmp/composer
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+    profiles:
+      - tools
 volumes:
   db_data:
   mongo_data:
+  composer_cache:

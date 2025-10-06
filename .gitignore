@@ -14,3 +14,7 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# PHP dependencies
+src/backend/vendor/
+composer_cache/

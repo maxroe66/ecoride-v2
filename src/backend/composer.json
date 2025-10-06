@@ -1,0 +1,20 @@
+{
+  "name": "ecoride/backend",
+  "description": "Backend ecoride",
+  "type": "project",
+  "license": "proprietary",
+  "require": {
+    "php": ">=8.2"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "app/"
+    }
+  },
+  "require-dev": {},
+  "scripts": {
+    "post-install-cmd": [
+      "@php -r 'echo \"Post install OK\\n\";'"
+    ]
+  }
+}
