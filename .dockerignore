@@ -1,9 +1,15 @@
-node_modules
+# Exclusions build context
 .git
 .gitignore
-Dockerfile
 README.md
-nginx.conf
-src/frontend
-vendor
-composer.lock
+backups
+node_modules
+npm-debug.log
+yarn.lock
+src/
+.DS_Store
+.idea
+.vscode
+.env
+.env.*
+**/tests

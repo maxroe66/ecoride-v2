@@ -1,20 +1,47 @@
-.env
-.env.local
-.env.*.local
-# Node
-node_modules/
-# Logs
-*.log
-# Docker
-**/db_data/
-**/mongo_data/
-# IDE
-.vscode/
-.idea/
-# OS
-.DS_Store
-Thumbs.db
+# === Base ===
+/.env
+/.env.*
+/vendor/
+/node_modules/
+/.DS_Store
+/.idea/
+/.vscode/
 
-# PHP dependencies
-src/backend/vendor/
-composer_cache/
+# === Logs & runtime ===
+/storage/*
+!/storage/.gitkeep
+
+# Backups (générés manuellement)
+/backups/*
+!/backups/.gitkeep
+
+# Composer artefacts éventuels
+/composer.phar
+
+# Dumps / exports
+*.sql
+*.dump
+*.archive
+
+# Tests (si génération de caches)
+/phpunit.xml.cache
+/coverage/
+
+# Docker context bruit éventuel
+/docker/php/tmp/
+
+# === Dossiers intentionnellement vides conservés ===
+/app/Helpers/*
+!/app/Helpers/.gitkeep
+/app/Services/*
+!/app/Services/.gitkeep
+/app/Validators/*
+!/app/Validators/.gitkeep
+
+# Eviter inclusion fichiers sensibles accidentels
+*.pem
+*.key
+*.crt
+
+# System
+Thumbs.db
