@@ -167,10 +167,39 @@ docker compose down
 docker compose down -v   # (ATTENTION: supprime les données MySQL/Mongo)
 ```
 
-### 11.14 Prochaines améliorations possibles
-- Ajout d’un Makefile (aliases : `make up`, `make deps`).
-- Intégration d’un framework (Laravel / Slim / Symfony).
-- Ajout de tests automatisés (PHPUnit) + service dédié.
+### 11.4 Structure backend
+
+Arborescence actuelle (créée) :
+```
+src/
+  backend/
+    app/
+      Controller/    # Contrôleurs (logique de traitement des requêtes)
+      Model/         # Requêtes SQL / accès données bruts (ou futurs modèles)
+      Service/       # Logique métier réutilisable (ex: gestion crédits)
+      Security/      # Authentification, autorisations, CSRF, etc.
+      View/          # Fonctions / fragments pour rendu HTML (si besoin)
+      Util/          # Helpers génériques
+    config/          # Fichiers de configuration (db.php, bootstrap, etc.)
+    routes/          # Déclaration des routes (si séparées)
+    public/          # Point d’entrée web (index.php) + assets publics
+    scripts/         # SQL, seed, scripts maintenance
+    storage/
+      logs/          # Logs applicatifs
+      mails/         # Faux emails (dump) si pas d’envoi réel
+    tests/           # (À ajouter plus tard si tests unitaires)
+    composer.json
+    composer.lock
+    vendor/          # Généré (non versionné)
+```
+
+Contenu présent actuellement :
+- app/Example.php
+- public/index.php
+- Sous-dossiers vides maintenus via fichiers `.gitkeep`
+
+#### 11.4.1 À propos des fichiers `.gitkeep`
+Git n’enregistre pas les dossiers vides. Un fichier vide `.gitkeep` est placé dans chaque dossier pour conserver la structure. Il peut être supprimé dès qu’un fichier réel apparaît.
 
 ### 11.15 Test rapide du bootstrap actuel
 Commande (depuis l’hôte) :
