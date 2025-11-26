@@ -1,0 +1,202 @@
+/*
+	Global CSS – Palette & Typo (EcoRide)
+	Palette fournie (principales et secondaires) + typographie Roboto
+*/
+
+/* Variables de thème */
+:root {
+	/* Couleurs principales */
+	--color-beige-light: #F0F4C3;  /* fond principal */
+	--color-green-light: #A5D6A7;  /* accents, header/footer, boutons */
+	--color-green-dark:  #2E7D32;  /* titres, icônes, textes importants */
+
+	/* Couleurs secondaires */
+	--color-green-verydark: #1B3B1B; /* textes moins importants, liens nav */
+	--color-brown-light:    #A18B7F; /* liens actifs, hover, éléments secondaires */
+	--color-bluegrey:       #747B85; /* placeholders et aides de saisie */
+
+	/* Neutres */
+	--color-white: #FFFFFF;
+	--color-black: #111111;
+
+	/* Typographie */
+	--font-sans: 'Roboto', system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+
+	/* Échelle typographique (desktop par défaut) */
+	--text-base: 1rem; /* 16px */
+	--section-title: clamp(1.75rem, 1.2rem + 2vw, 2.5rem);  /* ≈28–40px */
+	--section-subtitle: clamp(1.15rem, 0.9rem + 1vw, 1.75rem); /* ≈18–28px */
+
+	/* Spacing */
+	--space-1: 0.25rem;
+	--space-2: 0.5rem;
+	--space-3: 0.75rem;
+	--space-4: 1rem;
+	--space-6: 1.5rem;
+	--space-8: 2rem;
+
+	/* Radii */
+	--radius-sm: 6px;
+	--radius-md: 10px;
+}
+
+/* Préférences utilisateurs */
+@media (max-width: 480px) {
+	:root {
+		/* Version mobile (≤480px) */
+		--section-title: clamp(1.4rem, 1.1rem + 2vw, 1.8rem);  /* ≈22–29px */
+		--section-subtitle: clamp(1rem, 0.9rem + 1.5vw, 1.25rem); /* ≈16–20px */
+	}
+}
+
+/* Reset léger & base */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+	margin: 0;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: 1.6;
+	color: var(--color-green-verydark);
+	background-color: var(--color-beige-light);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+/* Titres & sous-titres */
+h1, h2, h3, h4, h5, h6 {
+	margin: 0 0 var(--space-4);
+	color: var(--color-green-dark);
+	font-weight: 700;
+}
+
+.section-title {
+	font-size: var(--section-title);
+}
+
+.section-subtitle {
+	font-size: var(--section-subtitle);
+	color: var(--color-green-verydark);
+	font-weight: 600;
+}
+
+p { margin: 0 0 var(--space-4); }
+
+/* Liens */
+a {
+	color: var(--color-green-dark);
+	text-decoration: none;
+}
+a:hover { color: var(--color-brown-light); text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--color-green-light); outline-offset: 2px; }
+
+/* Boutons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: 0.55rem 1rem;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.btn-primary {
+	background-color: var(--color-green-dark);
+	color: var(--color-white);
+}
+.btn-primary:hover { background-color: #256a29; }
+.btn-primary:active { background-color: #1f5a23; }
+.btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(165, 214, 167, 0.6); }
+
+.btn-secondary {
+	background-color: var(--color-green-light);
+	color: var(--color-green-verydark);
+}
+.btn-secondary:hover { filter: brightness(0.95); }
+.btn-secondary:focus-visible { box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.35); }
+
+.btn-outline {
+	background: transparent;
+	color: var(--color-green-dark);
+	border-color: var(--color-green-dark);
+}
+.btn-outline:hover { background-color: rgba(46, 125, 50, 0.08); }
+
+/* Inputs & formulaires */
+input, select, textarea {
+	font-family: inherit;
+	font-size: 1rem;
+	color: var(--color-green-verydark);
+	background-color: var(--color-white);
+	border: 1px solid #d7d9c9;
+	border-radius: var(--radius-sm);
+	padding: 0.5rem 0.75rem;
+}
+
+input::placeholder, textarea::placeholder {
+	color: var(--color-bluegrey);
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+	outline: 2px solid var(--color-green-light);
+	outline-offset: 2px;
+	border-color: var(--color-green-light);
+}
+
+/* En-tête & pied de page (accents verts) */
+header, footer {
+	background-color: var(--color-green-light);
+	color: var(--color-green-verydark);
+}
+
+/* Utilitaires de couleur de texte */
+.text-primary { color: var(--color-green-dark) !important; }
+.text-secondary { color: var(--color-brown-light) !important; }
+.text-muted { color: var(--color-bluegrey) !important; }
+.text-invert { color: var(--color-white) !important; }
+
+/* Utilitaires de fond */
+.bg-primary { background-color: var(--color-green-dark) !important; }
+.bg-secondary { background-color: var(--color-green-light) !important; }
+.bg-muted { background-color: var(--color-beige-light) !important; }
+.bg-brown { background-color: var(--color-brown-light) !important; }
+
+/* Cartes / panneaux */
+.card {
+	background-color: var(--color-white);
+	border: 1px solid #e3e6d5;
+	border-radius: var(--radius-md);
+	padding: var(--space-6);
+	box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+}
+
+/* Navigation (liens moins importants) */
+.nav a {
+	color: var(--color-green-verydark);
+}
+.nav a:hover { color: var(--color-brown-light); }
+
+/* Conteneur responsive */
+.container {
+	width: 100%;
+	max-width: 1100px;
+	margin-inline: auto;
+	padding-inline: var(--space-4);
+}
+
+/* Espacements utilitaires */
+.mt-0 { margin-top: 0 !important; }
+.mt-4 { margin-top: var(--space-4) !important; }
+.mt-6 { margin-top: var(--space-6) !important; }
+.mb-0 { margin-bottom: 0 !important; }
+.mb-4 { margin-bottom: var(--space-4) !important; }
+.mb-6 { margin-bottom: var(--space-6) !important; }
+
+/* Accessibilité: focus visible global */
+:where(button, a, input, textarea, select):focus:not(:focus-visible) { outline: none; }
+
