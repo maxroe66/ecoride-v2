@@ -39,7 +39,8 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // Succès - rediriger vers la page d'accueil ou tableau de bord
+        // Succès - enregistrer la session et rediriger
+        SessionManager.setUser(data.data);
         window.location.href = data.redirect || '/';
       } catch (error) {
         showError(errorMsg, 'Erreur réseau : ' + error.message);
@@ -217,4 +218,24 @@ function validateSignupForm(pseudo, email, password, confirmPassword) {
 function isValidEmail(email) {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   return emailRegex.test(email);
+}
+
+/**
+ * Effectue la déconnexion
+ */
+async function logout() {
+  if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+    return;
+  }
+
+  try {
+    await SessionManager.logout();
+    // Rediriger vers la page d'accueil après déconnexion
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Erreur déconnexion:', error);
+    // Même en cas d'erreur, on efface la session locale
+    SessionManager.clearSession();
+    window.location.href = '/';
+  }
 }
