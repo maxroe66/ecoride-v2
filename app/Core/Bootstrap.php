@@ -4,7 +4,10 @@ namespace App\Core;
 use App\Factories\AvisRepositoryFactory;
 use App\Repositories\ResilientAvisRepository; // pour les hints
 use App\Models\Avis;
-use App\Core\Env; 
+use App\Core\Env;
+use App\Factories\DatabaseFactory;
+use App\Repositories\UserRepository;
+use App\Services\AuthService; 
 
 class Bootstrap
 {
@@ -55,6 +58,10 @@ class Bootstrap
             echo json_encode(['success' => true, 'data' => 'ok']);
             return;
         }
+        if (str_starts_with($uri, '/api/auth')) {
+            $this->handleAuth($uri);
+            return;
+        }
         if (str_starts_with($uri, '/api/avis')) {
             $this->handleAvis($uri);
             return;
@@ -66,6 +73,119 @@ class Bootstrap
     private function repo(): ResilientAvisRepository
     {
         return AvisRepositoryFactory::get();
+    }
+
+    private function handleAuth(string $uri): void
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        
+        if ($method === 'POST' && $uri === '/api/auth/signup') {
+            $this->handleSignup();
+            return;
+        }
+
+        if ($method === 'POST' && $uri === '/api/auth/login') {
+            $this->handleLogin();
+            return;
+        }
+
+        if ($method === 'POST' && $uri === '/api/auth/logout') {
+            $this->handleLogout();
+            return;
+        }
+
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Endpoint auth']]);
+    }
+
+    private function handleSignup(): void
+    {
+        $raw = file_get_contents('php://input');
+        $json = json_decode($raw, true);
+
+        if (!is_array($json)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            return;
+        }
+
+        $pseudo = trim((string)($json['pseudo'] ?? ''));
+        $email = trim((string)($json['email'] ?? ''));
+        $password = $json['password'] ?? '';
+
+        if (!$pseudo || !$email || !$password) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'MISSING_FIELDS', 'message' => 'Pseudo, email et mot de passe requis']]);
+            return;
+        }
+
+        try {
+            $db = DatabaseFactory::getConnection();
+            $userRepository = new UserRepository($db);
+            $authService = new AuthService($userRepository);
+
+            $result = $authService->signup($pseudo, $email, $password);
+
+            http_response_code(201);
+            echo json_encode(['success' => true, 'data' => $result]);
+        } catch (\Exception $e) {
+            http_response_code(422);
+            echo json_encode(['success' => false, 'error' => ['code' => 'SIGNUP_FAILED', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    private function handleLogin(): void
+    {
+        $raw = file_get_contents('php://input');
+        $json = json_decode($raw, true);
+
+        if (!is_array($json)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            return;
+        }
+
+        $emailOrPseudo = trim((string)($json['email'] ?? ''));
+        $password = $json['password'] ?? '';
+
+        if (!$emailOrPseudo || !$password) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'MISSING_FIELDS', 'message' => 'Email/Pseudo et mot de passe requis']]);
+            return;
+        }
+
+        try {
+            $db = DatabaseFactory::getConnection();
+            $userRepository = new UserRepository($db);
+            $authService = new AuthService($userRepository);
+
+            $userData = $authService->login($emailOrPseudo, $password);
+
+            echo json_encode([
+                'success' => true,
+                'data' => $userData,
+                'redirect' => '/'
+            ]);
+        } catch (\Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'LOGIN_FAILED', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    private function handleLogout(): void
+    {
+        try {
+            $db = DatabaseFactory::getConnection();
+            $userRepository = new UserRepository($db);
+            $authService = new AuthService($userRepository);
+
+            $authService->logout();
+
+            echo json_encode(['success' => true, 'data' => ['message' => 'Déconnexion réussie']]);
+        } catch (\Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => ['code' => 'LOGOUT_FAILED', 'message' => $e->getMessage()]]);
+        }
     }
 
     private function handleAvis(string $uri): void
