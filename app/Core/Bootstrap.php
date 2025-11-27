@@ -11,6 +11,10 @@ class Bootstrap
     public function __construct()
     {
         Env::load();
+        // Démarrer la session pour l'accès aux données utilisateur
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
     }
 
     public function run(): void
@@ -20,12 +24,27 @@ class Bootstrap
             $this->handleApi($uri);
             return;
         }
-        // Serve frontend index
-        $frontend = __DIR__ . '/../../frontend/index.html';
-        if (is_file($frontend)) {
-            readfile($frontend);
+        // Route requests to frontend pages
+        $this->servePage($uri);
+    }
+
+    private function servePage(string $uri): void
+    {
+        // Default to accueil for root
+        if ($uri === '/' || $uri === '') {
+            $page = __DIR__ . '/../../frontend/pages/accueil.php';
         } else {
-            echo '<h1>EcoRide</h1>';
+            // Build page path from URI
+            // e.g., /rides -> /frontend/pages/rides.php
+            $pageName = trim($uri, '/');
+            $page = __DIR__ . "/../../frontend/pages/{$pageName}.php";
+        }
+
+        if (is_file($page)) {
+            include $page;
+        } else {
+            http_response_code(404);
+            echo '<h1>404 - Page non trouvée</h1>';
         }
     }
 

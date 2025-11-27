@@ -10,6 +10,7 @@ services:
       - ./public:/var/www/public:ro
       - ./app:/var/www/app:ro
       - ./frontend:/var/www/frontend:ro
+      - ./images-icons:/var/www/images-icons:ro
       - ./vendor:/var/www/vendor:ro
     networks:
       - backend_net

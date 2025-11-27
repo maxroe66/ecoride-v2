@@ -1,0 +1,128 @@
+/* ==========================================================================
+   Footer Styling
+   ========================================================================== */
+
+.site-footer {
+  background-color: var(--color-green-verydark);
+  color: var(--color-beige-light);
+  padding: 40rem 20rem;
+  margin-top: 80rem;
+  border-top: 2rem solid var(--color-green-dark);
+}
+
+.footer-content {
+  max-width: 1200rem;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200rem, 1fr));
+  gap: 40rem;
+}
+
+.footer-column {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-title {
+  font-size: 16rem;
+  font-weight: 700;
+  margin-bottom: 16rem;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.footer-links,
+.social-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12rem;
+}
+
+.footer-links li a,
+.social-links li a {
+  color: var(--color-beige-light);
+  text-decoration: none;
+  font-size: 14rem;
+  transition: color 0.3s ease;
+  display: inline-block;
+}
+
+.footer-links li a:hover,
+.social-links li a:hover {
+  color: var(--color-green-light);
+  text-decoration: underline;
+}
+
+.social-links {
+  flex-direction: row;
+  gap: 16rem;
+}
+
+.social-links li a {
+  width: 36rem;
+  height: 36rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  font-size: 16rem;
+  transition: all 0.3s ease;
+}
+
+.social-links li a:hover {
+  background-color: var(--color-green-light);
+  color: var(--color-green-verydark);
+  text-decoration: none;
+  transform: scale(1.1);
+}
+
+.footer-bottom {
+  max-width: 1200rem;
+  margin: 40rem auto 0;
+  padding-top: 20rem;
+  border-top: 1rem solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.footer-copyright {
+  font-size: 13rem;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+}
+
+/* ==========================================================================
+   Responsive Footer
+   ========================================================================== */
+
+@media (min-width: 640rem) {
+  .site-footer {
+    padding: 50rem 30rem;
+  }
+
+  .footer-content {
+    gap: 50rem;
+  }
+
+  .footer-title {
+    font-size: 17rem;
+  }
+}
+
+@media (min-width: 1024rem) {
+  .site-footer {
+    padding: 60rem 40rem;
+  }
+
+  .footer-content {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 60rem;
+  }
+
+  .footer-title {
+    font-size: 18rem;
+  }
+}
