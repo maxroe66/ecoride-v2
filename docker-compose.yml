@@ -23,6 +23,11 @@ services:
         TZ: Europe/Paris
     environment:
       APP_ENV: dev
+      JWT_SECRET: 7oNSFp7JUVfQ8DJ1m/ZTmL7ryLjHbyOidgtal/bpC+g=
+      DB_HOST: db
+      DB_USER: ecoride
+      DB_PASSWORD: ecoride-v2
+      DB_NAME: ecoride
     volumes:
       - ./app:/var/www/app
       - ./public:/var/www/public

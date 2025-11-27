@@ -53,6 +53,9 @@ RUN composer dump-autoload -o
 # PHP ini overrides
 COPY docker/php/php.ini /usr/local/etc/php/conf.d/99-custom.ini
 
+# PHP-FPM configuration (clear_env = no pour env vars)
+COPY docker/php/www.conf /usr/local/etc/php-fpm.d/www.conf
+
 RUN usermod -u 1000 www-data && groupmod -g 1000 www-data || true
 
 EXPOSE 9000
