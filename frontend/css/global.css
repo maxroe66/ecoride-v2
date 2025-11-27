@@ -1,0 +1,167 @@
+/*
+	Global CSS – Palette & Typo (EcoRide)
+	Palette fournie (principales et secondaires) + typographie Roboto
+*/
+
+/* Variables de thème */
+:root {
+	/* Couleurs principales */
+	--color-beige-light: #F0F4C3;  /* fond principal */
+	--color-green-light: #A5D6A7;  /* accents, header/footer, boutons */
+	--color-green-dark:  #2E7D32;  /* titres, icônes, textes importants */
+
+	/* Couleurs secondaires */
+	--color-green-verydark: #1B3B1B; /* textes moins importants, liens nav */
+	--color-brown-light:    #A18B7F; /* liens actifs, hover, éléments secondaires */
+	--color-bluegrey:       #747B85; /* placeholders et aides de saisie */
+
+	/* Neutres */
+	--color-white: #FFFFFF;
+	--color-black: #111111;
+
+	/* Typographie */
+	--font-sans: 'Roboto', system-ui, -apple-system, Segoe UI, Helvetica, Arial, sans-serif;
+
+	/* Base typographique (1rem = 1px) */
+	--text-base: 16rem; /* 16px */
+	/* Tailles fixes demandées (pas de clamp) */
+	--section-title: 28rem; /* 28px */
+	--section-subtitle: 24rem; /* 24px */
+
+	/* Radii */
+	--radius-sm: 6px;
+	--radius-md: 10px;
+}
+
+/* 1rem = 1px pour écrire directement en «px» via rem */
+html, :root { font-size: 6.25%; }
+
+/* Tailles identiques sur mobile (pas de clamp) */
+
+/* Reset léger & base */
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+	display: grid;
+	/* Réserve une hauteur minimale au header et au footer,
+	   et laisse le contenu principal prendre le reste */
+	grid-template-rows: minmax(64rem, auto) 1fr minmax(64rem, auto);
+	min-height: 100vh;
+	margin: 0;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+
+	color: var(--color-green-verydark);
+	background-color: var(--color-beige-light);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+}
+
+header {
+	grid-row: 1 / 2;
+	background-color: var(--color-green-light);
+	color: var(--color-green-verydark);
+	/* Assure une présence visuelle même sans contenu */
+	padding: 12rem 16rem;
+}
+main {
+    grid-row: 2 / 3;
+}
+footer {
+	grid-row: 3 / 4;
+	background-color: var(--color-green-light);
+	color: var(--color-green-verydark);
+	padding: 12rem 16rem;
+}
+
+img { max-width: 100%; height: auto; display: block; }
+
+/* Titres & sous-titres */
+h1, h2, h3, h4, h5, h6 {
+	color: var(--color-green-dark);
+}
+h1 { font-size: 40rem; font-weight: 500; }
+h2 { font-size: 24rem; font-weight: 700; }
+
+.section-title { font-size: 28rem; }
+
+.section-subtitle { font-size: 24rem; color: var(--color-green-verydark); font-weight: 600; }
+
+
+
+/* Liens */
+a {
+	color: var(--color-green-dark);
+	text-decoration: none;
+}
+a:hover { color: var(--color-brown-light); text-decoration: underline; }
+a:focus-visible { outline: 2px solid var(--color-green-light); outline-offset: 2px; }
+
+/* Boutons */
+.btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8rem;
+	padding: 9rem 16rem;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.btn-primary {
+	background-color: var(--color-green-dark);
+	color: var(--color-white);
+}
+.btn-primary:hover { background-color: #256a29; }
+.btn-primary:active { background-color: #1f5a23; }
+.btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(165, 214, 167, 0.6); }
+
+.btn-secondary {
+	background-color: var(--color-green-light);
+	color: var(--color-green-verydark);
+}
+.btn-secondary:hover { filter: brightness(0.95); }
+.btn-secondary:focus-visible { box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.35); }
+
+.btn-outline {
+	background: transparent;
+	color: var(--color-green-dark);
+	border-color: var(--color-green-dark);
+}
+.btn-outline:hover { background-color: rgba(46, 125, 50, 0.08); }
+
+/* Inputs & formulaires */
+input, select, textarea {
+	font-family: inherit;
+	color: var(--color-green-verydark);
+	background-color: var(--color-white);
+	border: 1px solid #d7d9c9;
+	border-radius: var(--radius-sm);
+	padding: 8rem 12rem;
+}
+
+input::placeholder, textarea::placeholder {
+	color: var(--color-bluegrey);
+}
+
+input:focus-visible, select:focus-visible, textarea:focus-visible {
+	outline: 2px solid var(--color-green-light);
+	outline-offset: 2px;
+	border-color: var(--color-green-light);
+}
+
+/* En-tête & pied de page (accents verts) */
+header, footer {
+	background-color: var(--color-green-light);
+	color: var(--color-green-verydark);
+}
+
+ 
+
+/* Navigation (liens moins importants) */
+.nav a {
+	color: var(--color-green-verydark);
+}
+.nav a:hover { color: var(--color-brown-light); }

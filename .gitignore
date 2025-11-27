@@ -45,3 +45,6 @@
 
 # System
 Thumbs.db
+# Ignore Windows Zone.Identifier ADS exports
+*:[Zz]one.Identifier
+
