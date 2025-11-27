@@ -7,7 +7,10 @@ use App\Models\Avis;
 use App\Core\Env;
 use App\Factories\DatabaseFactory;
 use App\Repositories\UserRepository;
-use App\Services\AuthService; 
+use App\Services\AuthService;
+use App\Services\JwtService;
+use App\Services\CookieManager;
+use App\Middleware\AuthMiddleware; 
 
 class Bootstrap
 {
@@ -185,6 +188,22 @@ class Bootstrap
         } catch (\Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => ['code' => 'LOGOUT_FAILED', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    /**
+     * Valide l'authentification avec JWT
+     * Retourne les données utilisateur ou lance une exception 401
+     */
+    private function requireAuth(): array
+    {
+        try {
+            $middleware = new AuthMiddleware();
+            return $middleware->authenticate();
+        } catch (\Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
+            exit();
         }
     }
 
