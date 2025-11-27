@@ -80,7 +80,7 @@ img { max-width: 100%; height: auto; display: block; }
 h1, h2, h3, h4, h5, h6 {
 	color: var(--color-green-dark);
 }
-h1 { font-size: 28rem; font-weight: 700; }
+h1 { font-size: 40rem; font-weight: 500; }
 h2 { font-size: 24rem; font-weight: 700; }
 
 .section-title { font-size: 28rem; }
