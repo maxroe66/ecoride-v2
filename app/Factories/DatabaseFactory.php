@@ -24,11 +24,12 @@ class DatabaseFactory
      */
     private static function createConnection(): PDO
     {
-        $host = $_ENV['DB_HOST'] ?? getenv('DB_HOST') ?? 'db';
-        $port = $_ENV['DB_PORT'] ?? getenv('DB_PORT') ?? 3306;
-        $database = $_ENV['DB_NAME'] ?? getenv('DB_NAME') ?? 'ecoride';
-        $user = $_ENV['DB_USER'] ?? getenv('DB_USER') ?? 'ecoride';
-        $password = $_ENV['DB_PASSWORD'] ?? getenv('DB_PASSWORD') ?? 'ecoride-v2';
+        // En Docker, utiliser 'db' comme host par défaut
+        $host = getenv('DB_HOST') ?: 'db';
+        $port = getenv('DB_PORT') ?: 3306;
+        $database = getenv('DB_NAME') ?: 'ecoride';
+        $user = getenv('DB_USER') ?: 'ecoride';
+        $password = getenv('DB_PASSWORD') ?: 'ecoride-v2';
 
         $dsn = "mysql:host={$host};port={$port};dbname={$database};charset=utf8mb4";
 
