@@ -16,6 +16,8 @@
   padding: 12rem 24rem;
   max-width: 1400rem;
   margin: 0 auto;
+  width: 100%;
+  position: relative;
 }
 
 /* Logo */
@@ -177,11 +179,18 @@
 .navbar-toggle {
   display: none;
   flex-direction: column;
+  align-items: end;
+  justify-content: center;
   gap: 6rem;
   background: none;
   border: none;
   cursor: pointer;
   padding: 8rem;
+  position: absolute;
+  right: 12rem;
+  top: 50%;
+  transform: translateY(-50%);
+  flex-shrink: 0;
 }
 
 .hamburger {
@@ -192,10 +201,14 @@
   transition: all 160ms ease;
 }
 
-/* Responsive: Tablette (640px+) */
-@media (max-width: 768px) {
+/* Responsive: Tablette et Mobile (≤1024px) */
+@media (max-width: 700px) {
   .navbar {
     padding: 12rem 16rem;
+  }
+
+  .navbar-toggle {
+    right: 8rem;
   }
 
   .nav-link {
@@ -205,6 +218,7 @@
 
   .logo-text {
     display: inline;
+    font-size: 18rem;
   }
 
   .logo-icon {
@@ -215,22 +229,15 @@
   .nav-divider {
     display: none;
   }
-}
 
-/* Responsive: Mobile (≤480px) */
-@media (max-width: 480px) {
-  .navbar {
-    padding: 12rem;
-  }
-
+  /* Afficher le menu burger sur tablette et mobile */
   .navbar-toggle {
     display: flex;
+    align-items: flex-end;
+    justify-content: flex-start;
   }
 
-  .logo-text {
-    display: none;
-  }
-
+  /* Transformer le menu horizontal en menu mobile */
   .nav-links {
     position: absolute;
     top: 100%;
@@ -246,7 +253,7 @@
   }
 
   .nav-links.active {
-    max-height: 500rem;
+    max-height: 600rem;
   }
 
   .nav-item {
@@ -285,14 +292,15 @@
   }
 
   .dropdown-menu.active {
-    max-height: 300rem;
+    display: flex;
+    flex-direction: column;
   }
 
   .dropdown-link {
     padding: 12rem 32rem;
   }
 
-  /* Hamburger animation */
+  /* Animation du hamburger menu */
   .navbar-toggle.active .hamburger:nth-child(1) {
     transform: rotate(45deg) translateY(11rem);
   }
@@ -303,5 +311,31 @@
 
   .navbar-toggle.active .hamburger:nth-child(3) {
     transform: rotate(-45deg) translateY(-11rem);
+  }
+}
+
+/* Responsive: Petits mobiles (≤480px) */
+@media (max-width: 640px) {
+  .navbar {
+    padding: 12rem;
+  }
+
+  .logo-text {
+    display: none;
+  }
+
+  .logo-icon {
+    width: 28rem;
+    height: 28rem;
+  }
+
+  .nav-link {
+    padding: 14rem;
+    font-size: 15rem;
+  }
+    .navbar-toggle {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
   }
 }

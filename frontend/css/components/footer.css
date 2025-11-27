@@ -14,8 +14,8 @@
   max-width: 1200rem;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200rem, 1fr));
-  gap: 40rem;
+  grid-template-columns: 1fr;
+  gap: 32rem;
 }
 
 .footer-column {
@@ -98,21 +98,24 @@
    Responsive Footer
    ========================================================================== */
 
-@media (min-width: 640rem) {
+/* Tablettes (640px+) */
+@media (min-width: 640px) {
   .site-footer {
-    padding: 50rem 30rem;
+    padding: 40rem 24rem;
   }
 
   .footer-content {
-    gap: 50rem;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 40rem;
   }
 
   .footer-title {
-    font-size: 17rem;
+    font-size: 16rem;
   }
 }
 
-@media (min-width: 1024rem) {
+/* Desktop (1024px+) */
+@media (min-width: 1024px) {
   .site-footer {
     padding: 60rem 40rem;
   }
