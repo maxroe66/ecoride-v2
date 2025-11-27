@@ -175,16 +175,23 @@ class SessionManager {
     /**
      * Initialise le SessionManager (appelé au chargement de la page)
      * Peut être utilisé pour nettoyer les tokens expirés
+     * 
+     * NOTE: On ne nettoie plus automatiquement les tokens expirés ici
+     * car l'API serveur fera la validation vraiment nécessaire.
+     * On laisse l'utilisateur avoir une meilleure UX
      */
     static initialize() {
-        if (this.isTokenExpired()) {
-            console.warn('Token expiré, nettoyage de la session');
-            this.clearSession();
-        }
+        // Les tokens expirés seront nettoyés quand on essaie de les utiliser (401 API)
+        // pour une meilleure UX - afficher le menu de connexion d'abord
     }
 }
 
 // Initialiser au chargement
 document.addEventListener('DOMContentLoaded', () => {
     SessionManager.initialize();
+    
+    // Initialiser aussi le header si la fonction existe
+    if (typeof initializeAuthMenu === 'function') {
+        initializeAuthMenu();
+    }
 });

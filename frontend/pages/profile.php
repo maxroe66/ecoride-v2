@@ -169,8 +169,6 @@
 
   <?php include __DIR__ . '/../templates/layouts/footer.php'; ?>
 
-  <script src="/frontend/js/SessionManager.js"></script>
-  <script src="/frontend/js/header.js"></script>
   <script src="/frontend/js/auth.js"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {

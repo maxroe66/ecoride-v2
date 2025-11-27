@@ -62,6 +62,12 @@ function initializeAuthMenu() {
   const authContainer = document.getElementById('authContainer');
   if (!authContainer) return;
 
+  // Vérifier que SessionManager est chargé
+  if (typeof SessionManager === 'undefined') {
+    console.warn('SessionManager not loaded yet');
+    return;
+  }
+
   const isAuthenticated = SessionManager.isAuthenticated();
   const user = SessionManager.getUser();
 
@@ -83,6 +89,8 @@ function initializeAuthMenu() {
         </ul>
       </li>
     `;
+    // Réattacher les écouteurs après avoir créé le menu
+    attachUserMenuListeners();
   } else {
     // Boutons connexion/inscription
     authContainer.innerHTML = `
@@ -103,35 +111,44 @@ function attachUserMenuListeners() {
   const userMenuBtn = document.getElementById('userMenuBtn');
   const userDropdown = document.getElementById('userDropdown');
 
-  if (userMenuBtn && userDropdown) {
-    userMenuBtn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      userDropdown.classList.toggle('active');
-      userMenuBtn.querySelector('.dropdown-icon').style.transform = 
-        userDropdown.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
-    });
+  if (!userMenuBtn || !userDropdown) {
+    return;  // Le menu utilisateur n'existe pas
+  }
 
-    // Fermer le dropdown au clic dehors
-    document.addEventListener('click', function(e) {
-      if (!e.target.closest('.user-menu')) {
-        userDropdown.classList.remove('active');
-        if (userMenuBtn.querySelector('.dropdown-icon')) {
-          userMenuBtn.querySelector('.dropdown-icon').style.transform = 'rotate(0)';
-        }
+  // Supprimer les anciens écouteurs en clonant et remplaçant le bouton
+  const newUserMenuBtn = userMenuBtn.cloneNode(true);
+  userMenuBtn.parentNode.replaceChild(newUserMenuBtn, userMenuBtn);
+
+  // Réattacher à la nouvelle instance
+  newUserMenuBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    userDropdown.classList.toggle('active');
+    newUserMenuBtn.querySelector('.dropdown-icon').style.transform = 
+      userDropdown.classList.contains('active') ? 'rotate(180deg)' : 'rotate(0)';
+  });
+
+  // Fermer le dropdown au clic dehors
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.user-menu')) {
+      userDropdown.classList.remove('active');
+      const icon = newUserMenuBtn.querySelector('.dropdown-icon');
+      if (icon) {
+        icon.style.transform = 'rotate(0)';
+      }
+    }
+  });
+
+  // Fermer le dropdown au clic sur un lien
+  const dropdownLinks = userDropdown.querySelectorAll('.dropdown-link');
+  dropdownLinks.forEach(link => {
+    link.addEventListener('click', function() {
+      userDropdown.classList.remove('active');
+      const icon = newUserMenuBtn.querySelector('.dropdown-icon');
+      if (icon) {
+        icon.style.transform = 'rotate(0)';
       }
     });
-
-    // Fermer le dropdown au clic sur un lien
-    const dropdownLinks = userDropdown.querySelectorAll('.dropdown-link');
-    dropdownLinks.forEach(link => {
-      link.addEventListener('click', function() {
-        userDropdown.classList.remove('active');
-        if (userMenuBtn.querySelector('.dropdown-icon')) {
-          userMenuBtn.querySelector('.dropdown-icon').style.transform = 'rotate(0)';
-        }
-      });
-    });
-  }
+  });
 }
 
 /**
@@ -146,4 +163,33 @@ function escapeHtml(text) {
     "'": '&#039;'
   };
   return text.replace(/[&<>"']/g, m => map[m]);
+}
+
+/**
+ * Effectue la déconnexion
+ */
+async function logout() {
+  if (!confirm('Êtes-vous sûr de vouloir vous déconnecter ?')) {
+    return;
+  }
+
+  try {
+    await SessionManager.logout();
+    // Rediriger vers la page d'accueil après déconnexion
+    window.location.href = '/';
+  } catch (error) {
+    console.error('Erreur déconnexion:', error);
+    // Même en cas d'erreur, on efface la session locale
+    SessionManager.clearSession();
+    window.location.href = '/';
+  }
+}
+
+// Initialiser le menu dès le chargement du script (pas attendre DOMContentLoaded)
+if (document.readyState === 'loading') {
+  // Le DOM n'est pas encore complètement chargé
+  document.addEventListener('DOMContentLoaded', initializeAuthMenu);
+} else {
+  // Le DOM est déjà chargé (cas où le script est en footer)
+  initializeAuthMenu();
 }

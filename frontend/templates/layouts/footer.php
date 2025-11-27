@@ -58,3 +58,7 @@
     </p>
   </div>
 </footer>
+
+<!-- Scripts globaux chargés à la fin pour éviter le blocking -->
+<script src="/frontend/js/SessionManager.js"></script>
+<script src="/frontend/js/header.js"></script>
