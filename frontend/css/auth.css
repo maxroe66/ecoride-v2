@@ -1,0 +1,231 @@
+/* ==========================================================================
+   Authentification (Login/Signup) Pages Styling
+   ========================================================================== */
+
+.auth-container {
+  min-height: calc(100vh - 200rem);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20rem;
+  background: linear-gradient(135deg, var(--color-beige-light) 0%, rgba(165, 214, 167, 0.1) 100%);
+}
+
+.auth-box {
+  background-color: #fff;
+  border-radius: 8rem;
+  padding: 40rem;
+  width: 100%;
+  max-width: 400rem;
+  box-shadow: 0 4rem 6rem rgba(0, 0, 0, 0.1);
+}
+
+.auth-box h1 {
+  font-size: 28rem;
+  font-weight: 700;
+  margin-bottom: 8rem;
+  color: var(--color-green-verydark);
+  text-align: center;
+}
+
+.auth-subtitle {
+  font-size: 14rem;
+  color: var(--color-bluegrey);
+  text-align: center;
+  margin-bottom: 30rem;
+  line-height: 1.5;
+}
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20rem;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  font-size: 14rem;
+  font-weight: 600;
+  color: var(--color-green-verydark);
+  margin-bottom: 8rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  padding: 12rem 16rem;
+  font-size: 14rem;
+  border: 1rem solid #e0e0e0;
+  border-radius: 4rem;
+  font-family: inherit;
+  transition: all 0.3s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-green-light);
+  box-shadow: 0 0 0 3rem rgba(165, 214, 167, 0.3);
+}
+
+.form-hint {
+  font-size: 12rem;
+  color: var(--color-bluegrey);
+  margin-top: 4rem;
+}
+
+.form-group.remember-me {
+  flex-direction: row;
+  align-items: center;
+  gap: 8rem;
+  margin-bottom: 10rem;
+}
+
+.form-group.remember-me input {
+  width: 18rem;
+  height: 18rem;
+  margin: 0;
+  padding: 0;
+}
+
+.form-group.remember-me label {
+  margin: 0;
+  font-weight: 400;
+}
+
+/* Password strength indicator */
+.password-strength {
+  margin-top: 8rem;
+  height: 4rem;
+  background-color: #e0e0e0;
+  border-radius: 2rem;
+  overflow: hidden;
+}
+
+.strength-bar {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(to right, #e74c3c, #f39c12, #f1c40f, #2ecc71);
+  transition: width 0.3s ease;
+}
+
+.form-group.terms {
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 8rem;
+  margin-top: 15rem;
+}
+
+.form-group.terms input {
+  width: 18rem;
+  height: 18rem;
+  margin-top: 3rem;
+  flex-shrink: 0;
+  padding: 0;
+}
+
+.form-group.terms label {
+  margin: 0;
+  font-weight: 400;
+  font-size: 13rem;
+  line-height: 1.5;
+}
+
+.form-group.terms a {
+  color: var(--color-green-dark);
+  text-decoration: none;
+}
+
+.form-group.terms a:hover {
+  text-decoration: underline;
+}
+
+.btn-block {
+  width: 100%;
+  padding: 14rem 20rem;
+  font-size: 16rem;
+  margin-top: 10rem;
+}
+
+/* Error and success messages */
+.error-message {
+  padding: 12rem 16rem;
+  background-color: #fee;
+  border: 1rem solid #fcc;
+  border-radius: 4rem;
+  color: #c00;
+  font-size: 14rem;
+  margin-bottom: 10rem;
+}
+
+.success-message {
+  padding: 12rem 16rem;
+  background-color: #efe;
+  border: 1rem solid #cfc;
+  border-radius: 4rem;
+  color: #060;
+  font-size: 14rem;
+  margin-bottom: 10rem;
+}
+
+.auth-links {
+  margin-top: 24rem;
+  text-align: center;
+  border-top: 1rem solid #e0e0e0;
+  padding-top: 20rem;
+}
+
+.auth-links p {
+  font-size: 14rem;
+  color: var(--color-bluegrey);
+  margin-bottom: 12rem;
+}
+
+.auth-links p:last-child {
+  margin-bottom: 0;
+}
+
+.auth-links a {
+  color: var(--color-green-dark);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.auth-links a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsive Authentification
+   ========================================================================== */
+
+@media (min-width: 640rem) {
+  .auth-box {
+    padding: 50rem;
+  }
+
+  .auth-box h1 {
+    font-size: 32rem;
+    margin-bottom: 12rem;
+  }
+
+  .auth-subtitle {
+    font-size: 15rem;
+    margin-bottom: 35rem;
+  }
+}
+
+@media (min-width: 1024rem) {
+  .auth-container {
+    padding: 40rem;
+  }
+
+  .auth-box {
+    max-width: 450rem;
+  }
+}
