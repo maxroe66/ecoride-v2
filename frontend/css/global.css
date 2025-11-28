@@ -94,44 +94,9 @@ a {
 	color: var(--color-green-dark);
 	text-decoration: none;
 }
+
 a:hover { color: var(--color-brown-light); text-decoration: underline; }
 a:focus-visible { outline: 2px solid var(--color-green-light); outline-offset: 2px; }
-
-/* Boutons */
-.btn {
-	display: inline-flex;
-	align-items: center;
-	gap: 8rem;
-	padding: 9rem 16rem;
-	border-radius: var(--radius-md);
-	border: 1px solid transparent;
-	font-weight: 600;
-	cursor: pointer;
-	transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-}
-
-.btn-primary {
-	background-color: var(--color-green-dark);
-	color: var(--color-white);
-}
-.btn-primary:hover { background-color: #256a29; }
-.btn-primary:active { background-color: #1f5a23; }
-.btn-primary:focus-visible { box-shadow: 0 0 0 3px rgba(165, 214, 167, 0.6); }
-
-.btn-secondary {
-	background-color: var(--color-green-light);
-	color: var(--color-green-verydark);
-}
-.btn-secondary:hover { filter: brightness(0.95); }
-.btn-secondary:focus-visible { box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.35); }
-
-.btn-outline {
-	background: transparent;
-	color: var(--color-green-dark);
-	border-color: var(--color-green-dark);
-}
-.btn-outline:hover { background-color: rgba(46, 125, 50, 0.08); }
-
 /* Inputs & formulaires */
 input, select, textarea {
 	font-family: inherit;

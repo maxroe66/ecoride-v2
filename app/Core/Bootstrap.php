@@ -7,6 +7,7 @@ use App\Models\Avis;
 use App\Core\Env;
 use App\Factories\DatabaseFactory;
 use App\Repositories\UserRepository;
+use App\Repositories\TrajetRepository;
 use App\Services\AuthService;
 use App\Services\JwtService;
 use App\Services\CookieManager;
@@ -67,6 +68,10 @@ class Bootstrap
         }
         if (str_starts_with($uri, '/api/avis')) {
             $this->handleAvis($uri);
+            return;
+        }
+        if (str_starts_with($uri, '/api/trajets')) {
+            $this->handleTrajets($uri);
             return;
         }
         http_response_code(404);
@@ -280,5 +285,71 @@ class Bootstrap
 
         http_response_code(404);
         echo json_encode(['success'=>false,'error'=>['code'=>'NOT_FOUND','message'=>'Endpoint avis']]);
+    }
+
+    private function handleTrajets(string $uri): void 
+    {
+        $method = $_SERVER['REQUEST_METHOD'] ?? 'GET';
+        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
+
+        // 1. Vérifier que c'est une requête GET sur /api/trajets
+        if ($method === 'GET' && $uri === '/api/trajets') {
+            
+            // 2. Récupérer et valider les paramètres
+            $departure = trim((string)($query['departure'] ?? ''));
+          $arrival = trim((string)($query['arrival'] ?? ''));
+            $date = trim((string)($query['date'] ?? ''));
+            
+            // 3. Vérifier qu'ils ne sont pas vides
+            if (!$departure || !$arrival || !$date) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => ['code' => 'MISSING_FIELDS', 'message' => 'Paramètres departure, arrival et date requis']]);
+                return;
+            }
+            
+            // 4. Valider le format de la date (YYYY-MM-DD)
+            if (!preg_match('/^\d{4}-\d{2}-\d{2}$/', $date)) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_DATE', 'message' => 'Format de date invalide (YYYY-MM-DD)']]);
+                return;
+            }
+            
+            // 5. Appeler le repository pour chercher les trajets
+            try {
+                $db = DatabaseFactory::getConnection();
+                $trajetRepository = new TrajetRepository($db);
+
+                // Chercher les trajets
+                $trajets = $trajetRepository->searchTrajets($departure, $arrival, $date);
+
+                // Formater la réponse
+                $payload = array_map(fn($trajet) => [
+                    'covoiturage_id' => $trajet['covoiturage_id'],
+                    'date_depart' => $trajet['date_depart'],
+                    'heure_depart' => $trajet['heure_depart'],
+                    'lieu_depart' => $trajet['lieu_depart'],
+                    'heure_arrivee' => $trajet['heure_arrivee'],
+                    'lieu_arrivee' => $trajet['lieu_arrivee'],
+                    'nb_places' => $trajet['nb_places'],
+                    'prix_personne' => $trajet['prix_personne'],
+                    'est_ecologique' => $trajet['est_ecologique'],
+                    'conducteur_pseudo' => $trajet['pseudo'],
+                    'conducteur_id' => $trajet['utilisateur_id']
+                ], $trajets);
+
+                // 6. Retourner le résultat en JSON
+                http_response_code(200);
+                echo json_encode(['success' => true, 'data' => ['items' => $payload, 'count' => count($payload)]]);
+            } catch (\Exception $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'error' => ['code' => 'SEARCH_FAILED', 'message' => $e->getMessage()]]);
+            }
+            
+            return;
+        }
+    
+        // Pas encore implémenté pour les autres méthodes
+        http_response_code(404);
+        echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Endpoint trajets']]);
     }
 }

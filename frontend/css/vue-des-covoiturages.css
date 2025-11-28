@@ -1,0 +1,297 @@
+main {
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto auto;
+  place-items: center;
+  padding: 40rem 20rem;
+}
+
+.header-text { grid-row: 1; }
+form { grid-row: 2; }
+.hero-image { grid-row: 3; }
+
+
+.header-text {
+    text-align: center;
+    margin-bottom: 22rem;
+    font-size: 30rem;
+    font-weight: 600;
+}
+h1 {
+    margin: 0;
+    font-size: 32rem;
+}
+
+form {
+    width: 100%;
+}
+.input-group {
+    /* Carte centrale conforme au mockup */
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+    background-color: var(--color-green-light);
+    padding: 15rem;
+    margin: 0 24rem;
+    margin-bottom: 60rem;
+    border-radius: 10rem;
+    max-width: 600rem;
+}
+
+input {
+    margin-bottom: 20rem;
+    height: 40rem;
+    width: 100%;
+    border-radius: 10rem;
+}
+input::placeholder {
+    font-size: 16rem;
+}
+button {
+    align-self: center;
+    width: 100rem;
+    height: 40rem;
+    border-radius: 10rem;
+    background-color: var(--color-green-dark);
+    color: var(--color-white);
+    font-size: 16rem;
+    border: none;
+    cursor: pointer;
+}
+button:hover {
+    background-color: #256a29;
+}
+
+/* Conteneur des résultats */
+#resultsContainer {
+    width: 100%;
+    padding: 24rem;
+    margin-top: 40rem;
+}
+
+#resultsContainer > p {
+    text-align: center;
+    font-size: 18rem;
+    color: var(--color-gray-dark);
+}
+
+/* Cartes de trajets */
+.trajet-card {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-white);
+    border: 2rem solid var(--color-green-light);
+    border-radius: 10rem;
+    padding: 20rem;
+    margin-bottom: 20rem;
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.trajet-card:hover {
+    box-shadow: 0 4rem 12rem rgba(0, 0, 0, 0.1);
+    transform: translateY(-2rem);
+}
+
+.trajet-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16rem;
+    border-bottom: 2rem solid var(--color-green-light);
+    padding-bottom: 12rem;
+}
+
+.trajet-header h3 {
+    margin: 0;
+    font-size: 20rem;
+    color: var(--color-green-dark);
+    flex: 1;
+}
+
+.trajet-header .price {
+    margin: 0;
+    font-size: 18rem;
+    font-weight: 600;
+    color: var(--color-green-dark);
+    white-space: nowrap;
+    margin-left: 16rem;
+}
+
+.trajet-details {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10rem;
+    margin-bottom: 16rem;
+}
+
+.trajet-details p {
+    margin: 0;
+    font-size: 14rem;
+    color: var(--color-gray-dark);
+    line-height: 1.5;
+}
+
+.trajet-details strong {
+    color: var(--color-green-dark);
+}
+
+.trajet-details .eco {
+    background-color: #e8f5e9;
+    color: var(--color-green-dark);
+    padding: 8rem 12rem;
+    border-radius: 6rem;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.btn-reserve {
+    align-self: center;
+    width: auto;
+    min-width: 140rem;
+    height: 40rem;
+    padding: 0 24rem;
+    background-color: var(--color-green-dark);
+    color: var(--color-white);
+    font-size: 16rem;
+    border: none;
+    border-radius: 10rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.btn-reserve:hover {
+    background-color: #256a29;
+}
+.hero-image {
+    width: 250rem;
+    max-width: 250rem;
+    height: auto;
+    display: block;
+    margin: 0 auto 4rem auto;
+    border-radius: 10rem;
+}
+
+@media (min-width: 700px) {
+    h1 {
+        margin-bottom: 20rem;
+        font-size: 32rem;
+    }
+    .input-group {
+        flex-direction: row;
+        max-width: 90%;
+        gap: 12rem;
+        align-items: center;
+        padding: clamp(12rem, 3vw, 40rem) 24rem;
+        margin: 0 auto;
+        margin-bottom: 60rem;
+    }
+
+    input {
+        margin-bottom: 0;
+        flex: 1;
+        height: clamp(40rem, 5vw, 60rem);
+        font-size: clamp(14rem, 2vw, 18rem);
+    }
+
+    button {
+        width: auto;
+        min-width: 120rem;
+        align-self: center;
+        height: clamp(40rem, 5vw, 60rem);
+        font-size: clamp(14rem, 2vw, 18rem);
+        padding: 0 32rem;
+    }
+
+    .hero-image {
+        width: 400rem;
+        max-width: 400rem;
+    }
+
+    /* Cartes de trajets sur tablette */
+    .trajet-card {
+        flex-direction: row;
+        align-items: center;
+        padding: 20rem;
+    }
+
+    .trajet-header {
+        flex: 1;
+        border-bottom: none;
+        border-right: 2rem solid var(--color-green-light);
+        padding-right: 24rem;
+        padding-bottom: 0;
+        margin-bottom: 0;
+        margin-right: 24rem;
+    }
+
+    .trajet-header h3 {
+        font-size: 18rem;
+    }
+
+    .trajet-header .price {
+        display: block;
+        margin-left: 0;
+        margin-top: 8rem;
+    }
+
+    .trajet-details {
+        grid-template-columns: repeat(3, 1fr);
+        flex: 1;
+        margin-bottom: 0;
+        margin-right: 24rem;
+    }
+
+    .trajet-details p {
+        font-size: 13rem;
+    }
+}
+@media (min-width: 800px) and (max-width: 1000px) {
+    .input-group {
+        padding-top: clamp(20rem, 5vw, 40rem);
+        padding-bottom: clamp(20rem, 5vw, 40rem);
+    }
+}
+@media (min-width: 1000px) {
+    h1 {
+        font-size: 40rem;
+    }
+    .input-group {
+        
+        padding-top: clamp(12rem, 3vw, 40rem);
+        padding-bottom: clamp(12rem, 3vw, 40rem);
+    }
+
+    input {
+        height: clamp(40rem, 5vw, 60rem);
+        font-size: clamp(14rem, 2vw, 18rem);
+    }
+
+    button {
+        height: clamp(40rem, 5vw, 60rem);
+        font-size: clamp(14rem, 2vw, 18rem);
+        padding: 0 32rem;
+    }
+
+    #resultsContainer {
+        max-width: 1200rem;
+        margin: 40rem auto;
+        padding: 0 24rem;
+    }
+
+    .trajet-card {
+        padding: 24rem;
+    }
+
+    .trajet-header h3 {
+        font-size: 20rem;
+    }
+
+    .trajet-details {
+        grid-template-columns: repeat(4, 1fr);
+    }
+
+    .trajet-details p {
+        font-size: 14rem;
+    }
+}
