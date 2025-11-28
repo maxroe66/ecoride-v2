@@ -74,7 +74,7 @@ function initializeAuthMenu() {
   if (isAuthenticated && user) {
     // Menu utilisateur connecté
     authContainer.innerHTML = `
-      <li class="nav-item user-menu">
+      <div class="user-menu">
         <button class="nav-link user-button" id="userMenuBtn">
           <span class="user-icon">👤</span>
           <span class="user-name">${escapeHtml(user.pseudo)}</span>
@@ -87,19 +87,17 @@ function initializeAuthMenu() {
           <li class="dropdown-divider"></li>
           <li><a href="#" class="dropdown-link logout" onclick="logout(); return false;">Déconnexion</a></li>
         </ul>
-      </li>
+      </div>
     `;
     // Réattacher les écouteurs après avoir créé le menu
     attachUserMenuListeners();
   } else {
     // Boutons connexion/inscription
     authContainer.innerHTML = `
-      <li class="nav-item">
+      <div class="auth-buttons">
         <a href="/login" class="nav-link btn btn-outline">Connexion</a>
-      </li>
-      <li class="nav-item">
         <a href="/signup" class="nav-link btn btn-primary">Inscription</a>
-      </li>
+      </div>
     `;
   }
 }

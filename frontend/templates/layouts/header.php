@@ -25,7 +25,7 @@
         <a href="/" class="nav-link">Accueil</a>
       </li>
       <li class="nav-item">
-        <a href="/rides" class="nav-link">Covoiturage</a>
+        <a href="/vue-des-covoiturages" class="nav-link">Covoiturages</a>
       </li>
       <li class="nav-item">
         <a href="/avis" class="nav-link">Avis</a>
@@ -38,9 +38,9 @@
       <li class="nav-divider"></li>
 
       <!-- Conteneur dynamique pour l'authentification -->
-      <div id="authContainer">
+      <li class="nav-item" id="authContainer">
         <!-- Rempli par JavaScript (header.js) -->
-      </div>
+      </li>
     </ul>
   </nav>
 </header>
