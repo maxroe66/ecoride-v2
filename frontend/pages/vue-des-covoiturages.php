@@ -27,9 +27,6 @@
       <h1>Rechercher un covoiturage</h1>
     </div>
 
-    <!-- Image héros (visible desktop seulement) -->
-    <img src="/images-icons/voiture-2.jpeg" alt="EcoRide" class="hero-image">
-
     <!-- Formulaire de recherche -->
     <form class="search-form" id="searchForm">
       <div class="input-group">
@@ -39,6 +36,12 @@
         <button type="submit" id="searchButton">Rechercher</button>
       </div>
     </form>
+
+    <!-- Conteneur des résultats -->
+    <div id="resultsContainer" class="results-wrapper"></div>
+
+    <!-- Image héros (visible desktop seulement) -->
+    <img src="/images-icons/voiture-2.jpeg" alt="EcoRide" class="hero-image">
   </main>
 
   <!-- Footer dynamique -->

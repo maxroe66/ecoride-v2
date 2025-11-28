@@ -1,9 +1,6 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchForm = document.getElementById('searchForm');
-    const resultsContainer = document.createElement('div');
-    resultsContainer.id = 'resultsContainer';
-    resultsContainer.style.display = 'none';
-    document.querySelector('main').appendChild(resultsContainer);
+    const resultsContainer = document.getElementById('resultsContainer');
 
     searchForm.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -36,11 +33,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     function displayResults(trajets) {
-        const resultsContainer = document.getElementById('resultsContainer');
-        
         if (trajets.length === 0) {
-            resultsContainer.innerHTML = '<p>Aucun trajet trouvé</p>';
-            resultsContainer.style.display = 'block';
+            resultsContainer.innerHTML = '<p class="no-results">Aucun trajet trouvé</p>';
+            resultsContainer.classList.add('show');
             return;
         }
 
@@ -64,6 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
         `).join('');
 
         resultsContainer.innerHTML = trajetCards;
-        resultsContainer.style.display = 'block';
+        resultsContainer.classList.add('show');
     }
 });
