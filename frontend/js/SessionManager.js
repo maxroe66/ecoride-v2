@@ -4,7 +4,6 @@
  */
 class SessionManager {
     static STORAGE_KEY = 'ecoride_user';
-    static TOKEN_KEY = 'ecoride_token';
 
     /**
      * Retourne true si l'utilisateur est connecté
@@ -32,7 +31,7 @@ class SessionManager {
      * @returns {string|null}
      */
     static getToken() {
-        return localStorage.getItem(this.TOKEN_KEY);
+        return null;
     }
 
     /**
@@ -52,11 +51,6 @@ class SessionManager {
 
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userToStore));
 
-            // Stocker le token séparément
-            if (userData.token) {
-                localStorage.setItem(this.TOKEN_KEY, userData.token);
-            }
-
             // Dispatcher un événement personnalisé pour que les composants réagissent
             window.dispatchEvent(new CustomEvent('userLoggedIn', { detail: userToStore }));
         } catch (e) {
@@ -70,7 +64,6 @@ class SessionManager {
     static clearSession() {
         try {
             localStorage.removeItem(this.STORAGE_KEY);
-            localStorage.removeItem(this.TOKEN_KEY);
             
             // Dispatcher un événement pour que les composants réagissent
             window.dispatchEvent(new CustomEvent('userLoggedOut'));
@@ -101,75 +94,6 @@ class SessionManager {
         // Même si l'API échoue, on efface la session locale
         this.clearSession();
         return false;
-    }
-
-    /**
-     * Récupère les headers HTTP pour les requêtes authentifiées
-     * @returns {Object}
-     */
-    static getAuthHeaders() {
-        const headers = { 'Content-Type': 'application/json' };
-        const token = this.getToken();
-        
-        if (token) {
-            headers['Authorization'] = `Bearer ${token}`;
-        }
-
-        return headers;
-    }
-
-    /**
-     * Effectue une requête fetch authentifiée
-     * @param {string} url
-     * @param {Object} options
-     * @returns {Promise<Response>}
-     */
-    static async fetchAuthenticated(url, options = {}) {
-        const mergedOptions = {
-            ...options,
-            headers: {
-                ...this.getAuthHeaders(),
-                ...(options.headers || {})
-            }
-        };
-
-        return fetch(url, mergedOptions);
-    }
-
-    /**
-     * Décode manuellement le JWT pour lire les données (sans vérifier la signature)
-     * À utiliser UNIQUEMENT pour l'affichage, la validation doit se faire côté serveur
-     * @returns {Object|null}
-     */
-    static decodeToken() {
-        const token = this.getToken();
-        if (!token) return null;
-
-        try {
-            const parts = token.split('.');
-            if (parts.length !== 3) return null;
-
-            // Décoder le payload (partie 2)
-            const payload = parts[1];
-            const decoded = JSON.parse(atob(payload));
-            
-            return decoded;
-        } catch (e) {
-            console.error('Erreur décodage token:', e);
-            return null;
-        }
-    }
-
-    /**
-     * Vérifie si le token a expiré
-     * @returns {boolean}
-     */
-    static isTokenExpired() {
-        const decoded = this.decodeToken();
-        if (!decoded || !decoded.exp) return true;
-
-        const now = Math.floor(Date.now() / 1000);
-        return decoded.exp < now;
     }
 
     /**

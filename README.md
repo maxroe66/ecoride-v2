@@ -1,3 +1,10 @@
+Documentation complémentaire
+---------------------------
+
+- Détails du système d'authentification (JWT + cookies HttpOnly) : voir `README_AUTHENTIFICATION.md`.
+## 🔒 Sécurité & Bonnes pratiques
+ - Ne jamais committer `.env`.
+ - Toujours committer `composer.lock`.
 <div align="center">
 
 # EcoRide V2 – Environnement de Développement Complet
