@@ -297,7 +297,7 @@ class Bootstrap
             
             // 2. Récupérer et valider les paramètres
             $departure = trim((string)($query['departure'] ?? ''));
-          $arrival = trim((string)($query['arrival'] ?? ''));
+            $arrival = trim((string)($query['arrival'] ?? ''));
             $date = trim((string)($query['date'] ?? ''));
             
             // 3. Vérifier qu'ils ne sont pas vides
@@ -313,14 +313,51 @@ class Bootstrap
                 echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_DATE', 'message' => 'Format de date invalide (YYYY-MM-DD)']]);
                 return;
             }
+
+            // 5. Récupérer les paramètres de filtre optionnels et les valider
+            $economique = isset($query['economique']) && $query['economique'] === '1' ? true : null;
             
-            // 5. Appeler le repository pour chercher les trajets
+            // Valider maxPrice (0-10000€)
+            $maxPrice = null;
+            if (isset($query['maxPrice'])) {
+                $price = (float)$query['maxPrice'];
+                if ($price > 0 && $price <= 10000) {
+                    $maxPrice = $price;
+                }
+            }
+            
+            // Valider maxDuration (0-1440 minutes = 24h)
+            $maxDuration = null;
+            if (isset($query['maxDuration'])) {
+                $duration = (int)$query['maxDuration'];
+                if ($duration > 0 && $duration <= 1440) {
+                    $maxDuration = $duration;
+                }
+            }
+            
+            // Valider minRating (1-5)
+            $minRating = null;
+            if (isset($query['minRating'])) {
+                $rating = (int)$query['minRating'];
+                if ($rating >= 1 && $rating <= 5) {
+                    $minRating = $rating;
+                }
+            }
+            
+            // 6. Appeler le repository pour chercher les trajets
             try {
                 $db = DatabaseFactory::getConnection();
                 $trajetRepository = new TrajetRepository($db);
 
-                // Chercher les trajets
-                $trajets = $trajetRepository->searchTrajets($departure, $arrival, $date);
+                // Vérifier s'il y a des filtres actifs
+                $hasFilters = $economique || $maxPrice || $maxDuration || $minRating;
+
+                // Chercher les trajets avec ou sans filtres
+                if ($hasFilters) {
+                    $trajets = $trajetRepository->searchTrajetsWithFilters($departure, $arrival, $date, $economique, $maxPrice, $maxDuration, $minRating);
+                } else {
+                    $trajets = $trajetRepository->searchTrajets($departure, $arrival, $date);
+                }
 
                 // Formater la réponse
                 $payload = array_map(fn($trajet) => [
@@ -337,12 +374,12 @@ class Bootstrap
                     'conducteur_id' => $trajet['utilisateur_id']
                 ], $trajets);
 
-                // 6. Retourner le résultat en JSON
+                // 7. Retourner le résultat en JSON
                 http_response_code(200);
                 echo json_encode(['success' => true, 'data' => ['items' => $payload, 'count' => count($payload)]]);
             } catch (\Exception $e) {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'error' => ['code' => 'SEARCH_FAILED', 'message' => $e->getMessage()]]);
+                echo json_encode(['success' => false, 'error' => ['code' => 'SEARCH_FAILED', 'message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
             }
             
             return;
@@ -360,20 +397,57 @@ class Bootstrap
                 return;
             }
 
-            // 3. Appeler le repository pour chercher les prochaines dates
+            // 3. Récupérer les paramètres de filtre optionnels et les valider
+            $economique = isset($query['economique']) && $query['economique'] === '1' ? true : null;
+            
+            // Valider maxPrice (0-10000€)
+            $maxPrice = null;
+            if (isset($query['maxPrice'])) {
+                $price = (float)$query['maxPrice'];
+                if ($price > 0 && $price <= 10000) {
+                    $maxPrice = $price;
+                }
+            }
+            
+            // Valider maxDuration (0-1440 minutes = 24h)
+            $maxDuration = null;
+            if (isset($query['maxDuration'])) {
+                $duration = (int)$query['maxDuration'];
+                if ($duration > 0 && $duration <= 1440) {
+                    $maxDuration = $duration;
+                }
+            }
+            
+            // Valider minRating (1-5)
+            $minRating = null;
+            if (isset($query['minRating'])) {
+                $rating = (int)$query['minRating'];
+                if ($rating >= 1 && $rating <= 5) {
+                    $minRating = $rating;
+                }
+            }
+
+            // 4. Appeler le repository pour chercher les prochaines dates
             try {
                 $db = DatabaseFactory::getConnection();
                 $trajetRepository = new TrajetRepository($db);
         
-                // Chercher les 3 prochaines dates avec trajets disponibles
-                $suggestions = $trajetRepository->getNextAvailableDates($departure, $arrival, 3);
+                // Vérifier s'il y a des filtres actifs
+                $hasFilters = $economique || $maxPrice || $maxDuration || $minRating;
+
+                // Chercher les 3 prochaines dates avec or sans filtres
+                if ($hasFilters) {
+                    $suggestions = $trajetRepository->getNextAvailableDatesWithFilters($departure, $arrival, 3, $economique, $maxPrice, $maxDuration, $minRating);
+                } else {
+                    $suggestions = $trajetRepository->getNextAvailableDates($departure, $arrival, 3);
+                }
                 
-                // 4. Retourner le résultat en JSON
+                // 5. Retourner le résultat en JSON
                 http_response_code(200);
                 echo json_encode(['success' => true, 'data' => ['suggestions' => $suggestions]]);
             } catch (\Exception $e) {
                 http_response_code(500);
-                echo json_encode(['success' => false, 'error' => ['code' => 'SEARCH_FAILED', 'message' => $e->getMessage()]]);
+                echo json_encode(['success' => false, 'error' => ['code' => 'SEARCH_FAILED', 'message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
             }
             
             return;
