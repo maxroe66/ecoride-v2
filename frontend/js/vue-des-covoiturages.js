@@ -42,6 +42,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Générer le HTML pour chaque trajet
         const trajetCards = trajets.map(trajet => `
             <div class="trajet-card">
+                <div class="conducteur-section">
+                    <img class="conducteur-photo" src="/images-icons/icons8-avatar-50.png" alt="Avatar">
+                    <h3 class="conducteur-pseudo">${trajet.conducteur_pseudo}</h3>
+                    <div class="conducteur-rating" id="rating-${trajet.covoiturage_id}">
+                        <span class="stars">★★★★★</span>
+                        <span class="rating-text">-- / 5 (0 avis)</span>
+                    </div>
+                </div>
                 <div class="trajet-header">
                     <h3>${trajet.lieu_depart} → ${trajet.lieu_arrivee}</h3>
                     <p class="price">${trajet.prix_personne}€ par personne</p>
@@ -51,7 +59,6 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p><strong>Départ :</strong> ${trajet.heure_depart}</p>
                     <p><strong>Arrivée :</strong> ${trajet.heure_arrivee}</p>
                     <p><strong>Places :</strong> ${trajet.nb_places} disponibles</p>
-                    <p><strong>Conducteur :</strong> ${trajet.conducteur_pseudo}</p>
                     ${trajet.est_ecologique ? '<p class="eco">🌱 Véhicule écologique</p>' : ''}
                 </div>
                 <button class="btn-reserve">Réserver</button>
@@ -60,5 +67,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
         resultsContainer.innerHTML = trajetCards;
         resultsContainer.classList.add('show');
+        
+        // Charger les notes des conducteurs
+        loadRatings(trajets);
+    }
+
+    // Charger les notes moyennes pour tous les trajets
+    async function loadRatings(trajets) {
+        for (const trajet of trajets) {
+            try {
+                const response = await fetch(`/api/avis/stats?covoiturage_id=${trajet.covoiturage_id}`);
+                const result = await response.json();
+                
+                if (result.success) {
+                    const ratingElement = document.getElementById(`rating-${trajet.covoiturage_id}`);
+                    if (ratingElement) {
+                        displayStars(ratingElement, result.data.average, result.data.count);
+                    }
+                }
+            } catch (error) {
+                console.error('Erreur chargement note:', error);
+            }
+        }
+    }
+
+    // Afficher les étoiles et la note
+    function displayStars(element, average, count) {
+        const stars = Math.round(average); // Arrondir à l'entier plus proche
+        const starDisplay = '★'.repeat(stars) + '☆'.repeat(5 - stars); // ★★★☆☆
+        element.innerHTML = `
+            <span class="stars">${starDisplay}</span>
+            <span class="rating-text">${average.toFixed(1)} / 5 (${count} avis)</span>
+        `;
+        element.classList.add('loaded');
     }
 });
