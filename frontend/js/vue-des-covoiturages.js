@@ -1,6 +1,10 @@
 document.addEventListener('DOMContentLoaded', function() {
     const searchForm = document.getElementById('searchForm');
     const resultsContainer = document.getElementById('resultsContainer');
+    
+    // Variables pour stocker les derniers paramètres de recherche
+    let lastDeparture = '';
+    let lastArrival = '';
 
     searchForm.addEventListener('submit', async function(e) {
         e.preventDefault();
@@ -9,6 +13,10 @@ document.addEventListener('DOMContentLoaded', function() {
         const departure = document.getElementById('searchInput').value.trim();
         const arrival = document.getElementById('destinationInput').value.trim();
         const date = document.getElementById('dateInput').value.trim();
+        
+        // Sauvegarder pour les suggestions
+        lastDeparture = departure;
+        lastArrival = arrival;
 
         // 2. Vérifier que les champs ne sont pas vides
         if (!departure || !arrival || !date) {
@@ -32,16 +40,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    function displayResults(trajets) {
+    async function displayResults(trajets) {
         if (trajets.length === 0) {
-            resultsContainer.innerHTML = '<p class="no-results">Aucun trajet trouvé</p>';
-            resultsContainer.classList.add('show');
+            // Appeler l'API pour les suggestions
+            await displaySuggestions(lastDeparture, lastArrival);
             return;
         }
 
         // Générer le HTML pour chaque trajet
         const trajetCards = trajets.map(trajet => `
             <div class="trajet-card">
+                ${trajet.est_ecologique ? '<div class="eco-badge">🌱 Écologique</div>' : ''}
                 <div class="conducteur-section">
                     <img class="conducteur-photo" src="/images-icons/icons8-avatar-50.png" alt="Avatar">
                     <h3 class="conducteur-pseudo">${trajet.conducteur_pseudo}</h3>
@@ -59,9 +68,8 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p><strong>Départ :</strong> ${trajet.heure_depart}</p>
                     <p><strong>Arrivée :</strong> ${trajet.heure_arrivee}</p>
                     <p><strong>Places :</strong> ${trajet.nb_places} disponibles</p>
-                    ${trajet.est_ecologique ? '<p class="eco">🌱 Véhicule écologique</p>' : ''}
                 </div>
-                <button class="btn-reserve">Réserver</button>
+                <a href="/vue-covoiturage-detail.php?id=${trajet.covoiturage_id}" class="btn-detail">Détail</a>
             </div>
         `).join('');
 
@@ -100,5 +108,50 @@ document.addEventListener('DOMContentLoaded', function() {
             <span class="rating-text">${average.toFixed(1)} / 5 (${count} avis)</span>
         `;
         element.classList.add('loaded');
+    }
+
+    // Afficher les suggestions de dates alternatives
+    async function displaySuggestions(departure, arrival) {
+        try {
+            const response = await fetch(`/api/trajets-suggestions?departure=${encodeURIComponent(departure)}&arrival=${encodeURIComponent(arrival)}`);
+            const result = await response.json();
+            
+            if (result.success && result.data.suggestions.length > 0) {
+                const suggestionsHTML = `
+                    <div class="no-results">
+                        <p>Aucun trajet trouvé pour cette date.</p>
+                        <p><strong>Dates avec trajets disponibles :</strong></p>
+                        <ul class="suggestions-list">
+                            ${result.data.suggestions.map(s => `
+                                <li class="suggestion-item" data-date="${s.date}">
+                                    <strong>${s.date}</strong> - ${s.count} trajet(s) disponible(s)
+                                </li>
+                            `).join('')}
+                        </ul>
+                    </div>
+                `;
+                resultsContainer.innerHTML = suggestionsHTML;
+            } else {
+                resultsContainer.innerHTML = '<p class="no-results">Aucun trajet trouvé pour cette route.</p>';
+            }
+            resultsContainer.classList.add('show');
+            
+            // Ajouter les listeners pour les suggestions cliquables
+            const suggestionItems = document.querySelectorAll('.suggestion-item');
+            suggestionItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const selectedDate = this.getAttribute('data-date');
+                    // Remplir le champ date et relancer la recherche
+                    document.getElementById('dateInput').value = selectedDate;
+                    
+                    // Déclencher la soumission du formulaire
+                    searchForm.dispatchEvent(new Event('submit'));
+                });
+            });
+        } catch (error) {
+            console.error('Erreur chargement suggestions:', error);
+            resultsContainer.innerHTML = '<p class="no-results">Aucun trajet trouvé</p>';
+            resultsContainer.classList.add('show');
+        }
     }
 });

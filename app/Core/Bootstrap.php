@@ -347,7 +347,38 @@ class Bootstrap
             
             return;
         }
-    
+        // Route pour les suggestions de dates
+        if ($method === 'GET' && $uri === '/api/trajets-suggestions') {
+            //1. Récupérer et valider les paramètres
+            $departure = trim((string)($query['departure'] ?? ''));
+            $arrival = trim((string)($query['arrival'] ?? ''));
+
+            // 2. Vérifier qu'ils ne sont pas vides
+            if(!$departure || !$arrival) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => ['code' => 'MISSING_FIELDS', 'message' => 'Paramètres departure et arrival requis']]);
+                return;
+            }
+
+            // 3. Appeler le repository pour chercher les prochaines dates
+            try {
+                $db = DatabaseFactory::getConnection();
+                $trajetRepository = new TrajetRepository($db);
+        
+                // Chercher les 3 prochaines dates avec trajets disponibles
+                $suggestions = $trajetRepository->getNextAvailableDates($departure, $arrival, 3);
+                
+                // 4. Retourner le résultat en JSON
+                http_response_code(200);
+                echo json_encode(['success' => true, 'data' => ['suggestions' => $suggestions]]);
+            } catch (\Exception $e) {
+                http_response_code(500);
+                echo json_encode(['success' => false, 'error' => ['code' => 'SEARCH_FAILED', 'message' => $e->getMessage()]]);
+            }
+            
+            return;
+        }
+        
         // Pas encore implémenté pour les autres méthodes
         http_response_code(404);
         echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Endpoint trajets']]);

@@ -67,4 +67,49 @@ class TrajetRepository
         // 4. Retourner le tableau (peut être vide si aucun trajet)
         return $trajets ?? [];
     }
+    /**
+     * Récupère les N prochaines dates avec trajets disponibles
+     * @param string $departure - lieu de départ
+     * @param string $arrival - lieu d'arrivée
+     * @param int $limit - nombre de dates à retourner
+     * @return array - tableau des suggestions avec date et count
+     */
+    public function getNextAvailableDates(string $departure, string $arrival, int $limit = 3): array
+    {
+        // 1. Préparer la requête SQL
+        // Chercher les PROCHAINES DATES (à partir d'aujourd'hui)
+        // avec au moins 1 trajet disponible
+        
+        $stmt = $this->db->prepare('
+            SELECT 
+                c.date_depart,
+                COUNT(*) as count
+            FROM covoiturage c
+            WHERE c.lieu_depart = :departure
+            AND c.lieu_arrivee = :arrival
+            AND c.date_depart >= CURDATE()
+            AND c.statut = :statut
+            AND c.nb_places > 0
+            GROUP BY c.date_depart
+            ORDER BY c.date_depart ASC
+            LIMIT :limit
+        ');
+
+        // 2. Exécuter la requête
+        $stmt->execute([
+            ':departure' => $departure,
+            ':arrival' => $arrival,
+            ':statut' => 'planifie',
+            ':limit' => $limit
+        ]);
+
+        // 3. Récupérer tous les résultats
+        $results = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        // 4. Formater le résultat
+        return array_map(fn($row) => [
+            'date' => $row['date_depart'],
+            'count' => (int)$row['count']
+        ], $results ?? []);
+    }
 }
