@@ -3,6 +3,34 @@
 namespace App\Models;
 
 class User
+    /**
+     * Retourne les préférences du conducteur depuis la table utilisateur
+     */
+    public function getPreferences(): array
+    {
+        $pdo = \App\Factories\DatabaseFactory::getConnection();
+        $stmt = $pdo->prepare('SELECT preference_fumeur, preference_animaux, autres_preferences FROM utilisateur WHERE utilisateur_id = :id LIMIT 1');
+        $stmt->execute([':id' => $this->id]);
+        $row = $stmt->fetch(\PDO::FETCH_ASSOC);
+        if (!$row) {
+            return [
+                'fumeur' => false,
+                'animaux' => false,
+                'musique' => false,
+                'discussion' => false
+            ];
+        }
+        $autres = [];
+        if (!empty($row['autres_preferences'])) {
+            $autres = json_decode($row['autres_preferences'], true) ?: [];
+        }
+        return [
+            'fumeur' => (bool)$row['preference_fumeur'],
+            'animaux' => (bool)$row['preference_animaux'],
+            'musique' => isset($autres['musique']) ? (bool)$autres['musique'] : false,
+            'discussion' => isset($autres['discussion']) ? (bool)$autres['discussion'] : false
+        ];
+    }
 {
     public int $id;
     public string $nom;
