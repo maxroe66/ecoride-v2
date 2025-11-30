@@ -1,7 +1,11 @@
+
+
 /**
  * Gestionnaire de session utilisateur côté client
  * Gère l'authentification, le stockage du token et l'état utilisateur
  */
+
+
 class SessionManager {
     static STORAGE_KEY = 'ecoride_user';
 

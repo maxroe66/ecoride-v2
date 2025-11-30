@@ -129,7 +129,7 @@
 
   <?php include __DIR__ . '/../templates/layouts/footer.php'; ?>
 
-  <script src="/frontend/js/SessionManager.js"></script>
+ 
   <script src="/frontend/js/vue-covoiturage-detail.js"></script>
 </body>
 </html>

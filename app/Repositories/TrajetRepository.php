@@ -278,4 +278,44 @@ class TrajetRepository implements TrajetRepositoryInterface
         $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $trajets ?? [];
     }
+        /**
+     * Récupère le détail complet d'un covoiturage par ID
+     * @param int $id - covoiturage_id
+     * @return array - détail du trajet avec conducteur, véhicule, et stats avis
+     */
+    public function getTrajetDetail(int $id): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT 
+                c.covoiturage_id,
+                c.date_depart,
+                c.heure_depart,
+                c.lieu_depart,
+                c.heure_arrivee,
+                c.lieu_arrivee,
+                c.nb_places,
+                c.prix_personne,
+                c.est_ecologique,
+                u.utilisateur_id,
+                u.pseudo,
+                v.modele,
+                m.libelle AS marque,
+                v.energie,
+                AVG(COALESCE(a.note, 0)) AS avg_rating,
+                COUNT(a.covoiturage_id) AS reviews_count
+            FROM covoiturage c
+            JOIN utilisateur u ON c.conducteur_id = u.utilisateur_id
+            JOIN voiture v ON c.voiture_id = v.voiture_id
+            JOIN marque m ON v.marque_id = m.marque_id
+            LEFT JOIN avis_fallback a ON c.covoiturage_id = a.covoiturage_id
+            WHERE c.covoiturage_id = :id
+            GROUP BY c.covoiturage_id
+            LIMIT 1
+        ');
+
+        $stmt->execute([':id' => $id]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        return $result ?: [];
+    }
 }

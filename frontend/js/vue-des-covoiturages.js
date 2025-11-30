@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p><strong>Arrivée :</strong> ${trajet.heure_arrivee}</p>
                     <p><strong>Places :</strong> ${trajet.nb_places} disponibles</p>
                 </div>
-                <a href="/vue-covoiturage-detail.php?id=${trajet.covoiturage_id}" class="btn-detail">Détail</a>
+                <a href="/vue-covoiturage-detail?id=${trajet.covoiturage_id}" class="btn-detail">Détail</a>
             </div>
         `).join('');
 

@@ -30,6 +30,9 @@ class AvisRepositoryFactory
         // Mongo
         $mongoDsn = getenv('MONGO_DSN') ?: 'mongodb://mongo:27017';
         $mongoDb  = getenv('MONGO_DB') ?: 'ecoride';
+        // Log temporaire pour debug : affiche le DSN et la base utilisés
+        error_log('[AvisRepositoryFactory] MongoDB DSN utilisé : ' . $mongoDsn);
+        error_log('[AvisRepositoryFactory] MongoDB base utilisée : ' . $mongoDb);
         $mongoRepo = new MongoAvisRepository($mongoDsn, $mongoDb, 'avis');
         $mysqlRepo = new MysqlAvisRepository($pdo);
 

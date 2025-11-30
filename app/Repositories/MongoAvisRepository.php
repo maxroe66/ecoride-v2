@@ -42,11 +42,21 @@ class MongoAvisRepository implements AvisRepositoryInterface
 
     public function listForRide(int $rideId): array
     {
+        error_log('[MongoAvisRepository] Appel de listForRide avec ride_id=' . $rideId);
+        // Log tous les documents de la collection pour debug
+        $allQuery = new Query([]);
+        $allCursor = $this->manager->executeQuery($this->ns(), $allQuery);
+        foreach ($allCursor as $doc) {
+            error_log('[MongoAvisRepository] Document (ALL) : ' . json_encode((array)$doc));
+        }
+
+        // Requête normale
         $query = new Query(['ride_id' => $rideId]);
         $cursor = $this->manager->executeQuery($this->ns(), $query);
         $out = [];
         foreach ($cursor as $doc) {
             $doc = (array)$doc;
+            error_log('[MongoAvisRepository] Document (FILTERED) : ' . json_encode($doc));
             $out[] = new Avis(
                 (int)($doc['ride_id'] ?? 0),
                 (int)($doc['user_id'] ?? 0),

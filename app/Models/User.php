@@ -3,6 +3,7 @@
 namespace App\Models;
 
 class User
+{
     /**
      * Retourne les préférences du conducteur depuis la table utilisateur
      */
@@ -16,22 +17,14 @@ class User
             return [
                 'fumeur' => false,
                 'animaux' => false,
-                'musique' => false,
-                'discussion' => false
             ];
-        }
-        $autres = [];
-        if (!empty($row['autres_preferences'])) {
-            $autres = json_decode($row['autres_preferences'], true) ?: [];
         }
         return [
             'fumeur' => (bool)$row['preference_fumeur'],
             'animaux' => (bool)$row['preference_animaux'],
-            'musique' => isset($autres['musique']) ? (bool)$autres['musique'] : false,
-            'discussion' => isset($autres['discussion']) ? (bool)$autres['discussion'] : false
+            'autres_preferences' => $row['autres_preferences'] ?? ''
         ];
     }
-{
     public int $id;
     public string $nom;
     public string $prenom;

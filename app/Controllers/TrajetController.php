@@ -82,4 +82,47 @@ class TrajetController
             echo json_encode(['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
         }
     }
+
+    /**
+     * Récupère le détail complet d'un covoiturage
+     * GET /api/trajets/detail?id={id}
+     */
+    public static function show(): void
+    {
+        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
+        $id = $query['id'] ?? null;
+
+        // Valider que l'ID est un entier positif
+        if (!$id || !is_numeric($id) || (int)$id <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => 'ID invalide']]);
+            return;
+        }
+
+        $id = (int)$id;
+
+        try {
+            $db = DatabaseFactory::getConnection();
+            $service = new TripService(new TrajetRepository($db));
+            $detail = $service->detail($id);
+
+            // Log temporaire pour debug : affiche le détail et les avis récupérés
+            error_log('[TrajetController] Détail trajet : ' . json_encode($detail));
+
+            // Si vide, le trajet n'existe pas
+            if (empty($detail)) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Trajet introuvable']]);
+                return;
+            }
+
+            // Retourner le détail
+            http_response_code(200);
+            echo json_encode(['success' => true, 'data' => $detail]);
+        } catch (\Exception $e) {
+            error_log('[TrajetController] Exception : ' . $e->getMessage());
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+        }
+    }
 }

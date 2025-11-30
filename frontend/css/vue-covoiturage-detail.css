@@ -1,0 +1,188 @@
+/* ========== CONTAINER PRINCIPAL ========== */
+.detail-container {
+  max-width: 900px;
+  margin: 40px auto;
+  padding: 0 20px;
+}
+
+/* ========== LOADING SPINNER ========== */
+.loading-spinner {
+  text-align: center;
+  padding: 60px 20px;
+  font-size: 18px;
+  color: #666;
+}
+
+/* ========== SECTIONS ========== */
+.detail-section {
+  background: #fff;
+  border-radius: 8px;
+  padding: 30px;
+  margin-bottom: 30px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.detail-section h2 {
+  font-size: 22px;
+  margin: 0 0 20px 0;
+  color: #333;
+  border-bottom: 2px solid #27ae60;
+  padding-bottom: 10px;
+}
+
+/* ========== GRILLE DE DÉTAILS ========== */
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.detail-item {
+  padding: 15px;
+  background: #f9f9f9;
+  border-radius: 6px;
+  border-left: 4px solid #27ae60;
+}
+
+.detail-item strong {
+  display: block;
+  font-size: 14px;
+  color: #27ae60;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.detail-item p {
+  margin: 0;
+  font-size: 16px;
+  color: #333;
+  font-weight: 500;
+}
+
+/* ========== BADGE ÉCOLOGIQUE ========== */
+.eco-badge {
+  display: inline-block;
+  background: #27ae60;
+  color: white;
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* ========== CARTE CONDUCTEUR ========== */
+.conducteur-card {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: #f0f8f4;
+  border-radius: 8px;
+}
+
+.conducteur-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  width: 100%;
+}
+
+.conducteur-avatar {
+  flex-shrink: 0;
+}
+
+.conducteur-avatar img {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  border: 3px solid #27ae60;
+  object-fit: cover;
+}
+
+.conducteur-details {
+  flex: 1;
+}
+
+.conducteur-details h3 {
+  margin: 0 0 8px 0;
+  font-size: 20px;
+  color: #333;
+}
+
+.driver-rating {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 16px;
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.rating-count {
+  font-size: 14px;
+  color: #666;
+  font-weight: normal;
+}
+
+/* ========== MESSAGE D'ERREUR ========== */
+.error-box {
+  background: #f8d7da;
+  border: 1px solid #f5c6cb;
+  color: #721c24;
+  padding: 20px;
+  border-radius: 8px;
+  text-align: center;
+  margin: 40px auto;
+}
+
+.error-box p {
+  margin: 0 0 20px 0;
+  font-size: 16px;
+}
+
+/* ========== CTA SECTION ========== */
+.cta-section {
+  text-align: center;
+  padding: 40px;
+}
+
+.btn-large {
+  padding: 14px 40px;
+  font-size: 18px;
+  min-width: 300px;
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+  .detail-container {
+    margin: 20px auto;
+  }
+
+  .detail-section {
+    padding: 20px;
+    margin-bottom: 20px;
+  }
+
+  .detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .conducteur-card {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .conducteur-info {
+    flex-direction: column;
+  }
+
+  .conducteur-avatar img {
+    width: 100px;
+    height: 100px;
+  }
+
+  .btn-large {
+    min-width: 100%;
+  }
+}

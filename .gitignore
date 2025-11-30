@@ -33,7 +33,7 @@
 # === Dossiers intentionnellement vides conservés ===
 /app/Helpers/*
 !/app/Helpers/.gitkeep
-/app/Services/*
+!/app/Services/*.php
 !/app/Services/.gitkeep
 /app/Validators/*
 !/app/Validators/.gitkeep

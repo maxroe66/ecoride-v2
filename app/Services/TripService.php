@@ -77,7 +77,7 @@ class TripService
 
         // Récupérer les avis du conducteur
         $avisRepo = new \App\Repositories\ResilientAvisRepository(
-            new \App\Repositories\MongoAvisRepository('mongodb://localhost:27017'),
+            new \App\Repositories\MongoAvisRepository('mongodb://mongo:27017'),
             new \App\Repositories\MysqlAvisRepository(\App\Factories\DatabaseFactory::getConnection())
         );
         $avisConducteur = $avisRepo->listForRide($id);
@@ -104,8 +104,8 @@ class TripService
                 'energie' => $raw['energie']
             ],
             'rating' => [
-                'average' => (float)$raw['avg_rating'],
-                'count' => (int)$raw['reviews_count']
+                'average' => (float)$avisRepo->averageForRide($id),
+                'count' => count($avisConducteur)
             ],
             'preferences_conducteur' => $preferences,
             'avis_conducteur' => array_map(fn($avis) => [
@@ -117,8 +117,4 @@ class TripService
         ];
     }
 
-    public function detail(int $id): array
-    {
-        // ...existing code...
-    }
 }

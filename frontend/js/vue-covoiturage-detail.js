@@ -64,6 +64,52 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('vehicle-model').textContent = data.vehicule.modele;
     document.getElementById('vehicle-energy').textContent = data.vehicule.energie;
 
+      // Afficher les préférences du conducteur
+      if (data.preferences_conducteur) {
+        const prefList = document.getElementById('driver-preferences');
+        prefList.innerHTML = '';
+        ['fumeur', 'animaux'].forEach((key) => {
+          if (key in data.preferences_conducteur) {
+            const li = document.createElement('li');
+            li.textContent = `${formatPreference(key)} : ${data.preferences_conducteur[key] ? 'Oui' : 'Non'}`;
+            prefList.appendChild(li);
+          }
+        });
+        // Afficher autres préférences (texte libre)
+        if (data.preferences_conducteur.autres_preferences && data.preferences_conducteur.autres_preferences.trim() !== '') {
+          const li = document.createElement('li');
+          li.textContent = `Autres préférences : ${data.preferences_conducteur.autres_preferences}`;
+          li.style.fontStyle = 'italic';
+          prefList.appendChild(li);
+        }
+      } else {
+        document.getElementById('driver-preferences').innerHTML = '<li>Aucune préférence renseignée.</li>';
+      }
+      // Afficher les avis du conducteur
+      const reviewsDiv = document.getElementById('driver-reviews');
+      reviewsDiv.innerHTML = '';
+      if (Array.isArray(data.avis_conducteur) && data.avis_conducteur.length > 0) {
+        data.avis_conducteur.forEach((avis) => {
+          const avisEl = document.createElement('div');
+          avisEl.className = 'review-item';
+          avisEl.innerHTML = `<strong>Note :</strong> ${avis.note}/5<br><strong>Commentaire :</strong> ${avis.commentaire ? avis.commentaire : '(aucun)'}<br><span class='review-date'>${avis.date}</span>`;
+          reviewsDiv.appendChild(avisEl);
+        });
+      } else {
+        reviewsDiv.innerHTML = '<p>Aucun avis pour ce conducteur.</p>';
+      }
+// Fonction pour afficher le libellé des préférences
+function formatPreference(key) {
+  const labels = {
+    fumeur: 'Fumeur',
+    animaux: 'Animaux acceptés',
+    musique: 'Musique',
+    discussion: 'Discussion',
+    // Ajouter d'autres clés si besoin
+  };
+  return labels[key] ? labels[key] : key;
+}
+
     // Afficher le contenu et masquer le spinner
     document.getElementById('loadingSpinner').style.display = 'none';
     document.getElementById('detailContent').style.display = 'block';
