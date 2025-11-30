@@ -73,11 +73,12 @@ function initializeAuthMenu() {
 
   if (isAuthenticated && user) {
     // Menu utilisateur connecté
+    const displayName = escapeHtml(getDisplayName(user));
     authContainer.innerHTML = `
       <div class="user-menu">
         <button class="nav-link user-button" id="userMenuBtn">
           <span class="user-icon">👤</span>
-          <span class="user-name">${escapeHtml(user.pseudo)}</span>
+          <span class="user-name">${displayName}</span>
           <span class="dropdown-icon">▼</span>
         </button>
         <ul class="dropdown-menu" id="userDropdown">
@@ -153,6 +154,8 @@ function attachUserMenuListeners() {
  * Échappe les caractères HTML pour éviter les injections XSS
  */
 function escapeHtml(text) {
+  if (text === undefined || text === null) return '';
+  const str = String(text);
   const map = {
     '&': '&amp;',
     '<': '&lt;',
@@ -160,7 +163,12 @@ function escapeHtml(text) {
     '"': '&quot;',
     "'": '&#039;'
   };
-  return text.replace(/[&<>"']/g, m => map[m]);
+  return str.replace(/[&<>"']/g, m => map[m]);
+}
+
+function getDisplayName(user) {
+  if (!user || typeof user !== 'object') return 'Utilisateur';
+  return user.pseudo || user.username || (user.email ? user.email.split('@')[0] : 'Utilisateur');
 }
 
 /**

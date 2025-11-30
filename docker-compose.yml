@@ -36,6 +36,8 @@ services:
       - ./composer.json:/var/www/composer.json
       - ./composer.lock:/var/www/composer.lock
       - ./vendor:/var/www/vendor
+      - ./tests:/var/www/tests:ro
+      - ./phpunit.xml.dist:/var/www/phpunit.xml.dist:ro
     networks:
       - backend_net
   db:

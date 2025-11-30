@@ -4,7 +4,7 @@ namespace App\Repositories;
 use PDO;
 use Exception;
 
-class TrajetRepository
+class TrajetRepository implements TrajetRepositoryInterface
 {
     private PDO $db;
 

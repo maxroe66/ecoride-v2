@@ -5,7 +5,7 @@ use App\Models\User;
 use PDO;
 use Exception;
 
-class UserRepository
+class UserRepository implements UserRepositoryInterface
 {
     private PDO $db;
 

@@ -41,9 +41,10 @@ class SessionManager {
     static setUser(userData) {
         try {
             // Stocker les données utilisateur (sans le token)
+            const pseudo = userData.pseudo || userData.username || (userData.email ? userData.email.split('@')[0] : 'Utilisateur');
             const userToStore = {
                 utilisateur_id: userData.utilisateur_id,
-                pseudo: userData.pseudo,
+                pseudo: pseudo,
                 email: userData.email,
                 credit: userData.credit,
                 type_utilisateur: userData.type_utilisateur || 'standard'
