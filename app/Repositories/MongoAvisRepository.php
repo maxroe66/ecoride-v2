@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Avis;
@@ -16,7 +17,10 @@ class MongoAvisRepository implements AvisRepositoryInterface
         $this->manager = new Manager($dsn);
     }
 
-    private function ns(): string { return $this->dbName . '.' . $this->collection; }
+    private function ns(): string
+    {
+        return $this->dbName . '.' . $this->collection;
+    }
 
     public function add(Avis $avis): bool
     {

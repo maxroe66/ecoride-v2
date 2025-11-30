@@ -37,6 +37,9 @@
       </div>
     </form>
 
+    <!-- Conteneur des filtres (sera rempli par JS après recherche) -->
+    <div id="filtersContainer" class="filters-wrapper"></div>
+
     <!-- Conteneur des résultats -->
     <div id="resultsContainer" class="results-wrapper"></div>
 

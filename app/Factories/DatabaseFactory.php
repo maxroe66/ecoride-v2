@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Factories;
 
 use PDO;

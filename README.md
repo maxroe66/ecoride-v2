@@ -2,6 +2,32 @@ Documentation complémentaire
 ---------------------------
 
 - Détails du système d'authentification (JWT + cookies HttpOnly) : voir `README_AUTHENTIFICATION.md`.
+
+## 🧩 Architecture (Pitch Jury)
+- Contrôleurs: lisent l’entrée (query/JSON), valident via `App\Validators\QueryValidator`, délèguent la logique au Service, renvoient JSON et codes HTTP.
+- Services: appliquent les règles métier (auth, trajets, avis), génèrent le JWT (`App\Services\JwtService`), gèrent le cookie (`App\Services\CookieManager`), et accèdent aux données via des Repositories (interfaces).
+- Repositories: accès DB (MySQL/Mongo) derrière interfaces (`UserRepositoryInterface`, `TrajetRepositoryInterface`, `AvisRepositoryInterface`). `ResilientAvisRepository` bascule vers MySQL si Mongo est indisponible.
+- Router & Bootstrap: toutes les routes API via `App\Core\Router`. `App\Core\Bootstrap` initialise l’env, enregistre les routes et dispatch; sert aussi les pages frontend.
+- Validation & Exceptions: `QueryValidator` centralise les règles d’entrée. `App\Exceptions\ValidationException` (422) porte les erreurs multi-champs.
+
+### Routes principales
+- `POST /api/auth/signup` → `AuthController::signup`
+- `POST /api/auth/login` → `AuthController::login`
+- `POST /api/auth/logout` → `AuthController::logout`
+- `GET /api/trajets` → recherche + filtres
+- `GET /api/trajets/suggestions` → suggestions de dates
+- `GET /api/avis`, `GET /api/avis/stats`, `POST /api/avis` (protégé)
+
+### Tests (Docker)
+```
+docker compose exec php vendor/bin/phpunit --testdox
+```
+
+### Principes clés
+- Pas de logique métier dans les contrôleurs.
+- Services n’accèdent à la DB que via Repositories.
+- Validation centralisée et réponses JSON cohérentes.
+
 ## 🔒 Sécurité & Bonnes pratiques
  - Ne jamais committer `.env`.
  - Toujours committer `composer.lock`.
@@ -373,3 +399,33 @@ Branche de fonctionnalité : `feature/xxx` → PR vers `develop` → fusion vers
 ---
 
 > Dernière mise à jour : 2025-10-07
+
+Pitch clair pour le jury:
+
+Contrôleur: lit l’entrée, la valide via QueryValidator, délègue au AuthService, renvoie JSON.
+Service: applique les règles métier et utilise le UserRepository pour la DB; crée le JWT via JwtService et gère le cookie via CookieManager.
+Validator: centralise les règles de validation (champ manquant, formats…), lève ValidationException pour erreurs multi-champs.
+Router/Bootstrap: toutes les routes API passent par le Router; Bootstrap initialise, enregistre et dispatch.
+Architecture globale:
+```plaintext
+		  +--------v---------+
+		  |     Controller   |
+		  +----+--------+----+
+			   |        |
+	   +-------v--+  +--v-------+
+	   |  Service  |  | Validator|
+	   +-------+---+  +----+----+
+			   |          |
+	   +-------v---+      |
+	   | Repository |     |
+	   +-------+---+      |
+			   |          |
+		  +----v----+     |
+		  |  DB /   |     |
+		  | MongoDB |     |
+		  +---------+     |
+						   |
+					   +---v---+
+					   |  DTO  |
+					   +-------+
+```   

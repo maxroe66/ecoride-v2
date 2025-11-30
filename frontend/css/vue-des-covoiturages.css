@@ -1,17 +1,20 @@
+/* ========== LAYOUT PRINCIPAL ========== */
 main {
   display: grid;
   grid-template-columns: 1fr;
-  grid-template-rows: auto auto auto auto;
+  grid-template-rows: auto auto auto auto auto;
   place-items: center;
   padding: 40rem 20rem;
 }
 
 .header-text { grid-row: 1; }
 form { grid-row: 2; }
-#resultsContainer { grid-row: 3; }
-.hero-image { grid-row: 4; }
+#filtersContainer { grid-row: 3; }
+#resultsContainer { grid-row: 4; }
+.hero-image { grid-row: 5; }
 
 
+/* ========== HEADER & TITRE ========== */
 .header-text {
     text-align: center;
     margin-bottom: 22rem;
@@ -23,6 +26,7 @@ h1 {
     font-size: 32rem;
 }
 
+/* ========== BARRE DE RECHERCHE ========== */
 form {
     width: 100%;
 }
@@ -64,7 +68,7 @@ button:hover {
     background-color: #256a29;
 }
 
-/* Conteneur des résultats */
+/* ========== RÉSULTATS & SUGGESTIONS ========== */
 #resultsContainer {
     width: 100%;
     padding: 24rem;
@@ -118,7 +122,9 @@ button:hover {
     font-size: 18rem;
 }
 
-/* Badge écologique - En haut à droite de la carte */
+/* ========== CARTES DE TRAJETS ========== */
+
+/* Badge écologique */
 .eco-badge {
     position: absolute;
     top: clamp(8rem, 2vw, 16rem);
@@ -132,7 +138,7 @@ button:hover {
     box-shadow: 0 2rem 8rem rgba(31, 111, 33, 0.2);
 }
 
-/* Cartes de trajets - Layout fluide et responsif */
+/* Carte principale */
 .trajet-card {
     display: grid;
     position: relative;
@@ -154,7 +160,7 @@ button:hover {
     border-left-width: clamp(3rem, 0.8vw, 6rem);
 }
 
-/* Route principale (départ → arrivée) */
+/* Sections de la carte */
 .trajet-card .trajet-header {
     display: flex;
     flex-direction: column;
@@ -179,7 +185,6 @@ button:hover {
     color: var(--color-green-dark);
 }
 
-/* Détails organisés - Adaptation fluide */
 .trajet-card .trajet-details {
     display: grid;
     grid-template-columns: 1fr;
@@ -214,7 +219,7 @@ button:hover {
     margin-top: clamp(2rem, 1vw, 4rem);
 }
 
-/* Bouton détail - Fluide */
+/* ========== BOUTON DÉTAIL ========== */
 .btn-detail {
     align-self: center;
     justify-self: center;
@@ -246,6 +251,7 @@ button:hover {
     transform: translateY(0);
 }
 
+/* ========== IMAGE HÉRO ========== */
 .hero-image {
     width: clamp(200rem, 40vw, 400rem);
     max-width: 400rem;
@@ -255,7 +261,7 @@ button:hover {
     border-radius: 10rem;
 }
 
-/* Section conducteur - Avatar et pseudo - Fluide */
+/* ========== SECTION CONDUCTEUR ========== */
 .conducteur-section {
     display: flex;
     flex-direction: column;
@@ -281,7 +287,7 @@ button:hover {
     text-align: center;
 }
 
-/* Section notation du conducteur */
+/* ========== NOTATION CONDUCTEUR ========== */
 .conducteur-rating {
     display: flex;
     flex-direction: column;
@@ -321,11 +327,158 @@ button:hover {
     }
 }
 
-/* Tablette (700px+) - Transition vers layout multi-colonnes */
+/* ========== STYLES FILTRES ========== */
+.filters-wrapper {
+    width: 100%;
+    margin: clamp(20rem, 4vw, 40rem) auto;
+    animation: fadeInFilters 0.4s ease-in-out;
+}
+
+.filters-content {
+    background-color: var(--color-green-light);
+    border-left: clamp(3rem, 0.8vw, 6rem) solid var(--color-green-dark);
+    border-radius: clamp(8rem, 2vw, 12rem);
+    padding: clamp(16rem, 3vw, 28rem);
+    max-width: 900rem;
+    margin: 0 auto;
+    box-shadow: 0 clamp(2rem, 1vw, 4rem) clamp(8rem, 2vw, 16rem) rgba(76, 175, 80, 0.15);
+}
+
+.filters-title {
+    margin: 0 0 clamp(16rem, 3vw, 24rem) 0;
+    font-size: clamp(16rem, 3vw, 22rem);
+    font-weight: 600;
+    color: var(--color-green-dark);
+    text-align: center;
+}
+
+.filters-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: clamp(14rem, 3vw, 24rem);
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(6rem, 1.5vw, 10rem);
+}
+
+.filter-label {
+    font-size: clamp(13rem, 2vw, 16rem);
+    font-weight: 500;
+    color: var(--color-green-dark);
+    display: flex;
+    align-items: center;
+    gap: clamp(8rem, 1.5vw, 12rem);
+}
+
+/* Filtre écologique - checkbox avec label inline */
+.filter-eco-item .filter-label {
+    flex-direction: row;
+    gap: clamp(8rem, 1.5vw, 12rem);
+    cursor: pointer;
+}
+
+.filter-eco-item .filter-checkbox {
+    width: clamp(18rem, 3vw, 24rem);
+    height: clamp(18rem, 3vw, 24rem);
+    cursor: pointer;
+    accent-color: var(--color-green-dark);
+    flex-shrink: 0;
+    margin-bottom: 0;
+}
+
+.filter-eco-text {
+    font-size: clamp(13rem, 2vw, 16rem);
+    font-weight: 500;
+    color: var(--color-green-dark);
+}
+
+/* Inputs number */
+.filter-input-number {
+    width: 100%;
+    padding: clamp(8rem, 1.5vw, 12rem) clamp(10rem, 2vw, 14rem);
+    border: clamp(1rem, 0.3vw, 2rem) solid var(--color-green-dark);
+    border-radius: clamp(6rem, 1.5vw, 10rem);
+    font-size: clamp(13rem, 2vw, 15rem);
+    color: #333;
+    background-color: var(--color-white);
+    transition: all 0.2s ease;
+}
+
+.filter-input-number:focus {
+    outline: none;
+    border-color: var(--color-green-dark);
+    box-shadow: 0 0 0 clamp(2rem, 0.5vw, 4rem) rgba(76, 175, 80, 0.2);
+    background-color: #fafaf8;
+}
+
+.filter-input-number:hover {
+    border-color: #1e5a1f;
+}
+
+.filter-input-number::placeholder {
+    color: #999;
+    font-size: clamp(13rem, 2vw, 15rem);
+}
+
+/* Select dropdown */
+.filter-select {
+    width: 100%;
+    padding: clamp(8rem, 1.5vw, 12rem) clamp(10rem, 2vw, 14rem);
+    border: clamp(1rem, 0.3vw, 2rem) solid var(--color-green-dark);
+    border-radius: clamp(6rem, 1.5vw, 10rem);
+    font-size: clamp(13rem, 2vw, 15rem);
+    color: #333;
+    background-color: var(--color-white);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f6f21' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: right clamp(8rem, 1.5vw, 12rem) center;
+    background-size: clamp(16rem, 2vw, 20rem);
+    padding-right: clamp(28rem, 4vw, 36rem);
+}
+
+.filter-select:focus {
+    outline: none;
+    border-color: var(--color-green-dark);
+    box-shadow: 0 0 0 clamp(2rem, 0.5vw, 4rem) rgba(76, 175, 80, 0.2);
+    background-color: #fafaf8;
+}
+
+.filter-select:hover {
+    border-color: #1e5a1f;
+}
+
+.filter-select option {
+    background-color: var(--color-white);
+    color: #333;
+    padding: clamp(6rem, 1vw, 10rem);
+}
+
+/* Animation d'apparition des filtres */
+@keyframes fadeInFilters {
+    from {
+        opacity: 0;
+        transform: translateY(-8rem);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== RESPONSIVE - TABLETTE (700px+) ========== */
 @media (min-width: 700px) {
     h1 {
         margin-bottom: 20rem;
         font-size: 32rem;
+    }
+    .filter-item {
+        flex-direction: row;
     }
     .input-group {
         flex-direction: row;
@@ -430,14 +583,21 @@ button:hover {
         width: clamp(140rem, 12vw, 180rem);
         height: clamp(48rem, 5vw, 60rem);
     }
+
+    /* Filtres en 2 colonnes */
+    .filters-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: clamp(16rem, 3vw, 28rem);
+    }
 }
+/* ========== RESPONSIVE - INTERMÉDIAIRE (800-1000px) ========== */
 @media (min-width: 800px) and (max-width: 1000px) {
     .input-group {
         padding-top: clamp(20rem, 5vw, 40rem);
         padding-bottom: clamp(20rem, 5vw, 40rem);
     }
 }
-/* Desktop (1000px+) - Layout optimisé et fluide */
+/* ========== RESPONSIVE - DESKTOP (1000px+) ========== */
 @media (min-width: 1000px) {
     h1 {
         font-size: 40rem;
@@ -553,4 +713,24 @@ button:hover {
         width: fit-content;
         justify-self: center;
     }
+
+    /* Filtres en 4 colonnes */
+    .filters-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: clamp(20rem, 3vw, 32rem);
+    }
+
+    .filters-content {
+        max-width: 1200rem;
+    }
+    .filter-item.filter-eco-item {
+    align-self: end;
+    margin-bottom: 10px;
+    }
+    
+    .filter-item:not(.filter-eco-item) {
+    flex-direction: column;
+    }
+
+
 }
