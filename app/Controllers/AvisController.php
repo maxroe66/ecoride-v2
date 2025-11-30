@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Validators\QueryValidator;
@@ -19,7 +20,7 @@ class AvisController
             $rideId = QueryValidator::validateRideId($query); // Exception 400 si invalide
         } catch (\Exception $e) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'INVALID_PARAM','message'=>'Paramètre covoiturage_id requis']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_PARAM','message' => 'Paramètre covoiturage_id requis']]);
             return;
         }
 
@@ -33,10 +34,10 @@ class AvisController
             'date_creation' => $a->createdAt->format('Y-m-d H:i:s')
         ], $avis);
 
-        echo json_encode(['success'=>true,'data'=>[
-            'items'=>$payload,
-            'count'=>count($payload),
-            'average'=>$service->averageForRide($rideId)
+        echo json_encode(['success' => true,'data' => [
+            'items' => $payload,
+            'count' => count($payload),
+            'average' => $service->averageForRide($rideId)
         ]]);
     }
 
@@ -47,13 +48,13 @@ class AvisController
             $rideId = QueryValidator::validateRideId($query);
         } catch (\Exception $e) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'INVALID_PARAM','message'=>'Paramètre covoiturage_id requis']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_PARAM','message' => 'Paramètre covoiturage_id requis']]);
             return;
         }
         $service = new ReviewService();
         $avg = $service->averageForRide($rideId);
         $count = $service->countForRide($rideId);
-        echo json_encode(['success'=>true,'data'=>['covoiturage_id'=>$rideId,'average'=>$avg,'count'=>$count]]);
+        echo json_encode(['success' => true,'data' => ['covoiturage_id' => $rideId,'average' => $avg,'count' => $count]]);
     }
 
     public static function create(): void
@@ -62,7 +63,7 @@ class AvisController
         $json = json_decode($raw, true);
         if (!is_array($json)) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'INVALID_JSON','message'=>'Corps JSON invalide']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
             return;
         }
         // Validation complète via QueryValidator tout en conservant format d'erreur
@@ -70,12 +71,12 @@ class AvisController
             $data = QueryValidator::validateAvisCreation($json);
         } catch (\App\Exceptions\ValidationException $ve) {
             http_response_code(422);
-            echo json_encode(['success'=>false,'error'=>['code'=>'VALIDATION_FAILED','messages'=>$ve->errors]]);
+            echo json_encode(['success' => false,'error' => ['code' => 'VALIDATION_FAILED','messages' => $ve->errors]]);
             return;
         } catch (\Exception $e) {
             // Erreur de note etc. (déjà status dans exception mais on force 422 pour cohérence format actuel)
             http_response_code(422);
-            echo json_encode(['success'=>false,'error'=>['code'=>'VALIDATION_FAILED','messages'=>[$e->getMessage()]]]);
+            echo json_encode(['success' => false,'error' => ['code' => 'VALIDATION_FAILED','messages' => [$e->getMessage()]]]);
             return;
         }
 
@@ -83,10 +84,10 @@ class AvisController
         $ok = $service->create($data['rideId'], $data['userId'], $data['rating'], $data['comment']);
         if ($ok) {
             http_response_code(201);
-            echo json_encode(['success'=>true,'data'=>['message'=>'Créé','note'=>$data['rating']]]);
+            echo json_encode(['success' => true,'data' => ['message' => 'Créé','note' => $data['rating']]]);
         } else {
             http_response_code(500);
-            echo json_encode(['success'=>false,'error'=>['code'=>'PERSIST_FAILED','message'=>'Échec enregistrement avis']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'PERSIST_FAILED','message' => 'Échec enregistrement avis']]);
         }
     }
 }

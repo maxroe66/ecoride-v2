@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Factories;
 
 use App\Repositories\{MongoAvisRepository, MysqlAvisRepository, ResilientAvisRepository};
@@ -10,7 +11,9 @@ class AvisRepositoryFactory
 
     public static function get(): ResilientAvisRepository
     {
-        if (self::$instance) return self::$instance;
+        if (self::$instance) {
+            return self::$instance;
+        }
 
         // MySQL
         $host = getenv('DB_HOST') ?: 'db';
@@ -27,7 +30,7 @@ class AvisRepositoryFactory
         // Mongo
         $mongoDsn = getenv('MONGO_DSN') ?: 'mongodb://mongo:27017';
         $mongoDb  = getenv('MONGO_DB') ?: 'ecoride';
-    $mongoRepo = new MongoAvisRepository($mongoDsn, $mongoDb, 'avis');
+        $mongoRepo = new MongoAvisRepository($mongoDsn, $mongoDb, 'avis');
         $mysqlRepo = new MysqlAvisRepository($pdo);
 
         self::$instance = new ResilientAvisRepository($mongoRepo, $mysqlRepo);

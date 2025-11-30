@@ -37,6 +37,12 @@ Client (Frontend) -> HTTP -> Nginx -> public/index.php -> Bootstrap
 ### Models
 - Objets métier simples (`User`, `Avis`). Représentation en mémoire.
 
+### Factories
+- `UserFactory`: helpers de construction utilisateur
+  - `UserFactory::fromSignup(array $payload)`: construit un `User` à partir des données d'inscription (sans double-hash), prêt pour persistance via `UserRepository`.
+  - `UserFactory::fromRow(array $row)`: hydrate un `User` depuis une ligne MySQL.
+  - Intégration dans `AuthService` optionnelle (actuellement non utilisée), prévue pour centraliser la création.
+
 ### Middleware
 - Exemple: `AuthMiddleware.php` vérifie présence/validité du JWT avant autoriser routes protégées (ex: POST avis).
 
@@ -150,7 +156,7 @@ Structure échec:
 - Recommandation future: Tests d’intégration (requête HTTP simulée) pour vérifier pipeline complet.
 
 ## Améliorations Futures
-1. Interfaces pour repositories (`UserRepositoryInterface`, `TrajetRepositoryInterface`, etc.) et rétablir type-hints stricts dans Services.
+1. Interfaces pour repositories (`UserRepositoryInterface`, `TrajetRepositoryInterface`, etc.) et type-hints stricts dans Services — Fait.
 2. Conteneur d’injection de dépendances (simple factory ou Pimple/DI maison) pour éviter instanciations répétées.
 3. Gestion des erreurs centralisée (exception -> mapper -> réponse JSON).
 4. Logger structuré (monolog) pour événements principaux (auth, création avis, échec validation).
@@ -194,7 +200,7 @@ Structure échec:
 ## Statut Actuel
 - Refactor terminé couches principales.
 - Tests Services opérationnels (6 tests, 16 assertions).
-- À aligner: code retour signup (doit être 201 si création).
+- Signup: code retour aligné sur 201 (création).
 - Prochaine cible: interfaces + doc vivante.
 
 ## Glossaire

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Core;
 
 /**
@@ -26,7 +27,9 @@ class Router
 
         if (isset($this->routes[$method][$path])) {
             $route = $this->routes[$method][$path];
-            foreach ($route['middlewares'] as $mw) { $mw(); }
+            foreach ($route['middlewares'] as $mw) {
+                $mw();
+            }
             ($route['action'])();
             return true;
         }

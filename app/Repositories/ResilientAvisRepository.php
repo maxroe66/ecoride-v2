@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use App\Models\Avis;
@@ -12,7 +13,8 @@ class ResilientAvisRepository implements AvisRepositoryInterface
     public function __construct(
         private MongoAvisRepository $mongo,
         private MysqlAvisRepository $mysql
-    ) {}
+    ) {
+    }
 
     private function mongoAvailable(): bool
     {
@@ -31,7 +33,11 @@ class ResilientAvisRepository implements AvisRepositoryInterface
     public function add(Avis $avis): bool
     {
         if ($this->mongoAvailable()) {
-            try { return $this->mongo->add($avis); } catch (\Throwable) { $this->markMongoFailure(); }
+            try {
+                return $this->mongo->add($avis);
+            } catch (\Throwable) {
+                $this->markMongoFailure();
+            }
         }
         return $this->mysql->add($avis);
     }
@@ -39,7 +45,11 @@ class ResilientAvisRepository implements AvisRepositoryInterface
     public function listForRide(int $rideId): array
     {
         if ($this->mongoAvailable()) {
-            try { return $this->mongo->listForRide($rideId); } catch (\Throwable) { $this->markMongoFailure(); }
+            try {
+                return $this->mongo->listForRide($rideId);
+            } catch (\Throwable) {
+                $this->markMongoFailure();
+            }
         }
         return $this->mysql->listForRide($rideId);
     }
@@ -47,7 +57,11 @@ class ResilientAvisRepository implements AvisRepositoryInterface
     public function averageForRide(int $rideId): float
     {
         if ($this->mongoAvailable()) {
-            try { return $this->mongo->averageForRide($rideId); } catch (\Throwable) { $this->markMongoFailure(); }
+            try {
+                return $this->mongo->averageForRide($rideId);
+            } catch (\Throwable) {
+                $this->markMongoFailure();
+            }
         }
         return $this->mysql->averageForRide($rideId);
     }

@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Core;
 
 use App\Core\Env;
@@ -7,6 +8,7 @@ use App\Controllers\AuthController;
 use App\Controllers\AvisController;
 use App\Controllers\TrajetController;
 use App\Middleware\AuthMiddleware;
+
 // Nettoyage: suppression des anciens imports legacy non utilisés
 
 class Bootstrap
@@ -42,7 +44,7 @@ class Bootstrap
         $router = new Router();
         // Health
         $router->add('GET', '/api/health', function () {
-            echo json_encode(['success'=>true,'data'=>'ok']);
+            echo json_encode(['success' => true,'data' => 'ok']);
         });
         // Auth
         $router->add('POST', '/api/auth/signup', [AuthController::class, 'signup']);
@@ -51,15 +53,22 @@ class Bootstrap
         // Avis
         $router->add('GET', '/api/avis', [AvisController::class, 'list']);
         $router->add('GET', '/api/avis/stats', [AvisController::class, 'stats']);
-        $router->add('POST', '/api/avis', [AvisController::class, 'create'], [function () { (new \App\Middleware\AuthMiddleware())->authenticate(); }]);
+        $router->add('POST', '/api/avis', [AvisController::class, 'create'], [function () {
+            (new \App\Middleware\AuthMiddleware())->authenticate();
+        }]);
         // Trajets
         $router->add('GET', '/api/trajets', [TrajetController::class, 'search']);
+        // Alias corrigé: chemin attendu par le frontend `/api/trajets/suggestions`
+        $router->add('GET', '/api/trajets/suggestions', [TrajetController::class, 'suggestions']);
+        // Conserver l'ancien alias si déjà utilisé quelque part
         $router->add('GET', '/api/trajets-suggestions', [TrajetController::class, 'suggestions']);
 
         header('Content-Type: application/json');
-        if ($router->dispatch()) { return; }
+        if ($router->dispatch()) {
+            return;
+        }
         http_response_code(404);
-        echo json_encode(['success'=>false,'error'=>['code'=>'NOT_FOUND','message'=>'Endpoint']]);
+        echo json_encode(['success' => false,'error' => ['code' => 'NOT_FOUND','message' => 'Endpoint']]);
     }
 
     private function servePage(string $uri): void

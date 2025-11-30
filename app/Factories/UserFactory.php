@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Factories;
 
 use App\Models\User;
@@ -39,9 +40,15 @@ class UserFactory
             isset($row['credit']) ? (float)$row['credit'] : 20.00,
             $row['type_utilisateur'] ?? 'standard'
         );
-        if (isset($row['utilisateur_id'])) { $user->id = (int)$row['utilisateur_id']; }
-        if (isset($row['date_creation'])) { $user->date_creation = (string)$row['date_creation']; }
-        if (isset($row['suspendu'])) { $user->suspendu = (int)$row['suspendu']; }
+        if (isset($row['utilisateur_id'])) {
+            $user->id = (int)$row['utilisateur_id'];
+        }
+        if (isset($row['date_creation'])) {
+            $user->date_creation = (string)$row['date_creation'];
+        }
+        if (isset($row['suspendu'])) {
+            $user->suspendu = (int)$row['suspendu'];
+        }
         return $user;
     }
 }

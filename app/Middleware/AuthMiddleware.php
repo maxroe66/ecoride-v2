@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Middleware;
 
 use App\Services\JwtService;
@@ -18,9 +19,9 @@ class AuthMiddleware
 
     /**
      * Valide l'authentification de l'utilisateur
-     * 
+     *
      * Cherche le token uniquement dans le cookie sécurisé (ecoride_token).
-     * 
+     *
      * @return array Données utilisateur du token
      * @throws Exception si pas de token ou token invalide
      */

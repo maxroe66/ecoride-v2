@@ -1,9 +1,11 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Factories\DatabaseFactory;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
+use App\Validators\QueryValidator;
 
 /**
  * Contrôleur d'authentification
@@ -17,27 +19,27 @@ class AuthController
         $json = json_decode($raw, true);
         if (!is_array($json)) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'INVALID_JSON','message'=>'Corps JSON invalide']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
             return;
         }
-        $pseudo = trim((string)($json['pseudo'] ?? ''));
-        $email = trim((string)($json['email'] ?? ''));
-        $password = (string)($json['password'] ?? '');
-        if (!$pseudo || !$email || !$password) {
+        // Validation centralisée
+        try {
+            $data = QueryValidator::validateSignup($json);
+        } catch (\Exception $e) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'MISSING_FIELDS','message'=>'Pseudo, email et mot de passe requis']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
             return;
         }
         try {
             $db = DatabaseFactory::getConnection();
             $repo = new UserRepository($db);
             $auth = new AuthService($repo);
-            $data = $auth->signup($pseudo,$email,$password);
+            $data = $auth->signup($data['pseudo'],$data['email'],$data['password']);
             http_response_code(201);
-            echo json_encode(['success'=>true,'data'=>$data]);
+            echo json_encode(['success' => true,'data' => $data]);
         } catch (\Exception $e) {
             http_response_code(422);
-            echo json_encode(['success'=>false,'error'=>['code'=>'SIGNUP_FAILED','message'=>$e->getMessage()]]);
+            echo json_encode(['success' => false,'error' => ['code' => 'SIGNUP_FAILED','message' => $e->getMessage()]]);
         }
     }
 
@@ -47,25 +49,26 @@ class AuthController
         $json = json_decode($raw, true);
         if (!is_array($json)) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'INVALID_JSON','message'=>'Corps JSON invalide']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
             return;
         }
-        $emailOrPseudo = trim((string)($json['email'] ?? $json['pseudo'] ?? ''));
-        $password = (string)($json['password'] ?? '');
-        if (!$emailOrPseudo || !$password) {
+        // Validation centralisée
+        try {
+            $data = QueryValidator::validateLogin($json);
+        } catch (\Exception $e) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'MISSING_FIELDS','message'=>'Email/Pseudo et mot de passe requis']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
             return;
         }
         try {
             $db = DatabaseFactory::getConnection();
             $repo = new UserRepository($db);
             $auth = new AuthService($repo);
-            $userData = $auth->login($emailOrPseudo,$password);
-            echo json_encode(['success'=>true,'data'=>$userData,'redirect'=>'/']);
+            $userData = $auth->login($data['emailOrPseudo'],$data['password']);
+            echo json_encode(['success' => true,'data' => $userData,'redirect' => '/']);
         } catch (\Exception $e) {
             http_response_code(401);
-            echo json_encode(['success'=>false,'error'=>['code'=>'LOGIN_FAILED','message'=>$e->getMessage()]]);
+            echo json_encode(['success' => false,'error' => ['code' => 'LOGIN_FAILED','message' => $e->getMessage()]]);
         }
     }
 
@@ -76,10 +79,10 @@ class AuthController
             $repo = new UserRepository($db);
             $auth = new AuthService($repo);
             $auth->logout();
-            echo json_encode(['success'=>true,'data'=>['message'=>'Déconnexion réussie']]);
+            echo json_encode(['success' => true,'data' => ['message' => 'Déconnexion réussie']]);
         } catch (\Exception $e) {
             http_response_code(500);
-            echo json_encode(['success'=>false,'error'=>['code'=>'LOGOUT_FAILED','message'=>$e->getMessage()]]);
+            echo json_encode(['success' => false,'error' => ['code' => 'LOGOUT_FAILED','message' => $e->getMessage()]]);
         }
     }
 }

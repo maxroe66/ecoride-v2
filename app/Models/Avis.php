@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Models;
 
 class Avis
@@ -9,5 +10,6 @@ class Avis
         public readonly int $rating,          // note (1..5)
         public readonly ?string $comment,     // commentaire
         public readonly \DateTimeImmutable $createdAt = new \DateTimeImmutable()
-    ) {}
+    ) {
+    }
 }

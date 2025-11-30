@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Repositories;
 
 use PDO;
@@ -30,7 +31,7 @@ class TrajetRepository implements TrajetRepositoryInterface
         // - statut = 'planifie' (seulement les trajets à venir)
         // - nb_places > 0 (avec places disponibles)
         // - LIMIT 100 (limiter à 100 résultats max)
-        
+
         $stmt = $this->db->prepare('
             SELECT 
                 c.covoiturage_id,
@@ -81,7 +82,7 @@ class TrajetRepository implements TrajetRepositoryInterface
         // 1. Préparer la requête SQL
         // Chercher les PROCHAINES DATES (à partir d'aujourd'hui)
         // avec au moins 1 trajet disponible
-        
+
         $stmt = $this->db->prepare('
             SELECT 
                 c.date_depart,
@@ -134,8 +135,7 @@ class TrajetRepository implements TrajetRepositoryInterface
         ?float $maxPrice = null,
         ?int $maxDuration = null,
         ?int $minRating = null
-    ): array
-    {
+    ): array {
         // Construire dynamiquement la requête SQL selon les filtres
         $sql = '
             SELECT 
@@ -208,16 +208,15 @@ class TrajetRepository implements TrajetRepositoryInterface
 
 
     public function searchTrajetsWithFilters(
-        string $departure, 
-        string $arrival, 
+        string $departure,
+        string $arrival,
         string $date,
         ?bool $economique = null,
         ?float $maxPrice = null,
         ?int $maxDuration = null,
         ?int $minRating = null
-    ): array
+    ): array {
 
-    {
         // Construire dynamiquement la requête SQL selon les filtres
         $sql = '
             SELECT 
@@ -279,5 +278,4 @@ class TrajetRepository implements TrajetRepositoryInterface
         $trajets = $stmt->fetchAll(PDO::FETCH_ASSOC);
         return $trajets ?? [];
     }
-
 }

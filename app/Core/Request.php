@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Core;
 
 /**
@@ -37,7 +38,9 @@ class Request
     private function parseJsonBody(): array
     {
         $raw = file_get_contents('php://input');
-        if (!$raw) { return []; }
+        if (!$raw) {
+            return [];
+        }
         $decoded = json_decode($raw, true);
         return is_array($decoded) ? $decoded : [];
     }

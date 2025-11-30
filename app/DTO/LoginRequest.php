@@ -1,4 +1,5 @@
 <?php
+
 namespace App\DTO;
 
 /**
@@ -10,7 +11,8 @@ class LoginRequest
     public function __construct(
         public readonly string $emailOrPseudo,
         public readonly string $password
-    ) {}
+    ) {
+    }
 
     /**
      * Crée un LoginRequest depuis un tableau JSON décodé.

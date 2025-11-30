@@ -1,4 +1,5 @@
 <?php
+
 namespace App\DTO;
 
 use App\Models\User;

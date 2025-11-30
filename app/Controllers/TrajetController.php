@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use App\Factories\DatabaseFactory;
@@ -24,7 +25,7 @@ class TrajetController
             http_response_code(400);
             $msg = $e->getMessage();
             $code = str_contains($msg, 'Format de date') ? 'INVALID_DATE' : 'MISSING_FIELDS';
-            echo json_encode(['success'=>false,'error'=>['code'=>$code,'message'=>$msg]]);
+            echo json_encode(['success' => false,'error' => ['code' => $code,'message' => $msg]]);
             return;
         }
 
@@ -44,10 +45,10 @@ class TrajetController
             );
             $payload = array_map(fn($t) => TripService::normalize($t), $trajets);
             http_response_code(200);
-            echo json_encode(['success'=>true,'data'=>['items'=>$payload,'count'=>count($payload)]]);
+            echo json_encode(['success' => true,'data' => ['items' => $payload,'count' => count($payload)]]);
         } catch (\Exception $e) {
             http_response_code(500);
-            echo json_encode(['success'=>false,'error'=>['code'=>'SEARCH_FAILED','message'=>'Erreur lors de la recherche. Veuillez réessayer.']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
         }
     }
 
@@ -58,7 +59,7 @@ class TrajetController
             $validated = QueryValidator::validateDateSuggestions($query);
         } catch (\Exception $e) {
             http_response_code(400);
-            echo json_encode(['success'=>false,'error'=>['code'=>'MISSING_FIELDS','message'=>$e->getMessage()]]);
+            echo json_encode(['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
             return;
         }
         $filters = QueryValidator::extractFilters($query);
@@ -75,10 +76,10 @@ class TrajetController
                 $filters['minRating']
             );
             http_response_code(200);
-            echo json_encode(['success'=>true,'data'=>['suggestions'=>$suggestions]]);
+            echo json_encode(['success' => true,'data' => ['suggestions' => $suggestions]]);
         } catch (\Exception $e) {
             http_response_code(500);
-            echo json_encode(['success'=>false,'error'=>['code'=>'SEARCH_FAILED','message'=>'Erreur lors de la recherche. Veuillez réessayer.']]);
+            echo json_encode(['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
         }
     }
 }
