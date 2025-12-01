@@ -133,6 +133,9 @@ function formatPreference(key) {
     document.getElementById('loadingSpinner').style.display = 'none';
     document.getElementById('detailContent').style.display = 'block';
 
+    // Initialiser les événements des modales de participation
+    initializeParticipationEvents();
+
   } catch (error) {
     console.error('Erreur lors du chargement:', error);
     showError('Une erreur réseau est survenue. Veuillez vérifier votre connexion.');
@@ -234,7 +237,239 @@ function showError(message) {
 }
 
 /**
- * Placeholder : action pour contacter le conducteur
+ * Gestion des modales et participations
+ */
+
+// Variables globales pour tracker l'état de la participation
+let currentCovoiturageId = null;
+let currentParticipationId = null;
+let currentNbPlaces = 1;
+let currentPrice = 0;
+
+/**
+ * Initialiser les événements des modales et du bouton participer
+ */
+function initializeParticipationEvents() {
+  const btnParticipate = document.getElementById('btn-participate');
+  if (btnParticipate) {
+    btnParticipate.addEventListener('click', openModal1);
+  }
+
+  // Fermer les modales avec le bouton X
+  document.querySelectorAll('.modal-close').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const modal = e.target.closest('.modal');
+      if (modal.id === 'modal1-participation') {
+        closeModal1();
+      } else if (modal.id === 'modal2-confirmation') {
+        closeModal2();
+      }
+    });
+  });
+
+  // Gérer les actions des boutons avec data-action
+  document.querySelectorAll('[data-action]').forEach(btn => {
+    btn.addEventListener('click', handleModalAction);
+  });
+
+  // Fermer modal au clic sur le fond (backdrop)
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) {
+        if (modal.id === 'modal1-participation') {
+          closeModal1();
+        } else if (modal.id === 'modal2-confirmation') {
+          closeModal2();
+        }
+      }
+    });
+  });
+}
+
+/**
+ * Gérer les actions des boutons via data-action
+ */
+function handleModalAction(e) {
+  const action = e.target.getAttribute('data-action');
+  
+  if (action === 'close-modal1') {
+    closeModal1();
+  } else if (action === 'proceed-modal2') {
+    proceedToModal2();
+  } else if (action === 'close-modal2') {
+    closeModal2();
+  } else if (action === 'confirm-participation') {
+    confirmParticipation();
+  }
+}
+
+/**
+ * Ouvrir Modal 1 (première confirmation)
+ */
+function openModal1() {
+  // Récupérer l'ID du covoiturage depuis l'URL
+  const urlParams = new URLSearchParams(window.location.search);
+  currentCovoiturageId = parseInt(urlParams.get('id'));
+
+  // Récupérer les infos depuis le DOM (déjà chargées dans DOMContentLoaded)
+  const detailContent = document.getElementById('detailContent');
+  if (!detailContent || detailContent.style.display === 'none') {
+    alert('Impossible de charger les informations du covoiturage.');
+    return;
+  }
+
+  // Récupérer prix et places
+  const priceText = document.getElementById('detail-price')?.textContent || '0';
+  currentPrice = parseFloat(priceText.replace('€', ''));
+  
+  const seatsText = document.getElementById('detail-seats')?.textContent || '0';
+  const seatsMatch = seatsText.match(/(\d+)/);
+  const availableSeats = seatsMatch ? parseInt(seatsMatch[1]) : 0;
+
+  // Valider que les places disponibles > 0
+  if (availableSeats <= 0) {
+    alert('Aucune place disponible pour ce covoiturage.');
+    return;
+  }
+
+  // Mettre à jour modal 1
+  currentNbPlaces = 1;
+  document.getElementById('modal1-amount').textContent = (currentPrice * currentNbPlaces).toFixed(2);
+  document.getElementById('modal1-seats').textContent = currentNbPlaces;
+
+  // Afficher la modal 1
+  const modal1 = document.getElementById('modal1-participation');
+  modal1.classList.add('show');
+}
+
+/**
+ * Fermer Modal 1
+ */
+function closeModal1() {
+  const modal1 = document.getElementById('modal1-participation');
+  modal1.classList.remove('show');
+}
+
+/**
+ * Passer à Modal 2 (deuxième confirmation)
+ */
+function proceedToModal2() {
+  // Appeler API 1 : requestParticipation
+  requestParticipation();
+}
+
+/**
+ * API 1 : Demander une participation
+ */
+async function requestParticipation() {
+  try {
+    const response = await fetch('/api/participations/request', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        covoiturage_id: currentCovoiturageId,
+        nb_places: currentNbPlaces
+      })
+    });
+
+    const result = await response.json();
+
+    if (!result.success) {
+      alert('Erreur : ' + (result.error?.message || 'Impossible de créer la participation.'));
+      return;
+    }
+
+    // Sauvegarder l'ID de participation
+    currentParticipationId = result.data.participation_id;
+
+    // Fermer modal 1 et ouvrir modal 2
+    closeModal1();
+    openModal2();
+
+  } catch (error) {
+    console.error('Erreur requestParticipation:', error);
+    alert('Erreur de connexion. Veuillez réessayer.');
+  }
+}
+
+/**
+ * Ouvrir Modal 2 (deuxième confirmation)
+ */
+function openModal2() {
+  document.getElementById('modal2-amount').textContent = (currentPrice * currentNbPlaces).toFixed(2);
+  
+  const modal2 = document.getElementById('modal2-confirmation');
+  modal2.classList.add('show');
+}
+
+/**
+ * Fermer Modal 2
+ */
+function closeModal2() {
+  const modal2 = document.getElementById('modal2-confirmation');
+  modal2.classList.remove('show');
+}
+
+/**
+ * API 2 + 3 : Valider et Confirmer la participation
+ */
+async function confirmParticipation() {
+  try {
+    // API 2 : Valider
+    const validateResponse = await fetch('/api/participations/validate', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        participation_id: currentParticipationId
+      })
+    });
+
+    const validateResult = await validateResponse.json();
+
+    if (!validateResult.success) {
+      alert('Erreur validation : ' + (validateResult.error?.message || 'Impossible de valider.'));
+      return;
+    }
+
+    // API 3 : Confirmer
+    const confirmResponse = await fetch('/api/participations/confirm', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        participation_id: currentParticipationId
+      })
+    });
+
+    const confirmResult = await confirmResponse.json();
+
+    if (!confirmResult.success) {
+      alert('Erreur confirmation : ' + (confirmResult.error?.message || 'Impossible de confirmer.'));
+      return;
+    }
+
+    // Succès !
+    closeModal2();
+    alert('✅ Participation confirmée ! Votre crédit a été débité.');
+    
+    // Recharger la page ou rediriger
+    setTimeout(() => {
+      window.location.reload();
+    }, 1500);
+
+  } catch (error) {
+    console.error('Erreur confirmParticipation:', error);
+    alert('Erreur de connexion. Veuillez réessayer.');
+  }
+}
+
+/**
+ * Placeholder : action pour contacter le conducteur (legacy)
  */
 function contactDriver() {
   alert('La fonctionnalité de contact est en développement.');

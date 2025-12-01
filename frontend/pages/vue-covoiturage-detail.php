@@ -130,8 +130,56 @@
 
       <!-- CTA - Pleine largeur en bas -->
       <section class="detail-section cta-section">
-        <button class="btn btn-primary btn-large" onclick="contactDriver()">Participer</button>
+        <button class="btn btn-primary btn-large" id="btn-participate">Participer</button>
       </section>
+    </div>
+
+    <!-- MODAL 1 : Première confirmation du montant -->
+    <div id="modal1-participation" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirmer votre participation</h2>
+          <button class="modal-close" aria-label="Fermer">×</button>
+        </div>
+        <div class="modal-body">
+          <p>Vous êtes sur le point de participer à ce covoiturage.</p>
+          <div class="modal-info">
+            <p><strong>Montant à débiter :</strong> <span id="modal1-amount">---</span> €</p>
+            <p><strong>Nombre de places :</strong> <span id="modal1-seats">---</span></p>
+          </div>
+          <p class="modal-note">
+            Vous pourrez confirmer votre participation à l'étape suivante.
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-action="close-modal1">Annuler</button>
+          <button class="btn btn-primary" data-action="proceed-modal2">Continuer</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL 2 : Deuxième confirmation finale -->
+    <div id="modal2-confirmation" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2>Confirmation finale</h2>
+          <button class="modal-close" aria-label="Fermer">×</button>
+        </div>
+        <div class="modal-body">
+          <p class="modal-warning">⚠️ Attention !</p>
+          <p>Vous êtes sur le point de confirmer votre participation. Votre crédit sera débité de façon définitive.</p>
+          <div class="modal-info">
+            <p><strong>Montant final :</strong> <span id="modal2-amount">---</span> €</p>
+          </div>
+          <p class="modal-note">
+            Cette action est irréversible. Êtes-vous certain ?
+          </p>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" data-action="close-modal2">Annuler</button>
+          <button class="btn btn-primary btn-danger" data-action="confirm-participation">Valider et débiter</button>
+        </div>
+      </div>
     </div>
 
     <!-- Message d'erreur -->
