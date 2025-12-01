@@ -239,17 +239,35 @@
 /* ========== CTA SECTION ========== */
 .cta-section {
   text-align: center;
-  padding: 40rem;
+  padding: 0rem;
+  background: transparent;
+  box-shadow: none;
+  margin-bottom: 0rem;
+  border-radius: 0;
 }
 
 .btn-large {
   padding: 14rem 40rem;
   font-size: 18rem;
   min-width: 300rem;
+  background-color: #27ae60;
+  color: white;
+  border: none;
+  border-radius: 6rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.btn-large:hover {
+  background-color: #1e6e47;
+}
+
+.btn-large:active {
+  transform: scale(0.98);
 }
 
 /* ========== RESPONSIVE ========== */
-@media (max-width: 768rem) {
+@media (min-width: 768px) and (max-width: 1024px) {
   .detail-container {
     margin: 20rem auto;
   }
@@ -279,5 +297,51 @@
 
   .btn-large {
     min-width: 100%;
+  }
+}
+
+/* ========== LAYOUT 2 COLONNES À PARTIR DE 1000PX ========== */
+@media (min-width: 1000px) {
+  .detail-container {
+    max-width: 1400rem;
+  }
+
+  .detail-wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30rem;
+    align-items: start;
+    margin-bottom: 3rem;
+  }
+
+  .detail-column {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+  }
+
+  .detail-column-left {
+    /* Conducteur : colonne gauche */
+    grid-column: 1;
+  }
+
+  .detail-column-right {
+    /* Trajet + Véhicule : colonne droite */
+    grid-column: 2;
+  }
+
+  /* Ajuster la grille des détails en 2 colonnes sur grand écran */
+  .detail-column-right .detail-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+  }
+
+  /* CTA reste en pleine largeur */
+  .cta-section {
+    margin-top: 2rem;
+  }
+  .btn-large {
+    min-width: 500rem;
+    padding: 18rem 30rem;
   }
 }
