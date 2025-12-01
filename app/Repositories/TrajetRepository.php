@@ -318,4 +318,59 @@ class TrajetRepository implements TrajetRepositoryInterface
 
         return $result ?: [];
     }
+
+    public function updateNbPlaces(int $covoiturageId, int $amount): bool
+    {
+        // 1. Validations
+        if ($covoiturageId <= 0) {
+            throw new Exception('Invalid trip ID');
+        }
+
+        if ($amount === 0) {
+            throw new Exception('Amount cannot be zero');
+        }
+
+        try {
+            // 2. Vérifier que le trajet existe ET que les places ne deviennent pas négatives
+            if ($amount < 0) {
+                // Si on retire des places, vérifier qu'il y en a assez
+                $stmt = $this->db->prepare('
+                    SELECT nb_places FROM covoiturage WHERE covoiturage_id = :id
+                ');
+                $stmt->execute([':id' => $covoiturageId]);
+                $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                if (!$result) {
+                    throw new Exception('Trip not found');
+                }
+
+                // Vérifier qu'on n'essaie pas de retirer plus que ce qu'il y a
+                if ($result['nb_places'] + $amount < 0) {
+                    throw new Exception('Cannot remove more seats than available');
+                }
+            }
+
+            // 3. Mettre à jour le nombre de places
+            $updateStmt = $this->db->prepare('
+                UPDATE covoiturage 
+                SET nb_places = nb_places + :amount 
+                WHERE covoiturage_id = :id
+            ');
+
+            $updateStmt->execute([
+                ':amount' => $amount,
+                ':id' => $covoiturageId
+            ]);
+
+            // Vérifier que la mise à jour a réussi
+            if ($updateStmt->rowCount() === 0) {
+                throw new Exception('Trip not found');
+            }
+
+            return true;
+
+        } catch (Exception $e) {
+            throw new Exception('Failed to update seats: ' . $e->getMessage());
+        }
+    }
 }

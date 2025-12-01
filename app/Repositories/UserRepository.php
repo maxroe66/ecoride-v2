@@ -165,16 +165,24 @@ class UserRepository implements UserRepositoryInterface
         }
 
         try {
-            // 1. Déterminer le signe (+ ou -)
-            $sign = ($type === 'debit') ? '-' : '+';
+            // 1. Préparer la requête selon le type d'opération
+            if ($type === 'debit') {
+                // Débiter : credit - amount
+                $stmt = $this->db->prepare('
+                    UPDATE utilisateur 
+                    SET credit = credit - :amount 
+                    WHERE utilisateur_id = :userId
+                ');
+            } else {
+                // Créditer : credit + amount
+                $stmt = $this->db->prepare('
+                    UPDATE utilisateur 
+                    SET credit = credit + :amount 
+                    WHERE utilisateur_id = :userId
+                ');
+            }
 
-            // 2. Mettre à jour le crédit de l'utilisateur
-            $stmt = $this->db->prepare('
-                UPDATE utilisateur 
-                SET credit = credit ' . $sign . ' :amount 
-                WHERE utilisateur_id = :userId
-            ');
-
+            // 2. Exécuter la mise à jour du crédit de l'utilisateur
             $stmt->execute([
                 ':amount' => $amount,
                 ':userId' => $userId
