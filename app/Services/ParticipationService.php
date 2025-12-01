@@ -34,13 +34,13 @@ class ParticipationService
             // 1. Récupérer le trajet
             $trajet = $this->trajetRepo->getTrajetDetail($covoiturageId);
             if (empty($trajet)) {
-                throw new Exception('Trip not found');
+                throw new Exception('Le covoiturage n\'existe pas.');
             }
 
             // 2. Récupérer l'utilisateur
             $user = $this->userRepo->findById($userId);
             if ($user === null) {
-                throw new Exception('User not found');
+                throw new Exception('Utilisateur non trouvé.');
             }
 
             // 3. Valider avec le Validator
@@ -56,7 +56,7 @@ class ParticipationService
             // 4. Vérifier pas de doublon
             $existing = $this->participationRepo->findByUserAndTrip($userId, $covoiturageId);
             if ($existing !== null) {
-                throw new Exception('You already have a participation for this trip');
+                throw new Exception('Vous participez déjà à ce covoiturage.');
             }
 
             // 5. Créer la participation
@@ -72,7 +72,7 @@ class ParticipationService
             ];
 
         } catch (Exception $e) {
-            throw new Exception('Failed to request participation: ' . $e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -86,12 +86,12 @@ class ParticipationService
             // 1. Récupérer la participation
             $participation = $this->participationRepo->findById($participationId);
             if ($participation === null) {
-                throw new Exception('Participation not found');
+                throw new Exception('Participation non trouvée.');
             }
 
             // 2. Vérifier que le statut est 'demandee'
             if ($participation['statut'] !== 'demandee') {
-                throw new Exception('Cannot validate participation with status: ' . $participation['statut']);
+                throw new Exception('Impossible de valider une participation avec le statut : ' . $participation['statut']);
             }
 
             // 3. Changer le statut
@@ -106,7 +106,7 @@ class ParticipationService
             ];
 
         } catch (Exception $e) {
-            throw new Exception('Failed to validate participation: ' . $e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 
@@ -120,18 +120,18 @@ class ParticipationService
             // 1. Récupérer la participation
             $participation = $this->participationRepo->findById($participationId);
             if ($participation === null) {
-                throw new Exception('Participation not found');
+                throw new Exception('Participation non trouvée.');
             }
 
             // 2. Vérifier que le statut est 'en_attente_validation'
             if ($participation['statut'] !== 'en_attente_validation') {
-                throw new Exception('Cannot confirm participation with status: ' . $participation['statut']);
+                throw new Exception('Impossible de confirmer une participation avec le statut : ' . $participation['statut']);
             }
 
             // 3. Récupérer le trajet pour le prix
             $trajet = $this->trajetRepo->getTrajetDetail($participation['covoiturage_id']);
             if (empty($trajet)) {
-                throw new Exception('Trip not found');
+                throw new Exception('Le covoiturage n\'existe pas.');
             }
 
             // 4. Calculer le montant à débiter
@@ -163,7 +163,7 @@ class ParticipationService
             ];
 
         } catch (Exception $e) {
-            throw new Exception('Failed to confirm participation: ' . $e->getMessage());
+            throw new Exception($e->getMessage());
         }
     }
 }
