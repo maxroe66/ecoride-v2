@@ -64,6 +64,11 @@ class Bootstrap
         // Conserver l'ancien alias si déjà utilisé quelque part
         $router->add('GET', '/api/trajets-suggestions', [TrajetController::class, 'suggestions']);
 
+        // Participations (authentification gérée à l'intérieur du contrôleur)
+        $router->add('POST', '/api/participations/request', [TrajetController::class, 'requestParticipation']);
+        $router->add('POST', '/api/participations/validate', [TrajetController::class, 'validateParticipation']);
+        $router->add('POST', '/api/participations/confirm', [TrajetController::class, 'confirmParticipation']);
+
         header('Content-Type: application/json');
         if ($router->dispatch()) {
             return;

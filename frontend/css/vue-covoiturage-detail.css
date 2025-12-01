@@ -349,3 +349,144 @@
     padding: 18rem 30rem;
   }
 }
+
+/* ========== MODALES ========== */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  animation: fadeIn 0.3s ease-in;
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background-color: #fff;
+  border-radius: 8rem;
+  box-shadow: 0 4rem 20rem rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500rem;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rem;
+  border-bottom: 1rem solid #e0e0e0;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20rem;
+  color: #333;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 28rem;
+  cursor: pointer;
+  color: #999;
+  padding: 0;
+  width: 32rem;
+  height: 32rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.modal-close:hover {
+  color: #333;
+}
+
+.modal-body {
+  padding: 20rem;
+  color: #666;
+  font-size: 14rem;
+  line-height: 1.6;
+}
+
+.modal-body p {
+  margin: 10rem 0;
+}
+
+.modal-info {
+  background-color: #f5f5f5;
+  border-left: 4rem solid #27ae60;
+  padding: 15rem;
+  border-radius: 4rem;
+  margin: 15rem 0;
+}
+
+.modal-info p {
+  margin: 8rem 0;
+  font-size: 15rem;
+}
+
+.modal-note {
+  color: #999;
+  font-size: 13rem;
+  margin-top: 15rem;
+}
+
+.modal-warning {
+  color: #d32f2f;
+  font-weight: bold;
+  font-size: 16rem;
+  margin: 0 0 10rem 0;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10rem;
+  padding: 20rem;
+  border-top: 1rem solid #e0e0e0;
+}
+
+.modal-footer .btn {
+  min-width: 100rem;
+  padding: 10rem 20rem;
+  font-size: 14rem;
+}
+
+.btn-danger {
+  background-color: #d32f2f;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #b71c1c;
+}
