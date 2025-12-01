@@ -151,4 +151,56 @@ class UserRepository implements UserRepositoryInterface
 
         return $user;
     }
+
+    public function updateCredit(int $userId, float $amount, string $type): bool
+    {
+        // Vérifier que le type est valide
+        if (!in_array($type, ['debit', 'credit'])) {
+            throw new Exception('Invalid operation type. Must be "debit" or "credit"');
+        }
+
+        // Vérifier que le montant est positif
+        if ($amount <= 0) {
+            throw new Exception('Amount must be positive');
+        }
+
+        try {
+            // 1. Déterminer le signe (+ ou -)
+            $sign = ($type === 'debit') ? '-' : '+';
+
+            // 2. Mettre à jour le crédit de l'utilisateur
+            $stmt = $this->db->prepare('
+                UPDATE utilisateur 
+                SET credit = credit ' . $sign . ' :amount 
+                WHERE utilisateur_id = :userId
+            ');
+
+            $stmt->execute([
+                ':amount' => $amount,
+                ':userId' => $userId
+            ]);
+
+            // Vérifier que la mise à jour a réussi
+            if ($stmt->rowCount() === 0) {
+                throw new Exception('User not found');
+            }
+
+            // 3. Enregistrer l'opération dans credit_operation
+            $operationStmt = $this->db->prepare('
+                INSERT INTO credit_operation (utilisateur_id, type_operation, montant, date_operation)
+                VALUES (:userId, :type, :montant, NOW())
+            ');
+
+            $operationStmt->execute([
+                ':userId' => $userId,
+                ':type' => $type,
+                ':montant' => $amount
+            ]);
+
+            return true;
+
+        } catch (Exception $e) {
+            throw new Exception('Failed to update credit: ' . $e->getMessage());
+        }
+    }
 }

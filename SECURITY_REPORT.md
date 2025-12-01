@@ -209,3 +209,65 @@ L’application peut atteindre un bon niveau de sécurité avec des corrections 
 
 ---
 Rapport préparé automatiquement – Adapter selon politique interne sécurité.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+📋 Analyse complète pour US6 : Participer à un covoiturage
+Architecture existante
+✅ Base de données : Schéma MySQL complet avec :
+
+Table utilisateur : avec colonne credit (DECIMAL(10,2))
+Table covoiturage : avec colonne nb_places (INT)
+Table participation : avec statuts ['demandee', 'confirmee', 'refusee', 'annulee', 'en_attente_validation', 'validee', 'probleme']
+Table credit_operation : pour tracer les opérations de crédit
+✅ Backend :
+
+UserRepository pour gestion utilisateurs
+TrajetRepository pour gestion trajets
+TripService pour logique métier
+TrajetController pour routes API
+AuthMiddleware pour authentification JWT
+System de validation avec QueryValidator
+✅ Frontend :
+
+Pages PHP dynamiques avec session
+JavaScript (Vue.js-like) pour interactions
+API REST JSON pour communication
+Implémentation à faire
+Phase 1 : Backend
+
+ParticipationRepository - CRUD pour participations
+ParticipationService - Logique double confirmation + mises à jour
+ParticipationValidator - Validation des requêtes
+UserRepository::updateCredit() - Débit des crédits
+TrajetRepository::updateNbPlaces() - Mise à jour places
+Routes API dans Bootstrap.php + méthodes dans TrajetController
+Phase 2 : Frontend
+
+Bouton "Participer" dans vue-covoiturage-detail.php
+Modal double confirmation avec montant
+JavaScript pour appels API + gestion session
+Redirection login si visiteur
+Workflow participations :
+
+
+Utilisateur clique "Participer"  ↓[Vérifier : places > 0 ET credit >= prix]  ↓[Si visiteur → Redirection login]  ↓Modal 1ère confirmation (affiche montant, bouton "Confirmer")  ↓POST /api/participations/request → status: 'demandee'  ↓Modal 2ème confirmation (dernière chance, bouton "Valider")  ↓POST /api/participations/validate → status: 'validee'  ↓UPDATE utilisateur.credit -= prix_personne  ↓UPDATE covoiturage.nb_places -= 1  ↓✅ Confirmation
+Informations clés :
+
+Crédit initial : 20.00 € (défini dans User::__construct)
+Trajet détail récupéré via /api/trajets/detail?id=
+Authentification via JWT/Session cookie
+Double validation utilise statuts : demandee → en_attente_validation → validee
