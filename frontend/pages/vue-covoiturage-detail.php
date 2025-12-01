@@ -25,6 +25,41 @@
 
     <!-- Contenu détail -->
     <div id="detailContent" style="display: none;">
+      <!-- Détail conducteur avec préférences et avis -->
+      <section class="detail-section conductor-section">
+        <h2>Profil du conducteur</h2>
+        
+        <!-- Carte profil -->
+        <div class="conducteur-card">
+          <div class="conducteur-info">
+            <div class="conducteur-avatar">
+              <img id="driver-photo" src="/images-icons/icons8-avatar-50.png" alt="Photo du conducteur">
+            </div>
+            <div class="conducteur-details">
+              <h3 id="driver-name">---</h3>
+              <div class="driver-rating">
+                <span id="driver-rating-value">---</span>
+                <span id="driver-rating-count" class="rating-count">---</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Préférences du conducteur -->
+        <div class="conductor-subsection">
+          <h3>Préférences</h3>
+          <ul id="driver-preferences"></ul>
+        </div>
+
+        <!-- Avis du conducteur -->
+        <div class="conductor-subsection">
+          <h3>Avis</h3>
+          <div id="driver-reviews" class="reviews-container"></div>
+          <button id="toggle-reviews-btn" class="btn-toggle-reviews" style="display: none;">
+            Voir tous les avis
+          </button>
+        </div>
+      </section>
       <!-- Détail trajet -->
       <section class="detail-section">
         <h2>Informations du trajet</h2>
@@ -64,24 +99,6 @@
         </div>
       </section>
 
-      <!-- Détail conducteur -->
-      <section class="detail-section">
-        <h2>Profil du conducteur</h2>
-        <div class="conducteur-card">
-          <div class="conducteur-info">
-            <div class="conducteur-avatar">
-              <img id="driver-photo" src="/images-icons/icons8-avatar-50.png" alt="Photo du conducteur">
-            </div>
-            <div class="conducteur-details">
-              <h3 id="driver-name">---</h3>
-              <div class="driver-rating">
-                <span id="driver-rating-value">---</span>
-                <span id="driver-rating-count" class="rating-count">---</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
       <!-- Détail véhicule -->
       <section class="detail-section">
@@ -101,18 +118,7 @@
           </div>
         </div>
       </section>
-      
-        <!-- Préférences du conducteur -->
-        <section class="detail-section">
-          <h2>Préférences du conducteur</h2>
-          <ul id="driver-preferences"></ul>
-        </section>
 
-        <!-- Avis du conducteur -->
-        <section class="detail-section">
-          <h2>Avis sur le conducteur</h2>
-          <div id="driver-reviews"></div>
-        </section>
 
       <!-- CTA -->
       <section class="detail-section cta-section">

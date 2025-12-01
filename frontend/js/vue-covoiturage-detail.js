@@ -87,14 +87,33 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
       // Afficher les avis du conducteur
       const reviewsDiv = document.getElementById('driver-reviews');
+      const toggleBtn = document.getElementById('toggle-reviews-btn');
       reviewsDiv.innerHTML = '';
+      toggleBtn.style.display = 'none';
+      
       if (Array.isArray(data.avis_conducteur) && data.avis_conducteur.length > 0) {
-        data.avis_conducteur.forEach((avis) => {
+        const maxVisibleReviews = 3;
+        const totalReviews = data.avis_conducteur.length;
+        
+        data.avis_conducteur.forEach((avis, index) => {
           const avisEl = document.createElement('div');
           avisEl.className = 'review-item';
+          
+          // Masquer les avis au-delà du 3ème
+          if (index >= maxVisibleReviews) {
+            avisEl.classList.add('hidden');
+          }
+          
           avisEl.innerHTML = `<strong>Note :</strong> ${avis.note}/5<br><strong>Commentaire :</strong> ${avis.commentaire ? avis.commentaire : '(aucun)'}<br><span class='review-date'>${avis.date}</span>`;
           reviewsDiv.appendChild(avisEl);
         });
+        
+        // Afficher le bouton si plus de 3 avis
+        if (totalReviews > maxVisibleReviews) {
+          toggleBtn.style.display = 'block';
+          toggleBtn.textContent = `Voir tous les avis (${totalReviews})`;
+          toggleBtn.onclick = () => toggleAllReviews();
+        }
       } else {
         reviewsDiv.innerHTML = '<p>Aucun avis pour ce conducteur.</p>';
       }
@@ -174,6 +193,34 @@ function calculateDuration(depart, arrivee) {
     return `${mins}min`;
   }
   return `${hours}h ${mins}min`;
+}
+
+/**
+ * Affiche/masque tous les avis du conducteur
+ */
+function toggleAllReviews() {
+  const reviewItems = document.querySelectorAll('.review-item.hidden');
+  const toggleBtn = document.getElementById('toggle-reviews-btn');
+  
+  if (reviewItems.length > 0) {
+    // Les avis masqués existent, on les affiche
+    reviewItems.forEach(item => {
+      item.classList.remove('hidden');
+    });
+    toggleBtn.textContent = 'Masquer les avis';
+  } else {
+    // Les avis sont tous visibles, on masque les avis au-delà du 3ème
+    const allReviews = document.querySelectorAll('.review-item');
+    const maxVisibleReviews = 3;
+    const totalReviews = allReviews.length;
+    
+    allReviews.forEach((item, index) => {
+      if (index >= maxVisibleReviews) {
+        item.classList.add('hidden');
+      }
+    });
+    toggleBtn.textContent = `Voir tous les avis (${totalReviews})`;
+  }
 }
 
 /**
