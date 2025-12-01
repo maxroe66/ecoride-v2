@@ -194,7 +194,7 @@
 
 /* ========== BOUTON VOIR PLUS AVIS ========== */
 .btn-toggle-reviews {
-  background: #27ae60;
+  background: var(--color-green-dark);
   color: white;
   border: none;
   padding: 10rem 20rem;
@@ -207,7 +207,7 @@
 }
 
 .btn-toggle-reviews:hover {
-  background: #1e6e47;
+  background-color: #256a3f;
 }
 
 .btn-toggle-reviews:active {
@@ -250,7 +250,7 @@
   padding: 14rem 40rem;
   font-size: 18rem;
   min-width: 300rem;
-  background-color: #27ae60;
+  background-color: var(--color-green-dark);
   color: white;
   border: none;
   border-radius: 6rem;
@@ -259,7 +259,7 @@
 }
 
 .btn-large:hover {
-  background-color: #1e6e47;
+  background-color: #256a3f;
 }
 
 .btn-large:active {
@@ -304,6 +304,10 @@
 @media (min-width: 1000px) {
   .detail-container {
     max-width: 1400rem;
+  }
+
+  .detail-item {
+    margin: 10rem;
   }
 
   .detail-wrapper {

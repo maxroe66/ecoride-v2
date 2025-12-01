@@ -92,7 +92,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       toggleBtn.style.display = 'none';
       
       if (Array.isArray(data.avis_conducteur) && data.avis_conducteur.length > 0) {
-        const maxVisibleReviews = 2;
+        const maxVisibleReviews = 3;
         const totalReviews = data.avis_conducteur.length;
         
         data.avis_conducteur.forEach((avis, index) => {
@@ -211,7 +211,7 @@ function toggleAllReviews() {
   } else {
     // Les avis sont tous visibles, on masque les avis au-delà du 3ème
     const allReviews = document.querySelectorAll('.review-item');
-    const maxVisibleReviews = 2;
+    const maxVisibleReviews = 3;
     const totalReviews = allReviews.length;
     
     allReviews.forEach((item, index) => {
