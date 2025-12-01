@@ -379,6 +379,14 @@ async function requestParticipation() {
     console.log('Response status:', response.status);
     console.log('Response text:', responseText);
 
+    // Gérer l'authentification
+    if (response.status === 401) {
+      closeModal1();
+      alert('Vous devez être connecté pour participer.\nVous allez être redirigé vers la page de connexion.');
+      window.location.href = '/login';
+      return;
+    }
+
     let result;
     try {
       result = JSON.parse(responseText);
