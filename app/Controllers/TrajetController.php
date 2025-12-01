@@ -4,8 +4,13 @@ namespace App\Controllers;
 
 use App\Factories\DatabaseFactory;
 use App\Repositories\TrajetRepository;
+use App\Repositories\ParticipationRepository;
+use App\Repositories\UserRepository;
 use App\Validators\QueryValidator;
 use App\Services\TripService;
+use App\Services\ParticipationService;
+use App\Middleware\AuthMiddleware;
+use Exception;
 
 /**
  * Contrôleur des trajets.
@@ -123,6 +128,177 @@ class TrajetController
             error_log('[TrajetController] Exception : ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+        }
+    }
+    /**
+     * Demander une participation à un covoiturage
+     * POST /api/participations/request
+     * Body: { covoiturage_id, nb_places }
+     */
+    public static function requestParticipation(): void
+    {
+        // 1. AUTHENTIFICATION
+        try {
+            $middleware = new AuthMiddleware();
+            $userData = $middleware->authenticate();
+            $userId = (int)$userData['id'];
+        } catch (Exception $e) {
+            http_response_code($e->getCode() ?: 401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
+            return;
+        }
+
+        // 2. LIRE ET VALIDER LE JSON
+        $raw = file_get_contents('php://input');
+        $json = json_decode($raw, true);
+        if (!is_array($json)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            return;
+        }
+
+        // Extraire covoiturage_id et nb_places du JSON
+        $covoiturageId = $json['covoiturage_id'] ?? null;
+        $nbPlaces = $json['nb_places'] ?? null;
+
+        // Valider que ces champs existent et sont des entiers > 0
+        if (!is_int($covoiturageId) || $covoiturageId <= 0 || !is_int($nbPlaces) || $nbPlaces <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => 'covoiturage_id et nb_places doivent être des entiers positifs']]);
+            return;
+        }
+        
+        // 3. LOGIQUE MÉTIER
+        try {
+            $db = DatabaseFactory::getConnection();
+            $service = new ParticipationService(
+                new ParticipationRepository($db),
+                new TrajetRepository($db),
+                new UserRepository($db)
+            );
+
+            // Appeler le service et retourner le résultat
+            $result = $service->requestParticipation($userId, $covoiturageId, $nbPlaces);
+            http_response_code(201);
+            echo json_encode(['success' => true, 'data' => $result]);
+            
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    /**
+     * Valider une participation (1ère confirmation)
+     * POST /api/participations/validate
+     * Body: { participation_id }
+     */
+    public static function validateParticipation(): void
+    {
+        // 1. AUTHENTIFICATION
+        try {
+            $middleware = new AuthMiddleware();
+            $userData = $middleware->authenticate();
+            $userId = (int)$userData['id'];
+        } catch (Exception $e) {
+            http_response_code($e->getCode() ?: 401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
+            return;
+        }
+
+        // 2. LIRE ET VALIDER LE JSON
+        $raw = file_get_contents('php://input');
+        $json = json_decode($raw, true);
+        if (!is_array($json)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            return;
+        }
+
+        // Extraire participation_id du JSON
+        $participationId = $json['participation_id'] ?? null;
+
+        // Valider que participation_id est un entier > 0
+        if (!is_int($participationId) || $participationId <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
+            return;
+        }
+
+        // 3. LOGIQUE MÉTIER
+        try {
+            $db = DatabaseFactory::getConnection();
+            $service = new ParticipationService(
+                new ParticipationRepository($db),
+                new TrajetRepository($db),
+                new UserRepository($db)
+            );
+
+            // Appeler le service et retourner le résultat
+            $result = $service->validateParticipation($participationId);
+            http_response_code(200);
+            echo json_encode(['success' => true, 'data' => $result]);
+            
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    /**
+     * Confirmer une participation (2ème confirmation finale)
+     * POST /api/participations/confirm
+     * Body: { participation_id }
+     */
+    public static function confirmParticipation(): void
+    {
+        // 1. AUTHENTIFICATION
+        try {
+            $middleware = new AuthMiddleware();
+            $userData = $middleware->authenticate();
+            $userId = (int)$userData['id'];
+        } catch (Exception $e) {
+            http_response_code($e->getCode() ?: 401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
+            return;
+        }
+
+        // 2. LIRE ET VALIDER LE JSON
+        $raw = file_get_contents('php://input');
+        $json = json_decode($raw, true);
+        if (!is_array($json)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            return;
+        }
+
+        // Extraire participation_id du JSON
+        $participationId = $json['participation_id'] ?? null;
+
+        // Valider que participation_id est un entier > 0
+        if (!is_int($participationId) || $participationId <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
+            return;
+        }
+
+        // 3. LOGIQUE MÉTIER
+        try {
+            $db = DatabaseFactory::getConnection();
+            $service = new ParticipationService(
+                new ParticipationRepository($db),
+                new TrajetRepository($db),
+                new UserRepository($db)
+            );
+
+            // Appeler le service et retourner le résultat
+            $result = $service->confirmParticipation($participationId);
+            http_response_code(200);
+            echo json_encode(['success' => true, 'data' => $result]);
+            
+        } catch (Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
         }
     }
 }
