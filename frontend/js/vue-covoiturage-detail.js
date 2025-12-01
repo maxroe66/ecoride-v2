@@ -374,7 +374,20 @@ async function requestParticipation() {
       })
     });
 
-    const result = await response.json();
+    // Log la réponse brute (pour déboguer)
+    const responseText = await response.text();
+    console.log('Response status:', response.status);
+    console.log('Response text:', responseText);
+
+    let result;
+    try {
+      result = JSON.parse(responseText);
+    } catch (e) {
+      console.error('Erreur parsing JSON:', e);
+      console.error('Contenu brut reçu:', responseText.substring(0, 500));
+      alert('Erreur serveur (réponse invalide). Vérifiez la console.');
+      return;
+    }
 
     if (!result.success) {
       alert('Erreur : ' + (result.error?.message || 'Impossible de créer la participation.'));

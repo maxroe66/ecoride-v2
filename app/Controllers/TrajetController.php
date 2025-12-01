@@ -141,7 +141,7 @@ class TrajetController
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
-            $userId = (int)$userData['id'];
+            $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 401);
             echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
@@ -199,7 +199,7 @@ class TrajetController
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
-            $userId = (int)$userData['id'];
+            $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 401);
             echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
@@ -256,7 +256,7 @@ class TrajetController
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
-            $userId = (int)$userData['id'];
+            $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
             http_response_code($e->getCode() ?: 401);
             echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
