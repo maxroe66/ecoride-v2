@@ -137,14 +137,17 @@ class TrajetController
      */
     public static function requestParticipation(): void
     {
+        // Définir le header avant toute sortie
+        header('Content-Type: application/json');
+
         // 1. AUTHENTIFICATION
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
 
@@ -195,14 +198,17 @@ class TrajetController
      */
     public static function validateParticipation(): void
     {
+        // Définir le header avant toute sortie
+        header('Content-Type: application/json');
+
         // 1. AUTHENTIFICATION
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
 
@@ -252,14 +258,17 @@ class TrajetController
      */
     public static function confirmParticipation(): void
     {
+        // Définir le header avant toute sortie
+        header('Content-Type: application/json');
+
         // 1. AUTHENTIFICATION
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code($e->getCode() ?: 401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
 
