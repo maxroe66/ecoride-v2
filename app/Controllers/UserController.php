@@ -7,6 +7,7 @@ use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Validators\UserProfileValidator;
 use App\Repositories\VehicleRepository;
+use App\Repositories\MarqueRepository;
 use App\Middleware\AuthMiddleware;
 use Exception;
 
@@ -74,7 +75,7 @@ class UserController
         }
 
         // Valider les champs requis
-        $required = ['modele', 'couleur', 'immatriculation', 'date_premiere_immatriculation', 'nb_places', 'energie'];
+        $required = ['modele', 'marque', 'couleur', 'date_premiere_immatriculation', 'nb_places', 'energie', 'immatriculation'];
         foreach ($required as $field) {
             if (empty($json[$field])) {
                 http_response_code(400);
@@ -86,11 +87,15 @@ class UserController
         try {
             $db = DatabaseFactory::getConnection();
             $vehicleRepo = new VehicleRepository($db);
+            $marqueRepo = new MarqueRepository($db);
+
+            // Résoudre la marque à partir du libellé
+            $marqueId = $marqueRepo->findOrCreateByName(trim((string)$json['marque']));
 
             // Créer le véhicule
             $vehicle = new \App\Models\Vehicules(
                 $json['modele'],
-                $json['marque_id'] ?? 1,
+                $marqueId,
                 $json['immatriculation'],
                 $json['energie'],
                 (int)$json['nb_places'],
@@ -108,6 +113,7 @@ class UserController
                 'data' => [
                     'id' => $vehicleId,
                     'modele' => $json['modele'],
+                    'marque' => $json['marque'],
                     'couleur' => $json['couleur'],
                     'immatriculation' => $json['immatriculation'],
                     'message' => 'Véhicule ajouté avec succès'
@@ -147,6 +153,7 @@ class UserController
                 return [
                     'id' => $vehicle->id,
                     'marque_id' => $vehicle->marque_id,
+                    'marque' => $vehicle->marque_libelle ?? null,
                     'modele' => $vehicle->modele,
                     'couleur' => $vehicle->couleur,
                     'immatriculation' => $vehicle->immatriculation,

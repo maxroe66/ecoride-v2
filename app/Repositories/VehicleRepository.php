@@ -49,7 +49,10 @@ class VehicleRepository
     public function findByUserId(int $userId): array
     {
         $stmt = $this->db->prepare('
-            SELECT * FROM voiture WHERE utilisateur_id = :user_id
+            SELECT v.*, m.libelle AS marque_libelle
+            FROM voiture v
+            LEFT JOIN marque m ON m.marque_id = v.marque_id
+            WHERE v.utilisateur_id = :user_id
         ');
 
         $stmt->execute([':user_id' => $userId]);
@@ -68,6 +71,10 @@ class VehicleRepository
             (bool)$row['est_ecologique']
         );
         $vehicle->id = $row['voiture_id'];
+        // Attache le libellé de marque si présent
+        if (isset($row['marque_libelle'])) {
+            $vehicle->marque_libelle = $row['marque_libelle'];
+        }
         $vehicles[] = $vehicle;
     }
         return $vehicles;

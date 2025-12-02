@@ -7,6 +7,7 @@ class Vehicules
     public int $id;
     public string $modele;
     public int $marque_id;
+    public ?string $marque_libelle = null;
     public string $immatriculation;
     public string $energie;
     public int $nb_places;

@@ -77,21 +77,33 @@ class UserService
             }
         }
 
-         // Étape 5 : Créer les nouveaux véhicules (si fournis)
-        foreach ($vehicules as $vehicleData) {
-            $vehicle = new \App\Models\Vehicules(
-                $vehicleData['modele'],
-                $vehicleData['marque_id'],
-                $vehicleData['immatriculation'],
-                $vehicleData['energie'],
-                $vehicleData['nb_places'],
-                $userId,
-                $vehicleData['couleur'] ?? null,
-                $vehicleData['date_premiere_immatriculation'] ?? null,
-                $vehicleData['est_ecologique'] ?? false
-            );
-            $this->vehicles->create($vehicle);
-        }
+             // Étape 5 : Créer les nouveaux véhicules (si fournis)
+            if (!empty($vehicules)) {
+                $marqueRepo = new MarqueRepository(DatabaseFactory::getConnection());
+                foreach ($vehicules as $vehicleData) {
+                    // Résoudre la marque: accepte marque (libellé) ou marque_id
+                    $marqueId = isset($vehicleData['marque_id']) ? (int)$vehicleData['marque_id'] : null;
+                    if (!$marqueId && !empty($vehicleData['marque'])) {
+                        $marqueId = $marqueRepo->findOrCreateByName((string)$vehicleData['marque']);
+                    }
+                    if (!$marqueId) {
+                        // fallback par sécurité
+                        $marqueId = 1;
+                    }
+                    $vehicle = new \App\Models\Vehicules(
+                        $vehicleData['modele'],
+                        $marqueId,
+                        $vehicleData['immatriculation'],
+                        $vehicleData['energie'],
+                        $vehicleData['nb_places'],
+                        $userId,
+                        $vehicleData['couleur'] ?? null,
+                        $vehicleData['date_premiere_immatriculation'] ?? null,
+                        $vehicleData['est_ecologique'] ?? false
+                    );
+                    $this->vehicles->create($vehicle);
+                }
+            }
 
         // Étape 6 : Persister le rôle mis à jour
         $this->users->updateRole($userId, $role);

@@ -166,7 +166,7 @@ function loadExistingVehicles() {
                     vehicleCard.className = 'vehicle-card';
                     vehicleCard.innerHTML = `
                         <h4>🚗 ${vehicle.modele}</h4>
-                        <p><strong>Marque:</strong> ${vehicle.marque_id}</p>
+                        <p><strong>Marque:</strong> ${vehicle.marque || vehicle.marque_id || ''}</p>
                         <p><strong>Couleur:</strong> ${vehicle.couleur}</p>
                         <p><strong>Immatriculation:</strong> ${vehicle.immatriculation}</p>
                         <p><strong>Places:</strong> ${vehicle.nb_places}</p>
@@ -333,7 +333,7 @@ function updateProfile() {
 
             // Ajouter le véhicule à l'array
             data.vehicules.push({
-                marque_id: 1, // À adapter selon votre système
+                marque: marque,
                 modele: modele,
                 couleur: couleur,
                 immatriculation: immatriculation,
@@ -544,7 +544,7 @@ function saveVehicleDirectly(formIndex) {
 
     // Construire l'objet à envoyer
     const data = {
-        marque_id: 1,
+        marque: marque,
         modele: modele,
         couleur: couleur,
         immatriculation: immatriculation,
