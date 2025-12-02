@@ -35,6 +35,7 @@ class User
     public float $credit;
     public string $date_creation;
     public string $type_utilisateur;
+    public string $role;
     public int $suspendu;
 
     public function __construct(
@@ -45,7 +46,8 @@ class User
         string $password,
         ?string $telephone = null,
         float $credit = 20.00,
-        string $type_utilisateur = 'standard'
+        string $type_utilisateur = 'standard',
+        string $role = 'passager'
     ) {
         $this->nom = $nom;
         $this->prenom = $prenom;
@@ -55,6 +57,7 @@ class User
         $this->telephone = $telephone;
         $this->credit = $credit;
         $this->type_utilisateur = $type_utilisateur;
+        $this->role = $role;
         $this->suspendu = 0;
         $this->date_creation = date('Y-m-d H:i:s');
     }
@@ -89,6 +92,7 @@ class User
             'telephone' => $this->telephone,
             'credit' => $this->credit,
             'type_utilisateur' => $this->type_utilisateur,
+            'role' => $this->role,
             'date_creation' => $this->date_creation,
         ];
     }
