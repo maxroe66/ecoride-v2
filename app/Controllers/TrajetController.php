@@ -310,4 +310,80 @@ class TrajetController
             echo json_encode(['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
         }
     }
+
+    /**
+     * Endpoint : POST /api/trajets
+     * Crée un nouveau trajet
+     */
+    public static function create(): void
+    {
+        header('Content-Type: application/json');
+
+        // 1. Vérifier l'authentification
+        try {
+            $middleware = new AuthMiddleware();
+            $userData = $middleware->authenticate();
+            $userId = (int)$userData['user_id'];
+        } catch (Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            return;
+        }
+
+        // 2. Récupérer les données JSON
+        $raw = file_get_contents('php://input');
+        $data = json_decode($raw, true);
+        
+        if (!is_array($data)) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            return;
+        }
+
+        try {
+            $db = DatabaseFactory::getConnection();
+            
+            // 3. Vérifier que l'utilisateur est chauffeur
+            $userRepo = new UserRepository($db);
+            $user = $userRepo->findById($userId);
+            
+            if (!$user || !in_array($user->role, ['chauffeur', 'chauffeur_passager'])) {
+                http_response_code(403);
+                echo json_encode(['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Seuls les chauffeurs peuvent créer des trajets']]);
+                return;
+            }
+
+            // 4. Vérifier que le véhicule appartient au chauffeur
+            if (!empty($data['voiture_id'])) {
+                $vehicleRepo = new \App\Repositories\VehicleRepository($db);
+                $vehicles = $vehicleRepo->findByUserId($userId);
+                $vehicleIds = array_map(fn($v) => $v->id, $vehicles);
+                
+                if (!in_array((int)$data['voiture_id'], $vehicleIds)) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Ce véhicule ne vous appartient pas']]);
+                    return;
+                }
+            }
+
+            // 5. Créer le trajet via le service
+            $service = new TripService(new TrajetRepository($db));
+            $trajet = $service->createTrip($data, $userId);
+
+            // 6. Retourner le trajet créé avec message d'avertissement
+            http_response_code(201);
+            echo json_encode([
+                'success' => true,
+                'data' => $trajet,
+                'message' => 'Trajet créé avec succès. Rappel : 2 crédits seront prélevés par la plateforme pour chaque participation.'
+            ]);
+
+        } catch (\App\Validators\Exception $e) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+        }
+    }
 }

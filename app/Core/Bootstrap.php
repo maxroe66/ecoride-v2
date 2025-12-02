@@ -59,6 +59,7 @@ class Bootstrap
         }]);
         // Trajets
         $router->add('GET', '/api/trajets', [TrajetController::class, 'search']);
+        $router->add('POST', '/api/trajets', [TrajetController::class, 'create']);
         $router->add('GET', '/api/trajets/detail', [TrajetController::class, 'show']);
         // Alias corrigé: chemin attendu par le frontend `/api/trajets/suggestions`
         $router->add('GET', '/api/trajets/suggestions', [TrajetController::class, 'suggestions']);
