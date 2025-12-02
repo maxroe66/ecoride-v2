@@ -1,0 +1,473 @@
+/* ======================================== */
+/* Profile Page CSS - Espace Utilisateur    */
+/* Mobile First Approach                    */
+/* ======================================== */
+
+/* ========== CONTAINER (MOBILE) ========== */
+.profile-container {
+  max-width: 100%;
+  margin: 20rem auto;
+  padding: 0 16rem;
+}
+
+.profile-box {
+  background: var(--color-white);
+  border-radius: 10rem;
+  padding: 20rem;
+  margin-bottom: 20rem;
+  box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.1);
+}
+
+/* ========== EN-TÊTE PROFIL (MOBILE) ========== */
+.profile-header {
+  margin-bottom: 20rem;
+  padding-bottom: 15rem;
+  border-bottom: 2rem solid var(--color-green-light);
+}
+
+.profile-header h1 {
+  margin: 0;
+  color: var(--color-green-dark);
+  font-size: 24rem;
+  font-weight: 500;
+}
+
+.profile-header p {
+  margin: 8rem 0 0 0;
+  color: var(--color-green-verydark);
+  font-size: 14rem;
+}
+
+/* ========== MESSAGES (MOBILE) ========== */
+#messageContainer {
+  margin-bottom: 20rem;
+  min-height: 0;
+}
+
+.message {
+  padding: 12rem;
+  border-radius: 10rem;
+  margin-bottom: 15rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: none;
+  border-left: 4rem solid transparent;
+  font-size: 14rem;
+}
+
+.message.show {
+  opacity: 1;
+  display: block;
+}
+
+.message.success {
+  background: #d4edda;
+  color: var(--color-green-dark);
+  border-left-color: var(--color-green-dark);
+}
+
+.message.error {
+  background: #f8d7da;
+  color: #d32f2f;
+  border-left-color: #d32f2f;
+}
+
+.message.info {
+  background: var(--color-green-light);
+  color: var(--color-green-dark);
+  border-left-color: var(--color-green-dark);
+}
+
+/* ========== SECTIONS (MOBILE) ========== */
+.profile-section {
+  margin-bottom: 20rem;
+  padding-bottom: 15rem;
+  border-bottom: 1rem solid #e0e0e0;
+}
+
+.profile-section:last-child {
+  border-bottom: none;
+}
+
+.profile-section h2 {
+  color: var(--color-green-dark);
+  font-size: 20rem;
+  margin: 0 0 15rem 0;
+  font-weight: 700;
+  border-bottom: 2rem solid var(--color-green-light);
+  padding-bottom: 8rem;
+}
+
+.profile-section h3 {
+  color: var(--color-green-dark);
+  font-size: 16rem;
+  margin: 0 0 12rem 0;
+  font-weight: 600;
+}
+
+/* ========== INFO TABLE (MOBILE) ========== */
+.info-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14rem;
+}
+
+.info-table tr {
+  border-bottom: 1rem solid #e0e0e0;
+}
+
+.info-table tr:last-child {
+  border-bottom: none;
+}
+
+.info-table td {
+  padding: 12rem 0;
+}
+
+.info-table td:first-child {
+  font-weight: 600;
+  color: var(--color-green-dark);
+  width: 50%;
+}
+
+.info-table td:last-child {
+  color: var(--color-green-verydark);
+  text-align: right;
+}
+
+/* ========== ROLE SELECTOR (MOBILE) ========== */
+.role-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 12rem;
+  margin-bottom: 15rem;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  gap: 12rem;
+}
+
+.role-option input[type="radio"] {
+  width: 20rem;
+  height: 20rem;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--color-green-dark);
+  flex-shrink: 0;
+}
+
+.role-option label {
+  margin: 0;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+  font-size: 16rem;
+  color: var(--color-green-verydark);
+}
+
+/* ========== FORMULAIRES (MOBILE) ========== */
+.form-group {
+  margin-bottom: 15rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6rem;
+  font-weight: 600;
+  color: var(--color-green-dark);
+  font-size: 14rem;
+}
+
+.form-group input,
+.form-group select,
+.form-group textarea {
+  font-size: 16rem;
+}
+
+.form-group textarea {
+  min-height: 80rem;
+  resize: vertical;
+}
+
+/* ========== SECTIONS CACHÉES (MOBILE) ========== */
+#vehiclesSection,
+#preferencesSection {
+  display: none;
+}
+
+#vehiclesSection.active,
+#preferencesSection.active {
+  display: block;
+}
+
+/* ========== VÉHICULES (MOBILE) ========== */
+.vehicle-form {
+  background: #f9f9f9;
+  padding: 15rem;
+  border-radius: 10rem;
+  margin-bottom: 15rem;
+  border-left: 4rem solid var(--color-green-dark);
+}
+
+.vehicle-form h4 {
+  margin: 0 0 12rem 0;
+  color: var(--color-green-dark);
+  font-size: 15rem;
+  font-weight: 600;
+}
+
+.vehicle-form .form-group {
+  margin-bottom: 12rem;
+}
+
+.remove-vehicle-btn {
+  background: #d32f2f;
+  color: var(--color-white);
+  padding: 10rem 16rem;
+  border: none;
+  border-radius: 10rem;
+  cursor: pointer;
+  font-size: 14rem;
+  font-weight: 600;
+  transition: background-color 0.3s ease;
+  margin-top: 8rem;
+  width: 100%;
+}
+
+.remove-vehicle-btn:hover {
+  background: #b71c1c;
+}
+
+.remove-vehicle-btn:active {
+  transform: scale(0.98);
+}
+
+/* ========== BOUTONS (MOBILE) ========== */
+.btn {
+  padding: 12rem 20rem;
+  border: none;
+  border-radius: 10rem;
+  font-size: 16rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 600;
+  display: inline-block;
+  text-align: center;
+  width: 100%;
+}
+
+.btn-primary {
+  background: var(--color-green-dark);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background-color: #256a29;
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+.btn-secondary {
+  background: var(--color-brown-light);
+  color: var(--color-white);
+}
+
+.btn-secondary:hover {
+  background-color: #8b7969;
+}
+
+.btn-secondary:active {
+  transform: scale(0.98);
+}
+
+.btn-danger {
+  background: #d32f2f;
+  color: var(--color-white);
+}
+
+.btn-danger:hover {
+  background-color: #b71c1c;
+}
+
+.btn-danger:active {
+  transform: scale(0.98);
+}
+
+.btn-group {
+  display: flex;
+  flex-direction: column;
+  gap: 12rem;
+  margin-top: 20rem;
+}
+
+.btn-group .btn {
+  width: 100%;
+}
+
+/* ========== RESPONSIVE: TABLETTE (640px+) ========== */
+@media (min-width: 640rem) {
+  .profile-container {
+    margin: 30rem auto;
+    padding: 0 20rem;
+  }
+
+  .profile-box {
+    padding: 25rem;
+    margin-bottom: 25rem;
+  }
+
+  .profile-header h1 {
+    font-size: 28rem;
+  }
+
+  .profile-header p {
+    font-size: 15rem;
+  }
+
+  .profile-section h2 {
+    font-size: 22rem;
+    margin-bottom: 18rem;
+    padding-bottom: 10rem;
+  }
+
+  .profile-section h3 {
+    font-size: 17rem;
+    margin-bottom: 15rem;
+  }
+
+  .info-table {
+    font-size: 15rem;
+  }
+
+  .info-table td {
+    padding: 15rem 0;
+  }
+
+  .info-table td:first-child {
+    width: 35%;
+  }
+
+  .role-selector {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 20rem;
+  }
+
+  .role-option {
+    flex: 0 1 auto;
+  }
+
+  .form-group {
+    margin-bottom: 18rem;
+  }
+
+  .form-group label {
+    margin-bottom: 8rem;
+    font-size: 15rem;
+  }
+
+  .vehicle-form {
+    padding: 18rem;
+    margin-bottom: 18rem;
+  }
+
+  .vehicle-form h4 {
+    font-size: 16rem;
+    margin-bottom: 15rem;
+  }
+
+  .remove-vehicle-btn {
+    width: auto;
+    padding: 10rem 20rem;
+  }
+
+  .btn {
+    width: auto;
+    padding: 12rem 24rem;
+  }
+
+  .btn-group {
+    flex-direction: row;
+    gap: 15rem;
+  }
+
+  .btn-group .btn {
+    flex: 1;
+  }
+}
+
+/* ========== RESPONSIVE: DESKTOP (1000px+) ========== */
+@media (min-width: 1000rem) {
+  .profile-container {
+    max-width: 900rem;
+    margin: 40rem auto;
+    padding: 0 20rem;
+  }
+
+  .profile-box {
+    padding: 30rem;
+    margin-bottom: 30rem;
+  }
+
+  .profile-header h1 {
+    font-size: 32rem;
+  }
+
+  .profile-header p {
+    font-size: 16rem;
+  }
+
+  .profile-section h2 {
+    font-size: 24rem;
+    margin-bottom: 20rem;
+    padding-bottom: 12rem;
+  }
+
+  .profile-section h3 {
+    font-size: 18rem;
+    margin-bottom: 16rem;
+  }
+
+  .info-table {
+    font-size: 16rem;
+  }
+
+  .info-table td {
+    padding: 16rem 0;
+  }
+
+  .info-table td:first-child {
+    width: 30%;
+  }
+
+  .form-group {
+    margin-bottom: 20rem;
+  }
+
+  .form-group label {
+    margin-bottom: 8rem;
+    font-size: 16rem;
+  }
+
+  .vehicle-form {
+    padding: 20rem;
+    margin-bottom: 20rem;
+  }
+
+  .vehicle-form h4 {
+    font-size: 17rem;
+    margin-bottom: 16rem;
+  }
+
+  .btn {
+    padding: 12rem 28rem;
+  }
+
+  .btn-group {
+    gap: 16rem;
+  }
+}
