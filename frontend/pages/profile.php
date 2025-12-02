@@ -52,6 +52,10 @@
               <td>Rôle actuel</td>
               <td id="infoRole">---</td>
             </tr>
+            <tr id="infoPrefRow" style="display: none;">
+              <td>Préférences</td>
+              <td id="infoPreferences">---</td>
+            </tr>
           </table>
 
           <!-- Mes véhicules (dropdown) -->

@@ -285,6 +285,20 @@ function loadExistingPreferences() {
             if (selFumeur && prefs.fumeur) selFumeur.value = prefs.fumeur;
             if (selAnimaux && prefs.animaux) selAnimaux.value = prefs.animaux;
             if (txtAutres && typeof prefs.autres_preferences === 'string') txtAutres.value = prefs.autres_preferences;
+            
+            // Afficher préférences dans la table d'infos si chauffeur
+            const user = SessionManager.getUser();
+            if (user && (user.role === 'chauffeur' || user.role === 'chauffeur_passager')) {
+                const prefRow = document.getElementById('infoPrefRow');
+                const infoPref = document.getElementById('infoPreferences');
+                if (prefRow && infoPref) {
+                    prefRow.style.display = 'table-row';
+                    const fumeur = prefs.fumeur || '---';
+                    const animaux = prefs.animaux || '---';
+                    const autres = prefs.autres_preferences || '---';
+                    infoPref.innerHTML = `<strong>Fumeur:</strong> ${fumeur} · <strong>Animaux:</strong> ${animaux}<br><small>${autres}</small>`;
+                }
+            }
         })
         .catch(err => console.error('Erreur préférences:', err));
 }
@@ -503,16 +517,19 @@ function onRoleChange(role) {
     // ÉTAPE 1 : Récupérer les sections à afficher/cacher
     const vehiclesSection = document.getElementById('vehiclesSection');
     const preferencesSection = document.getElementById('preferencesSection');
+    const prefRow = document.getElementById('infoPrefRow');
 
     // ÉTAPE 2 : Vérifier le rôle et afficher/cacher les sections
     if (role === 'passager') {
         // Les passagers n'ont pas besoin de véhicules ni de préférences
         vehiclesSection.style.display = 'none';
         preferencesSection.style.display = 'none';
+        if (prefRow) prefRow.style.display = 'none';
     } else if (role === 'chauffeur' || role === 'chauffeur_passager') {
         // Les chauffeurs doivent déclarer des véhicules et préférences
         vehiclesSection.style.display = 'block';
         preferencesSection.style.display = 'block';
+        if (prefRow) prefRow.style.display = 'table-row';
     }
 }
 
