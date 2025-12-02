@@ -386,4 +386,48 @@ class TrajetController
             echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
+
+    /**
+     * Liste les prochains trajets du chauffeur connecté
+     */
+    public static function myTrips(): void
+    {
+        header('Content-Type: application/json');
+
+        // Authentifier l'utilisateur
+        try {
+            $middleware = new \App\Middleware\AuthMiddleware();
+            $userData = $middleware->authenticate();
+            $userId = (int)$userData['user_id'];
+        } catch (Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            return;
+        }
+
+        try {
+            $db = \App\Factories\DatabaseFactory::getConnection();
+            $repo = new \App\Repositories\TrajetRepository($db);
+            $trajets = $repo->getTrajetsByUserId($userId);
+
+            // Ne garder que les trajets à venir
+            $nowDate = new \DateTime('now');
+            $upcoming = array_values(array_filter($trajets, function ($t) use ($nowDate) {
+                try {
+                    $dt = new \DateTime($t->dateDepart . ' ' . ($t->heureDepart ?: '00:00:00'));
+                    return $dt >= $nowDate; 
+                } catch (\Throwable $e) {
+                    return true; // en doute, on affiche
+                }
+            }));
+
+            // Mapper vers arrays simples
+            $data = array_map(fn($t) => $t->toArray(), $upcoming);
+
+            echo json_encode(['success' => true, 'data' => $data]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+        }
+    }
 }

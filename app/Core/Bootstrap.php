@@ -65,6 +65,8 @@ class Bootstrap
         $router->add('GET', '/api/trajets/suggestions', [TrajetController::class, 'suggestions']);
         // Conserver l'ancien alias si déjà utilisé quelque part
         $router->add('GET', '/api/trajets-suggestions', [TrajetController::class, 'suggestions']);
+        // Mes trajets (chauffeur connecté)
+        $router->add('GET', '/api/user/trajets', [TrajetController::class, 'myTrips']);
 
         // Participations (authentification gérée à l'intérieur du contrôleur)
         $router->add('POST', '/api/participations/request', [TrajetController::class, 'requestParticipation']);

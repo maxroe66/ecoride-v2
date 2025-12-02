@@ -159,6 +159,7 @@ Exclus: Tests de pénétration actifs, performance runtime, dépendances vendore
 | Middleware usage | Toutes routes protégées | Non appliqué à POST avis | Critique |
 | CSRF mention | Proposé en améliorations | Absent | Critique |
 | Cookie sécurité | HttpOnly + Secure | Secure conditionnel (HTTP dev) | Moyen |
+| Support Authorization header | Cookie uniquement | Cookie prioritaire + Authorization: Bearer (fallback) | Aucun (doc mise à jour) |
 
 ## 11. Résultats Pattern Search
 - Pas de `eval`, `system`, `shell_exec`, `var_dump`, `print_r` exposés.  
@@ -195,6 +196,11 @@ Exclus: Tests de pénétration actifs, performance runtime, dépendances vendore
 - Models: `User.php`, `Avis.php`  
 - Frontend JS: `auth.js`, `header.js`, `SessionManager.js`, `vue-des-covoiturages.js`  
 - Config: `docker-compose.yml`, `docker/nginx/default.conf`, `.env`, `.env.example`  
+
+### 15.3 Note sur Authorization: Bearer
+- Nginx transmet explicitement `Authorization` à PHP (`fastcgi_param HTTP_AUTHORIZATION $http_authorization;`).
+- `AuthMiddleware` privilégie le **cookie** et accepte `Authorization: Bearer` en fallback pour les tests outillés (curl/Postman).
+- Impact sécurité: nul côté CSRF (header non envoyé automatiquement par le navigateur). Conserver le cookie HttpOnly pour le site web.
 
 ### 15.2 Références OWASP
 - A01 Broken Access Control → B1, B2  

@@ -142,12 +142,17 @@ class UserRepository implements UserRepositoryInterface
             $row['password'],
             $row['telephone'],
             (float)$row['credit'],
-            $row['type_utilisateur']
+            $row['type_utilisateur'],
+            $row['role'] ?? 'passager'
         );
 
         $user->id = (int)$row['utilisateur_id'];
         $user->date_creation = $row['date_creation'];
         $user->suspendu = (int)$row['suspendu'];
+        // S'assurer que le rôle est bien hydraté même si le constructeur change
+        if (isset($row['role'])) {
+            $user->role = $row['role'];
+        }
 
         return $user;
     }

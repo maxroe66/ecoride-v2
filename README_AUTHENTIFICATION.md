@@ -57,14 +57,19 @@ Ce document résume le fonctionnement de l'authentification dans EcoRide, dans u
 ### 2.5 Vérification côté serveur (`AuthMiddleware`)
 
 1. `AuthMiddleware::authenticate()` :
-   - récupère le token **uniquement depuis le cookie** via `CookieManager` ;
-   - **ne lit plus** ni header `Authorization`, ni query `?token=`.
+   - récupère le token via `getToken()` avec **ordre de priorité** :
+     1. **Cookie sécurisé** `ecoride_token` via `CookieManager` (utilisé par le frontend web),
+     2. **Header `Authorization: Bearer <token>`** (utilisé pour les tests API avec curl/Postman).
 2. Il appelle `JwtService::validate()` qui :
    - vérifie la **signature HMAC-SHA256** du JWT,
-   - vérifie l’**expiration** du token.
+   - vérifie l'**expiration** du token.
 3. Comportement :
    - si tout est valide → retourne les données utilisateur au contrôleur ;
-   - sinon → renvoie une **erreur 401 “UNAUTHORIZED”**.
+   - sinon → renvoie une **erreur 401 "UNAUTHORIZED"**.
+
+**Justification du double support** :
+- **Cookie** : méthode principale pour le frontend (sécurisé, automatique, HttpOnly)
+- **Authorization header** : permet les tests API manuels (curl, Postman) sans simuler de cookies, tout en maintenant la sécurité JWT
 
 ### 2.6 Déconnexion
 

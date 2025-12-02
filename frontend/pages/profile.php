@@ -157,6 +157,72 @@
           </div>
         </section>
 
+        <!-- Section création de trajet (US9) - ACCORDION -->
+        <section class="profile-section">
+          <button type="button" class="accordion-toggle" id="createTripToggle">
+            <span>🚘 Créer un trajet</span>
+            <span class="accordion-icon">▼</span>
+          </button>
+          <div class="accordion-content" id="createTripSection" style="display: none;">
+            <p style="margin-top:0;color:#666;">
+              Rappel: 2 crédits seront prélevés par la plateforme pour chaque participation.
+            </p>
+
+            <div class="form-group">
+              <label for="createTripDeparture">Adresse de départ</label>
+              <input type="text" id="createTripDeparture" placeholder="Ex: Paris, Gare de Lyon">
+            </div>
+
+            <div class="form-group">
+              <label for="createTripArrival">Adresse d'arrivée</label>
+              <input type="text" id="createTripArrival" placeholder="Ex: Lyon, Part-Dieu">
+            </div>
+
+            <div style="display:flex; gap:12px; flex-wrap: wrap;">
+              <div class="form-group" style="flex:1 1 180px; min-width:180px;">
+                <label for="createTripDate">Date de départ</label>
+                <input type="date" id="createTripDate">
+              </div>
+              <div class="form-group" style="flex:1 1 180px; min-width:180px;">
+                <label for="createTripTime">Heure de départ</label>
+                <input type="time" id="createTripTime">
+              </div>
+            </div>
+
+            <div style="display:flex; gap:12px; flex-wrap: wrap;">
+              <div class="form-group" style="flex:1 1 180px; min-width:180px;">
+                <label for="createTripSeats">Places disponibles</label>
+                <input type="number" id="createTripSeats" min="1" max="8" placeholder="Ex: 3">
+              </div>
+              <div class="form-group" style="flex:1 1 180px; min-width:180px;">
+                <label for="createTripPrice">Prix / personne (crédits)</label>
+                <input type="number" id="createTripPrice" min="2" step="0.5" placeholder=">= 2">
+                <small id="createTripNetPreview" style="display:block;color:#666;margin-top:4px;">Vous recevrez 0 crédit net (prix - 2)</small>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="createTripVehicle">Véhicule</label>
+              <select id="createTripVehicle">
+                <option value="">-- Sélectionner un véhicule --</option>
+              </select>
+              <div style="margin-top:6px;">
+                <button type="button" id="openVehiclesManagerFromTrip" class="btn btn-secondary" style="padding:6px 10px;">+ Ajouter un véhicule</button>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" id="createTripBtn" class="btn btn-primary">Créer le trajet</button>
+            </div>
+
+            <hr style="margin:18px 0;">
+            <h3 style="margin:0 0 8px 0;">Mes prochains trajets</h3>
+            <div id="createTripUpcomingList">
+              <p style="text-align:center;color:#999;">Chargement...</p>
+            </div>
+          </div>
+        </section>
+
         <!-- Actions de base -->
         <div class="profile-section">
           <div class="btn-group">
