@@ -26,6 +26,7 @@ function setupEventListeners() {
     const vehiclesToggle = document.getElementById('vehiclesToggle');
     const editProfileToggle = document.getElementById('editProfileToggle');
     const createTripToggle = document.getElementById('createTripToggle');
+    const myTripsToggle = document.getElementById('myTripsToggle');
     const createTripBtn = document.getElementById('createTripBtn');
     const openVehiclesManagerFromTrip = document.getElementById('openVehiclesManagerFromTrip');
 
@@ -70,8 +71,15 @@ function setupEventListeners() {
     if (createTripToggle) {
         createTripToggle.addEventListener('click', () => {
             toggleAccordion('createTripToggle', 'createTripSection');
-            // Charger les prochains trajets à l'ouverture
-            setTimeout(loadUpcomingTrips, 50);
+        });
+    }
+
+    if (myTripsToggle) {
+        myTripsToggle.addEventListener('click', () => {
+            const section = document.getElementById('myTripsSection');
+            const wasClosed = section && (section.style.display === 'none' || section.style.display === '');
+            toggleAccordion('myTripsToggle', 'myTripsSection');
+            if (wasClosed) setTimeout(loadUpcomingTrips, 50);
         });
     }
 
@@ -289,16 +297,16 @@ function loadUpcomingTrips() {
                                 const card = document.createElement('div');
                                 card.className = 'vehicle-card';
                                 card.innerHTML = `
-                                    <div style="display:flex;justify-content:space-between;gap:8px;align-items:center;">
+                                    <div class="trip-row">
                                         <div>
-                                            <h4 style="margin:0;">${escapeHtml(t.lieu_depart)} ➝ ${escapeHtml(t.lieu_arrivee)}</h4>
-                                            <p style="margin:4px 0 0 0;color:#555;">
+                                            <h4 class="trip-title">${escapeHtml(t.lieu_depart)} ➝ ${escapeHtml(t.lieu_arrivee)}</h4>
+                                            <p class="trip-meta">
                                                 ${escapeHtml(t.date_depart)} • ${escapeHtml(t.heure_depart || '')} • ${t.nb_places} places
                                             </p>
                                         </div>
-                                        <div style="text-align:right;min-width:140px;">
+                                        <div class="trip-price">
                                             <div><strong>${Number(t.prix_personne).toFixed(2)}</strong> cr./pers</div>
-                                            <div style="color:#666;font-size:12px;">net: ${net.toFixed(2)} cr.</div>
+                                            <div class="net">net: ${net.toFixed(2)} cr.</div>
                                         </div>
                                     </div>
                                 `;
@@ -391,6 +399,10 @@ function createTrip() {
             document.getElementById('createTripSeats').value = '';
             document.getElementById('createTripPrice').value = '';
             document.getElementById('createTripVehicle').value = '';
+            // Rafraîchir la liste des prochains trajets si visible
+            if (document.getElementById('createTripUpcomingList')) {
+                loadUpcomingTrips();
+            }
         } else {
             showMessage(result.error?.message || 'Création de trajet impossible', 'error');
         }

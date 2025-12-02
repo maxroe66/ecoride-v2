@@ -214,11 +214,18 @@
             <div class="btn-group">
               <button type="button" id="createTripBtn" class="btn btn-primary">Créer le trajet</button>
             </div>
+          </div>
+        </section>
 
-            <hr style="margin:18px 0;">
-            <h3 style="margin:0 0 8px 0;">Mes prochains trajets</h3>
+        <!-- Section mes prochains trajets (US9) - ACCORDION -->
+        <section class="profile-section">
+          <button type="button" class="accordion-toggle" id="myTripsToggle">
+            <span>📅 Mes prochains trajets</span>
+            <span class="accordion-icon">▼</span>
+          </button>
+          <div class="accordion-content" id="myTripsSection" style="display: none;">
             <div id="createTripUpcomingList">
-              <p style="text-align:center;color:#999;">Chargement...</p>
+              <p style="text-align:center;color:#999;">Ouvrez pour charger vos trajets à venir</p>
             </div>
           </div>
         </section>
