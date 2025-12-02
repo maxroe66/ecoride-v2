@@ -6,6 +6,8 @@ use App\Models\User;
 use App\DTO\UserResponse;
 use App\Repositories\UserRepositoryInterface;
 use App\Repositories\VehicleRepository;  
+use App\Repositories\MarqueRepository;
+use App\Factories\DatabaseFactory;
 /**
  * Service utilisateur : encapsule accès repository et formatage réponse.
  */

@@ -43,7 +43,8 @@ class UserController
             echo json_encode(['success' => true, 'data' => $prefs]);
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
     /**
@@ -121,7 +122,8 @@ class UserController
             ]);
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
 
@@ -168,7 +170,8 @@ class UserController
             echo json_encode(['success' => true, 'data' => $vehiclesArray]);
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
 
@@ -212,7 +215,8 @@ class UserController
             echo json_encode(['success' => true, 'data' => ['id' => $vehicleId, 'message' => 'Véhicule supprimé']]);
         } catch (Exception $e) {
             http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
 
@@ -275,7 +279,8 @@ class UserController
             echo json_encode(['success' => true, 'data' => $userUpdated->toArray()]);
         } catch (Exception $e) {
             http_response_code(422);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UPDATE_FAILED', 'message' => $e->getMessage()]]);
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Mise à jour impossible' : $e->getMessage();
+            echo json_encode(['success' => false, 'error' => ['code' => 'UPDATE_FAILED', 'message' => $errorMsg]]);
         }
     }
 }

@@ -137,7 +137,7 @@
             </div>
 
             <!-- Bouton soumettre -->
-            <button type="button" id="updateProfileBtn" class="btn btn-primary">Enregistrer les modifications</button>
+            <button type="button" id="updateProfileBtn" class="btn btn-primary">Enregistré</button>
           </div>
         </section>
 

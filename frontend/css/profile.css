@@ -202,6 +202,11 @@
   display: block;
 }
 
+/* Ajout d'espace au-dessus de "Mes préférences" sur mobile */
+#preferencesSection {
+  margin-top: 16rem; /* espace supplémentaire au-dessus */
+}
+
 /* ========== VÉHICULES (MOBILE) ========== */
 .vehicle-form {
   background: #f9f9f9;
@@ -308,176 +313,13 @@
   width: 100%;
 }
 
-/* ========== RESPONSIVE: TABLETTE (640px+) ========== */
-@media (min-width: 640rem) {
-  .profile-container {
-    margin: 30rem auto;
-    padding: 0 20rem;
-  }
-
-  .profile-box {
-    padding: 25rem;
-    margin-bottom: 25rem;
-  }
-
-  .profile-header h1 {
-    font-size: 28rem;
-  }
-
-  .profile-header p {
-    font-size: 15rem;
-  }
-
-  .profile-section h2 {
-    font-size: 22rem;
-    margin-bottom: 18rem;
-    padding-bottom: 10rem;
-  }
-
-  .profile-section h3 {
-    font-size: 17rem;
-    margin-bottom: 15rem;
-  }
-
-  .info-table {
-    font-size: 15rem;
-  }
-
-  .info-table td {
-    padding: 15rem 0;
-  }
-
-  .info-table td:first-child {
-    width: 35%;
-  }
-
-  .role-selector {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 20rem;
-  }
-
-  .role-option {
-    flex: 0 1 auto;
-  }
-
-  .form-group {
-    margin-bottom: 18rem;
-  }
-
-  .form-group label {
-    margin-bottom: 8rem;
-    font-size: 15rem;
-  }
-
-  .vehicle-form {
-    padding: 18rem;
-    margin-bottom: 18rem;
-  }
-
-  .vehicle-form h4 {
-    font-size: 16rem;
-    margin-bottom: 15rem;
-  }
-
-  .remove-vehicle-btn {
-    width: auto;
-    padding: 10rem 20rem;
-  }
-
-  .btn {
-    width: auto;
-    padding: 12rem 24rem;
-  }
-
-  .btn-group {
-    flex-direction: row;
-    gap: 15rem;
-  }
-
-  .btn-group .btn {
-    flex: 1;
-  }
-}
-
-/* ========== RESPONSIVE: DESKTOP (1000px+) ========== */
-@media (min-width: 1000rem) {
-  .profile-container {
-    max-width: 900rem;
-    margin: 40rem auto;
-    padding: 0 20rem;
-  }
-
-  .profile-box {
-    padding: 30rem;
-    margin-bottom: 30rem;
-  }
-
-  .profile-header h1 {
-    font-size: 32rem;
-  }
-
-  .profile-header p {
-    font-size: 16rem;
-  }
-
-  .profile-section h2 {
-    font-size: 24rem;
-    margin-bottom: 20rem;
-    padding-bottom: 12rem;
-  }
-
-  .profile-section h3 {
-    font-size: 18rem;
-    margin-bottom: 16rem;
-  }
-
-  .info-table {
-    font-size: 16rem;
-  }
-
-  .info-table td {
-    padding: 16rem 0;
-  }
-
-  .info-table td:first-child {
-    width: 30%;
-  }
-
-  .form-group {
-    margin-bottom: 20rem;
-  }
-
-  .form-group label {
-    margin-bottom: 8rem;
-    font-size: 16rem;
-  }
-
-  .vehicle-form {
-    padding: 20rem;
-    margin-bottom: 20rem;
-  }
-
-  .vehicle-form h4 {
-    font-size: 17rem;
-    margin-bottom: 16rem;
-  }
-
-  .btn {
-    padding: 12rem 28rem;
-  }
-
-  .btn-group {
-    gap: 16rem;
-  }
-}
 
 /* ========== DROPDOWN & ACCORDION (ALL SIZES) ========== */
 
 /* Dropdown toggle button */
 .dropdown-toggle,
 .accordion-toggle {
-  background: linear-gradient(135deg, var(--color-green-light) 0%, var(--color-green-dark) 100%);
+  background: var(--color-green-dark);
   color: var(--color-white);
   border: none;
   padding: 12rem 16rem;
@@ -491,14 +333,14 @@
   align-items: center;
   margin-top: 15rem;
   margin-bottom: 10rem;
-  transition: all 0.3s ease;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .dropdown-toggle:hover,
 .accordion-toggle:hover {
-  background: linear-gradient(135deg, var(--color-green-dark) 0%, var(--color-green-verydark) 100%);
-  box-shadow: 0 4rem 12rem rgba(34, 139, 34, 0.3);
-  transform: translateY(-2rem);
+  background: #256a29; /* cohérent avec .btn-primary:hover */
+  box-shadow: 0 4rem 12rem rgba(34, 139, 34, 0.2);
+  transform: translateY(-1rem);
 }
 
 .dropdown-toggle span:first-child,
@@ -547,7 +389,7 @@
 /* Dropdown & Accordion when open */
 .dropdown-toggle.open,
 .accordion-toggle.open {
-  background: linear-gradient(135deg, var(--color-green-dark) 0%, var(--color-green-verydark) 100%);
+  background: var(--color-green-dark);
 }
 
 .dropdown-toggle.open .dropdown-icon,
@@ -560,6 +402,9 @@
   display: grid;
   gap: 12rem;
 }
+
+/* (Supprimé: règle redondante #vehiclesManager .vehicles-list) */
+
 
 .vehicle-card {
   background: var(--color-light-gray);
@@ -586,46 +431,188 @@
   font-weight: 500;
 }
 
-/* Tablet media query */
-@media (min-width: 640rem) {
-  .dropdown-toggle,
-  .accordion-toggle {
-    padding: 14rem 20rem;
+/* Champ invalidé côté client */
+.input-error {
+  outline: 2rem solid #d32f2f;
+  outline-offset: 0;
+  border-radius: 8rem;
+}
+
+/* ============================== */
+/*   MEDIA QUERIES - TABLETTE     */
+/* ============================== */
+@media (min-width: 768px) {
+  /* Conteneur & boîtes */
+  .profile-container {
+    max-width: 720rem;
+    margin: 24rem auto;
+    padding: 0 24rem;
+  }
+
+  .profile-box {
+    padding: 24rem;
+    border-radius: 12rem;
+  }
+
+  /* En-tête */
+  .profile-header {
+    margin-bottom: 24rem;
+    padding-bottom: 18rem;
+  }
+  .profile-header h1 {
+    font-size: 28rem;
+    font-weight: 600;
+  }
+  .profile-header p {
     font-size: 15rem;
   }
 
-  .dropdown-content,
-  .accordion-content {
-    padding: 20rem;
+  /* Sections */
+  .profile-section h2 {
+    font-size: 22rem;
+  }
+  .profile-section h3 {
+    font-size: 18rem;
   }
 
-  .vehicle-card {
-    padding: 15rem;
-  }
-}
-
-/* Desktop media query */
-@media (min-width: 1000rem) {
-  .dropdown-toggle,
-  .accordion-toggle {
-    padding: 16rem 24rem;
-    font-size: 16rem;
+  /* Messages */
+  .message {
+    font-size: 15rem;
   }
 
-  .dropdown-content,
-  .accordion-content {
-    padding: 24rem;
+  /* Tableau d'infos: lisibilité sur tablette */
+  .info-table {
+    font-size: 15rem;
+  }
+  .info-table td {
+    padding: 14rem 0;
+  }
+  .info-table td:first-child {
+    width: 40%;
+  }
+  .info-table td:last-child {
+    text-align: left;
   }
 
-  .vehicle-card {
-    padding: 18rem;
+  /* Sélecteur de rôle */
+  .role-selector {
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16rem 24rem;
   }
 
+  /* Formulaire en grille: label à gauche, champ à droite */
+  .form-group {
+    display: grid;
+    grid-template-columns: 220rem 1fr;
+    gap: 12rem 16rem;
+    align-items: center;
+  }
+  .form-group label {
+    margin: 0;
+  }
+  .form-group textarea {
+    min-height: 100rem;
+  }
+
+  /* Véhicules: grille 2 colonnes */
+  .vehicles-list {
+    grid-template-columns: repeat(2, 1fr);
+  }
   .vehicle-card h4 {
-    font-size: 16rem;
+    font-size: 15rem;
   }
-
   .vehicle-card p {
     font-size: 14rem;
   }
+
+  /* Formulaire véhicule: un peu plus d'air */
+  .vehicle-form {
+    padding: 18rem;
+  }
+
+  /* Boutons: en ligne et largeur auto */
+  .btn-group {
+    flex-direction: row;
+    gap: 16rem;
+  }
+  .btn-group .btn,
+  .btn {
+    width: auto;
+  }
+
+  /* Dropdown/Accordion */
+  .dropdown-toggle,
+  .accordion-toggle {
+    font-size: 15rem;
+    padding: 14rem 16rem;
+  }
 }
+
+/* ============================== */
+/*   MEDIA QUERIES - DESKTOP      */
+/* ============================== */
+@media (min-width: 1200px) {
+  /* Conteneur & boîtes */
+  .profile-container {
+    max-width: 1100rem;
+    margin: 28rem auto;
+    padding: 0 32rem;
+  }
+
+  .profile-box {
+    padding: 28rem;
+    border-radius: 14rem;
+    box-shadow: 0 4rem 16rem rgba(0, 0, 0, 0.08);
+  }
+
+  /* En-tête */
+  .profile-header h1 {
+    font-size: 32rem;
+  }
+  .profile-header p {
+    font-size: 16rem;
+  }
+
+  /* Sections: titres plus présents */
+  .profile-section h2 {
+    font-size: 24rem;
+  }
+  .profile-section h3 {
+    font-size: 20rem;
+  }
+
+  /* Table d'infos: colonnes plus équilibrées */
+  .info-table {
+    font-size: 16rem;
+  }
+  .info-table td:first-child {
+    width: 30%;
+  }
+
+  /* Grille véhicules: 3 colonnes */
+  .vehicles-list {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16rem;
+  }
+  .vehicle-card h4 {
+    font-size: 16rem;
+  }
+  .vehicle-card p {
+    font-size: 14rem;
+  }
+
+  /* Boutons: confort desktop */
+  .btn {
+    padding: 12rem 24rem;
+  }
+
+  /* Dropdown/Accordion */
+  .dropdown-toggle,
+  .accordion-toggle {
+    font-size: 16rem;
+    padding: 16rem 18rem;
+  }
+}
+

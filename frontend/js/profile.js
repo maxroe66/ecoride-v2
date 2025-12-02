@@ -309,7 +309,7 @@ function updateProfile() {
         preferences: {}
     };
 
-    // ÉTAPE 3 : Si chauffeur, récupérer les véhicules
+    // ÉTAPE 3 : Si chauffeur, valider puis récupérer véhicules & préférences
     if (role !== 'passager') {
         const vehicleForms = document.querySelectorAll('.vehicle-form');
 
@@ -317,39 +317,107 @@ function updateProfile() {
         const hasExisting = (window._existingVehiclesCount || 0) > 0;
         if (!hasExisting && vehicleForms.length === 0) {
             showMessage('Vous devez avoir au moins un véhicule pour être chauffeur', 'error');
+            // Ouvrir la section véhicules si elle est fermée
+            const vehiclesSection = document.getElementById('vehiclesSection');
+            if (vehiclesSection && vehiclesSection.style.display !== 'block') {
+                onRoleChange('chauffeur');
+            }
             return;
         }
 
-        // Parcourir tous les formulaires de véhicules
-        vehicleForms.forEach((form, index) => {
-            // Récupérer les valeurs des inputs
-            const marque = form.querySelector(`input[name="vehicles[${index}][marque]"]`).value;
-            const modele = form.querySelector(`input[name="vehicles[${index}][modele]"]`).value;
-            const couleur = form.querySelector(`input[name="vehicles[${index}][couleur]"]`).value;
-            const immatriculation = form.querySelector(`input[name="vehicles[${index}][immatriculation]"]`).value;
-            const date_premiere_immatriculation = form.querySelector(`input[name="vehicles[${index}][date_premiere_immatriculation]"]`).value;
-            const nb_places = form.querySelector(`input[name="vehicles[${index}][nb_places]"]`).value;
-            const energie = form.querySelector(`select[name="vehicles[${index}][energie]"]`).value;
+        // Réinitialiser les états d'erreur visuels
+        document.querySelectorAll('.input-error').forEach(el => el.classList.remove('input-error'));
 
-            // Ajouter le véhicule à l'array
-            data.vehicules.push({
-                marque: marque,
-                modele: modele,
-                couleur: couleur,
-                immatriculation: immatriculation,
-                date_premiere_immatriculation: date_premiere_immatriculation,
-                nb_places: parseInt(nb_places),
-                energie: energie,
-                est_ecologique: energie === 'electrique' ? 1 : 0
+        // Valider et collecter les véhicules saisis
+        const vehicleErrors = [];
+        const firstInvalidRefs = [];
+        vehicleForms.forEach((form, index) => {
+            const get = (selector) => form.querySelector(selector);
+            const marqueEl = get(`input[name="vehicles[${index}][marque]"]`);
+            const modeleEl = get(`input[name="vehicles[${index}][modele]"]`);
+            const couleurEl = get(`input[name="vehicles[${index}][couleur]"]`);
+            const immatEl = get(`input[name="vehicles[${index}][immatriculation]"]`);
+            const dateEl = get(`input[name="vehicles[${index}][date_premiere_immatriculation]"]`);
+            const placesEl = get(`input[name="vehicles[${index}][nb_places]"]`);
+            const energieEl = get(`select[name="vehicles[${index}][energie]"]`);
+
+            const fields = [
+                { el: marqueEl, name: 'marque' },
+                { el: modeleEl, name: 'modèle' },
+                { el: couleurEl, name: 'couleur' },
+                { el: immatEl, name: "plaque d'immatriculation" },
+                { el: dateEl, name: 'date de première immatriculation' },
+                { el: placesEl, name: 'nombre de places' },
+                { el: energieEl, name: "type d'énergie" }
+            ];
+
+            let localInvalid = false;
+            fields.forEach(f => {
+                const v = (f.el?.value || '').toString().trim();
+                const isEmpty = v === '';
+                const isPlacesInvalid = f.el === placesEl && (v === '' || isNaN(Number(v)) || Number(v) <= 0);
+                if (isEmpty || isPlacesInvalid) {
+                    localInvalid = true;
+                    f.el?.classList.add('input-error');
+                    if (firstInvalidRefs.length === 0) firstInvalidRefs.push(f.el);
+                }
             });
+
+            if (localInvalid) {
+                vehicleErrors.push(`Formulaire véhicule #${index + 1}: champs obligatoires manquants.`);
+            } else {
+                data.vehicules.push({
+                    marque: marqueEl.value,
+                    modele: modeleEl.value,
+                    couleur: couleurEl.value,
+                    immatriculation: immatEl.value,
+                    date_premiere_immatriculation: dateEl.value,
+                    nb_places: parseInt(placesEl.value, 10),
+                    energie: energieEl.value,
+                    est_ecologique: energieEl.value === 'electrique' ? 1 : 0
+                });
+            }
         });
 
-        // ÉTAPE 4 : Récupérer les préférences
+        // Préférences requises
+        const fumeurEl = document.querySelector('select[name="preference_fumeur"]');
+        const animauxEl = document.querySelector('select[name="preference_animaux"]');
+        const autresEl = document.querySelector('textarea[name="autres_preferences"]');
+        const prefErrors = [];
+        if (!fumeurEl || fumeurEl.value === '') {
+            prefErrors.push('Veuillez indiquer votre préférence fumeur.');
+            fumeurEl?.classList.add('input-error');
+            if (firstInvalidRefs.length === 0 && fumeurEl) firstInvalidRefs.push(fumeurEl);
+        }
+        if (!animauxEl || animauxEl.value === '') {
+            prefErrors.push('Veuillez indiquer votre préférence animaux.');
+            animauxEl?.classList.add('input-error');
+            if (firstInvalidRefs.length === 0 && animauxEl) firstInvalidRefs.push(animauxEl);
+        }
+
         data.preferences = {
-            fumeur: document.querySelector('select[name="preference_fumeur"]').value,
-            animaux: document.querySelector('select[name="preference_animaux"]').value,
-            autres_preferences: document.querySelector('textarea[name="autres_preferences"]').value
+            fumeur: fumeurEl ? fumeurEl.value : '',
+            animaux: animauxEl ? animauxEl.value : '',
+            autres_preferences: autresEl ? autresEl.value : ''
         };
+
+        const allErrors = [...vehicleErrors, ...prefErrors];
+        if (allErrors.length > 0) {
+            showMessage(allErrors[0], 'error');
+            // Ouvrir l'accordion si fermé
+            const editToggle = document.getElementById('editProfileToggle');
+            const editSection = document.getElementById('editProfileSection');
+            if (editToggle && editSection && editSection.style.display !== 'block') {
+                toggleAccordion('editProfileToggle', 'editProfileSection');
+            }
+            // S'assurer que les sections visibles (rôle chauffeur)
+            onRoleChange(role);
+            // Scroll jusqu'au premier champ invalide
+            if (firstInvalidRefs[0] && typeof firstInvalidRefs[0].scrollIntoView === 'function') {
+                firstInvalidRefs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+            return;
+        }
     }
 
     // ÉTAPE 5 : Envoyer les données à l'API
