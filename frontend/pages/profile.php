@@ -54,7 +54,19 @@
             </tr>
             <tr id="infoPrefRow" style="display: none;">
               <td>Préférences</td>
-              <td id="infoPreferences">---</td>
+              <td id="infoPreferences">
+                <div class="pref-container">
+                  <div class="pref-col">
+                    <span class="pref-label">Fumeur</span>
+                    <span class="pref-value" id="prefFumeur">---</span>
+                  </div>
+                  <div class="pref-col">
+                    <span class="pref-label">Animaux</span>
+                    <span class="pref-value" id="prefAnimaux">---</span>
+                  </div>
+                  <div class="pref-autres" id="prefAutres">---</div>
+                </div>
+              </td>
             </tr>
           </table>
 

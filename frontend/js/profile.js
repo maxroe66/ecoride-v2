@@ -290,13 +290,16 @@ function loadExistingPreferences() {
             const user = SessionManager.getUser();
             if (user && (user.role === 'chauffeur' || user.role === 'chauffeur_passager')) {
                 const prefRow = document.getElementById('infoPrefRow');
-                const infoPref = document.getElementById('infoPreferences');
-                if (prefRow && infoPref) {
+                if (prefRow) {
                     prefRow.style.display = 'table-row';
+                    // Remplir les colonnes
                     const fumeur = prefs.fumeur || '---';
                     const animaux = prefs.animaux || '---';
                     const autres = prefs.autres_preferences || '---';
-                    infoPref.innerHTML = `<strong>Fumeur:</strong> ${fumeur} · <strong>Animaux:</strong> ${animaux}<br><small>${autres}</small>`;
+                    
+                    document.getElementById('prefFumeur').textContent = fumeur;
+                    document.getElementById('prefAnimaux').textContent = animaux;
+                    document.getElementById('prefAutres').textContent = autres !== '---' ? autres : '---';
                 }
             }
         })
