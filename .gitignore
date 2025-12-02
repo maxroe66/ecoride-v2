@@ -48,3 +48,9 @@ Thumbs.db
 # Ignore Windows Zone.Identifier ADS exports
 *:[Zz]one.Identifier
 
+
+
+# === Artefacts locaux de dev ===
+/cookies.txt
+/public/test_auth.php
+
