@@ -117,4 +117,39 @@ class TripService
         ];
     }
 
+    /**
+     * Crée un nouveau trajet
+     * @param array $data - Données du formulaire
+     * @param int $conducteurId - ID du chauffeur
+     * @return array - Le trajet créé avec son ID
+     * @throws \Exception si validation échoue
+     */
+    public function createTrip(array $data, int $conducteurId): array
+    {
+        // 1. Valider les données
+        $validated = \App\Validators\TripValidator::validateCreateTrip($data, $conducteurId);
+        
+        // 2. TODO: Vérifier que le véhicule appartient au chauffeur
+        // (On le fera dans le contrôleur pour simplifier)
+        
+        // 3. Créer l'objet Trajet
+        $trajet = new \App\Models\Trajet(
+            $validated['date_depart'],
+            $validated['heure_depart'],
+            $validated['lieu_depart'],
+            $validated['lieu_arrivee'],
+            $validated['nb_places'],
+            $validated['prix_personne'],
+            $validated['conducteur_id'],
+            $validated['voiture_id']
+        );
+        
+        // 4. Persister en BD
+        $trajetId = $this->repo->createTrajet($trajet);
+        
+        // 5. Retourner le trajet avec son ID
+        $trajet->id = $trajetId;
+        return $trajet->toArray();
+    }
+
 }
