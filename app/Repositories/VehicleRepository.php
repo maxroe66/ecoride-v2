@@ -72,4 +72,16 @@ class VehicleRepository
     }
         return $vehicles;
     }
+
+    /**
+     * Supprime un véhicule par id s'il appartient à l'utilisateur
+     */
+    public function deleteByIdForUser(int $vehicleId, int $userId): bool
+    {
+        $stmt = $this->db->prepare('
+            DELETE FROM voiture WHERE voiture_id = :id AND utilisateur_id = :userId
+        ');
+        $stmt->execute([':id' => $vehicleId, ':userId' => $userId]);
+        return $stmt->rowCount() > 0;
+    }
 }

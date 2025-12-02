@@ -7,6 +7,7 @@ use App\Core\Router;
 use App\Controllers\AuthController;
 use App\Controllers\AvisController;
 use App\Controllers\TrajetController;
+use App\Controllers\UserController;
 use App\Middleware\AuthMiddleware;
 
 // Nettoyage: suppression des anciens imports legacy non utilisés
@@ -68,6 +69,13 @@ class Bootstrap
         $router->add('POST', '/api/participations/request', [TrajetController::class, 'requestParticipation']);
         $router->add('POST', '/api/participations/validate', [TrajetController::class, 'validateParticipation']);
         $router->add('POST', '/api/participations/confirm', [TrajetController::class, 'confirmParticipation']);
+
+        // User Profile (US8)
+        $router->add('GET', '/api/user/vehicles', [UserController::class, 'getVehicles']);
+        $router->add('POST', '/api/user/vehicles', [UserController::class, 'addVehicle']);
+        $router->add('DELETE', '/api/user/vehicles', [UserController::class, 'deleteVehicle']);
+        $router->add('GET', '/api/user/preferences', [UserController::class, 'getPreferences']);
+        $router->add('PUT', '/api/user/profile', [UserController::class, 'updateProfile']);
 
         header('Content-Type: application/json');
         if ($router->dispatch()) {

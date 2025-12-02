@@ -33,17 +33,12 @@ class UserProfileValidator
             throw new ValidationException(['Rôle invalide. Doit être: passager, chauffeur ou chauffeur_passager']);
         }
         
-        // Étape 4 : Si chauffeur ou chauffeur_passager, vérifier les véhicules
+        // Étape 4 : Si chauffeur ou chauffeur_passager, on accepte que le tableau de véhicules
+        // soit vide ici (l'utilisateur peut déjà avoir des véhicules). La contrainte
+        // "au moins un véhicule" sera vérifiée au niveau du service avec accès DB.
+        $vehicules = [];
         if ($role !== 'passager') {
-            // Récupérer les véhicules depuis les données
             $vehicules = $json['vehicules'] ?? [];
-            
-            // Vérifier qu'il y a au moins un véhicule
-            if (empty($vehicules)) {
-                throw new ValidationException(['Les véhicules sont obligatoires pour un chauffeur']);
-            }
-            
-            // Vérifier que c'est un tableau
             if (!is_array($vehicules)) {
                 throw new ValidationException(['Les véhicules doivent être un tableau']);
             }

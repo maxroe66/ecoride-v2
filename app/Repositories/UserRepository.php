@@ -211,4 +211,82 @@ class UserRepository implements UserRepositoryInterface
             throw new Exception('Failed to update credit: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Met à jour le rôle de l'utilisateur
+     * @param int $userId - ID de l'utilisateur
+     * @param string $role - Le nouveau rôle (passager, chauffeur, chauffeur_passager)
+     * @return bool - True si succès
+     */
+    public function updateRole(int $userId, string $role): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE utilisateur 
+            SET role = :role 
+            WHERE utilisateur_id = :userId
+        ');
+
+        $stmt->execute([
+            ':role' => $role,
+            ':userId' => $userId
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Met à jour les préférences de l'utilisateur
+     * @param int $userId - ID de l'utilisateur
+     * @param string|null $fumeur - Préférence fumeur/non-fumeur
+     * @param string|null $animaux - Préférence animaux
+     * @param string|null $autres_preferences - Autres préférences
+     * @return bool - True si succès
+     */
+    public function updatePreferences(int $userId, ?string $fumeur, ?string $animaux, ?string $autres_preferences): bool
+    {
+        $stmt = $this->db->prepare('
+            UPDATE utilisateur 
+            SET 
+                preference_fumeur = :fumeur,
+                preference_animaux = :animaux,
+                autres_preferences = :autres_preferences
+            WHERE utilisateur_id = :userId
+        ');
+
+        $stmt->execute([
+            ':fumeur' => $fumeur,
+            ':animaux' => $animaux,
+            ':autres_preferences' => $autres_preferences,
+            ':userId' => $userId
+        ]);
+
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Récupère les préférences de l'utilisateur
+     */
+    public function getPreferences(int $userId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT preference_fumeur, preference_animaux, autres_preferences
+            FROM utilisateur
+            WHERE utilisateur_id = :userId
+            LIMIT 1
+        ');
+        $stmt->execute([':userId' => $userId]);
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        if (!$row) {
+            return [
+                'fumeur' => null,
+                'animaux' => null,
+                'autres_preferences' => null,
+            ];
+        }
+        return [
+            'fumeur' => $row['preference_fumeur'] ?? null,
+            'animaux' => $row['preference_animaux'] ?? null,
+            'autres_preferences' => $row['autres_preferences'] ?? null,
+        ];
+    }
 }

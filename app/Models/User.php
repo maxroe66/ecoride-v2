@@ -15,13 +15,13 @@ class User
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
         if (!$row) {
             return [
-                'fumeur' => false,
-                'animaux' => false,
+                'fumeur' => null,
+                'animaux' => null,
             ];
         }
         return [
-            'fumeur' => (bool)$row['preference_fumeur'],
-            'animaux' => (bool)$row['preference_animaux'],
+            'fumeur' => $row['preference_fumeur'] ?? null,
+            'animaux' => $row['preference_animaux'] ?? null,
             'autres_preferences' => $row['autres_preferences'] ?? ''
         ];
     }

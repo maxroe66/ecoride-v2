@@ -68,7 +68,16 @@ class UserService
             $preferences['autres_preferences'] ?? null
         );
 
-         // Étape 4 : Créer les véhicules (si fournis)
+         // Étape 4 : Vérifier la contrainte "au moins un véhicule" si chauffeur
+        if (in_array($role, ['chauffeur', 'chauffeur_passager'])) {
+            $existing = $this->vehicles->findByUserId($userId);
+            $hasAnyVehicle = count($existing) > 0 || count($vehicules) > 0;
+            if (!$hasAnyVehicle) {
+                throw new \Exception('En tant que chauffeur, vous devez avoir au moins un véhicule.');
+            }
+        }
+
+         // Étape 5 : Créer les nouveaux véhicules (si fournis)
         foreach ($vehicules as $vehicleData) {
             $vehicle = new \App\Models\Vehicules(
                 $vehicleData['modele'],
@@ -84,10 +93,10 @@ class UserService
             $this->vehicles->create($vehicle);
         }
 
-        // Étape 5 : Persister le rôle mis à jour
+        // Étape 6 : Persister le rôle mis à jour
         $this->users->updateRole($userId, $role);
 
-        // Étape 6 : Retourner l'utilisateur mis à jour
+        // Étape 7 : Retourner l'utilisateur mis à jour
         return $user;
         }
 }

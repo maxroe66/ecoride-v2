@@ -51,7 +51,8 @@ class SessionManager {
                 pseudo: pseudo,
                 email: userData.email,
                 credit: userData.credit,
-                type_utilisateur: userData.type_utilisateur || 'standard'
+                type_utilisateur: userData.type_utilisateur || 'standard',
+                role: userData.role || 'passager'
             };
 
             localStorage.setItem(this.STORAGE_KEY, JSON.stringify(userToStore));
