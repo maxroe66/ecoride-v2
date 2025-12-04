@@ -62,6 +62,43 @@ class ParticipationRepository implements ParticipationRepositoryInterface
         return $result ?: null;
     }
 
+    public function findByTrip(int $tripId): array
+    {
+        // Étape 1: Préparer
+        $stmt = $this->db->prepare('
+            SELECT * FROM participation
+            WHERE covoiturage_id = :trip_id
+        ');
+        
+        // Étape 2: Exécuter
+        $stmt->execute([
+            ':trip_id' => $tripId
+        ]);
+        
+        // Étape 3: Retourner
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    public function findByUserAndStatus(int $userId, string $status): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT * FROM participation
+            WHERE utilisateur_id = :user_id AND statut = :statut
+            ORDER BY date_reservation DESC
+        ');
+
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':statut' => $status
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+
+    // Update the status of a participation
+
     public function updateStatus(int $participationId, string $newStatus): bool
     {
         // Etape 1: Préparer
@@ -75,5 +112,19 @@ class ParticipationRepository implements ParticipationRepositoryInterface
         ]);
         // Etape 3: Retourner si au moins une ligne a été affectée
         return $stmt->rowCount() > 0;
+    }
+
+
+    public function updateStatusByTrip(int $tripId, string $newStatus): int
+    {
+        $stmt = $this->db->prepare('
+            UPDATE participation SET statut = :statut WHERE covoiturage_id = :trip_id
+        ');
+
+        $stmt->execute([
+            ':statut' => $newStatus,
+            ':trip_id' => $tripId
+        ]);
+        return $stmt->rowCount();
     }
 }

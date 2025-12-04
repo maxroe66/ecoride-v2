@@ -294,4 +294,47 @@ class UserRepository implements UserRepositoryInterface
             'autres_preferences' => $row['autres_preferences'] ?? null,
         ];
     }
+
+    /**
+     * Met à jour le solde de crédits d'un utilisateur
+     * @param int $userId - ID de l'utilisateur
+     * @param float $amount - montant à ajouter (positif) ou retirer (négatif)
+     * @return bool - true si la mise à jour a réussi
+     */
+    public function updateCredit(int $userId, float $amount): bool
+    {
+        // Étape 1: Préparer
+        $stmt = $this->db->prepare('
+            UPDATE utilisateur SET credit = credit + :amount WHERE utilisateur_id = :user_id
+        ');
+
+        // Étape 2: Exécuter
+        $stmt->execute([
+            ':amount' => $amount,
+            ':user_id' => $userId
+        ]);
+
+        // Étape 3: Retourner si au moins une ligne a été affectée
+        return $stmt->rowCount() > 0;
+    }
+
+    /**
+     * Récupère le solde de crédits actuel d'un utilisateur
+     * @param int $userId - ID de l'utilisateur
+     * @return float - solde de crédits
+     */
+    public function getCredit(int $userId): float
+    {
+        // Étape 1: Préparer
+        $stmt = $this->db->prepare('
+            SELECT credit FROM utilisateur WHERE utilisateur_id = :user_id LIMIT 1
+        ');
+
+        // Étape 2: Exécuter
+        $stmt->execute([':user_id' => $userId]);
+        $result = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        // Étape 3: Retourner le crédit (0 si utilisateur non trouvé)
+        return (float)($result['credit'] ?? 0.00);
+    }
 }
