@@ -83,6 +83,7 @@ function initializeAuthMenu() {
         </button>
         <ul class="dropdown-menu" id="userDropdown">
           <li><a href="/profile" class="dropdown-link">Mon profil</a></li>
+          <li><a href="/historique" class="dropdown-link">Mes covoiturages</a></li>
           <li><a href="/my-rides" class="dropdown-link">Mes trajets</a></li>
           <li><a href="/settings" class="dropdown-link">Paramètres</a></li>
           <li class="dropdown-divider"></li>

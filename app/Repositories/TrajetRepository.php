@@ -296,6 +296,7 @@ class TrajetRepository implements TrajetRepositoryInterface
                 c.lieu_arrivee,
                 c.nb_places,
                 c.prix_personne,
+                c.statut,
                 c.est_ecologique,
                 u.utilisateur_id,
                 u.pseudo,
@@ -419,21 +420,25 @@ class TrajetRepository implements TrajetRepositoryInterface
     {
         $stmt = $this->db->prepare('
             SELECT 
-                covoiturage_id,
-                date_depart,
-                heure_depart,
-                lieu_depart,
-                heure_arrivee,
-                lieu_arrivee,
-                nb_places,
-                prix_personne,
-                statut,
-                est_ecologique,
-                conducteur_id,
-                voiture_id
-            FROM covoiturage
-            WHERE conducteur_id = :user_id
-            ORDER BY date_depart DESC
+                c.covoiturage_id,
+                c.date_depart,
+                c.heure_depart,
+                c.lieu_depart,
+                c.heure_arrivee,
+                c.lieu_arrivee,
+                c.nb_places,
+                c.prix_personne,
+                c.statut,
+                c.est_ecologique,
+                c.conducteur_id,
+                c.voiture_id,
+                v.modele,
+                m.libelle AS marque
+            FROM covoiturage c
+            JOIN voiture v ON c.voiture_id = v.voiture_id
+            JOIN marque m ON v.marque_id = m.marque_id
+            WHERE c.conducteur_id = :user_id
+            ORDER BY c.date_depart DESC
         ');
 
         $stmt->execute([':user_id' => $userId]);
@@ -454,7 +459,11 @@ class TrajetRepository implements TrajetRepositoryInterface
                 $row['heure_arrivee']
             );
             $trajet->id = $row['covoiturage_id'];
-            $trajets[] = $trajet;
+            // Enrichir avec les infos véhicule pour l'historique
+            $arr = $trajet->toArray();
+            $arr['marque'] = $row['marque'];
+            $arr['modele'] = $row['modele'];
+            $trajets[] = $arr;
         }
 
         return $trajets;

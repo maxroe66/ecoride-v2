@@ -20,10 +20,22 @@ class HistoryService
 
     public function getUserTripHistory(int $userId): array
     {
+        // Trajets en tant que chauffeur (déjà enrichis en tableau associatif)
         $trips = $this->trajetRepo->getTrajetsByUserId($userId);
+        $trips = array_map(fn($trip) => array_merge($trip, [
+            'role' => 'chauffeur',
+            // Normaliser quelques champs pour le frontend
+            'id' => $trip['covoiturage_id'] ?? null,
+            'prix' => $trip['prix_personne'] ?? null,
+            'nb_places_disponibles' => $trip['nb_places'] ?? null,
+        ]), $trips);
+
+        // Participations en tant que passager (on ne garde que les confirmées dans l'historique principal)
         $participations = $this->participationRepo->findByUserAndStatus($userId, 'confirmee');
-        $trips = array_map(fn($trip) => array_merge($trip->toArray(), ['role' => 'chauffeur']), $trips);
-        $participations = array_map(fn($p) => array_merge($p, ['role' => 'passager']), $participations);
+        $participations = array_map(fn($p) => array_merge($p, [
+            'role' => 'passager',
+            'statut_participation' => $p['statut'] ?? null,
+        ]), $participations);
         // Fusionner les 2 listes
         $history = array_merge($trips, $participations);
         // Trier par date_depart en descendant (plus récent d'abord)

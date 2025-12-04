@@ -157,66 +157,6 @@ class UserRepository implements UserRepositoryInterface
         return $user;
     }
 
-    public function updateCredit(int $userId, float $amount, string $type): bool
-    {
-        // Vérifier que le type est valide
-        if (!in_array($type, ['debit', 'credit'])) {
-            throw new Exception('Invalid operation type. Must be "debit" or "credit"');
-        }
-
-        // Vérifier que le montant est positif
-        if ($amount <= 0) {
-            throw new Exception('Amount must be positive');
-        }
-
-        try {
-            // 1. Préparer la requête selon le type d'opération
-            if ($type === 'debit') {
-                // Débiter : credit - amount
-                $stmt = $this->db->prepare('
-                    UPDATE utilisateur 
-                    SET credit = credit - :amount 
-                    WHERE utilisateur_id = :userId
-                ');
-            } else {
-                // Créditer : credit + amount
-                $stmt = $this->db->prepare('
-                    UPDATE utilisateur 
-                    SET credit = credit + :amount 
-                    WHERE utilisateur_id = :userId
-                ');
-            }
-
-            // 2. Exécuter la mise à jour du crédit de l'utilisateur
-            $stmt->execute([
-                ':amount' => $amount,
-                ':userId' => $userId
-            ]);
-
-            // Vérifier que la mise à jour a réussi
-            if ($stmt->rowCount() === 0) {
-                throw new Exception('User not found');
-            }
-
-            // 3. Enregistrer l'opération dans credit_operation
-            $operationStmt = $this->db->prepare('
-                INSERT INTO credit_operation (utilisateur_id, type_operation, montant, date_operation)
-                VALUES (:userId, :type, :montant, NOW())
-            ');
-
-            $operationStmt->execute([
-                ':userId' => $userId,
-                ':type' => $type,
-                ':montant' => $amount
-            ]);
-
-            return true;
-
-        } catch (Exception $e) {
-            throw new Exception('Failed to update credit: ' . $e->getMessage());
-        }
-    }
-
     /**
      * Met à jour le rôle de l'utilisateur
      * @param int $userId - ID de l'utilisateur
@@ -299,23 +239,67 @@ class UserRepository implements UserRepositoryInterface
      * Met à jour le solde de crédits d'un utilisateur
      * @param int $userId - ID de l'utilisateur
      * @param float $amount - montant à ajouter (positif) ou retirer (négatif)
+     * @param string $type - 'credit' ou 'debit' (optionnel, défaut 'credit')
      * @return bool - true si la mise à jour a réussi
      */
-    public function updateCredit(int $userId, float $amount): bool
+    public function updateCredit(int $userId, float $amount, string $type = 'credit'): bool
     {
-        // Étape 1: Préparer
-        $stmt = $this->db->prepare('
-            UPDATE utilisateur SET credit = credit + :amount WHERE utilisateur_id = :user_id
-        ');
+        // Vérifier que le type est valide
+        if (!in_array($type, ['debit', 'credit'])) {
+            throw new Exception('Invalid operation type. Must be "debit" or "credit"');
+        }
 
-        // Étape 2: Exécuter
-        $stmt->execute([
-            ':amount' => $amount,
-            ':user_id' => $userId
-        ]);
+        // Vérifier que le montant est positif
+        if ($amount <= 0) {
+            throw new Exception('Amount must be positive');
+        }
 
-        // Étape 3: Retourner si au moins une ligne a été affectée
-        return $stmt->rowCount() > 0;
+        try {
+            // 1. Préparer la requête selon le type d'opération
+            if ($type === 'debit') {
+                // Débiter : credit - amount
+                $stmt = $this->db->prepare('
+                    UPDATE utilisateur 
+                    SET credit = credit - :amount 
+                    WHERE utilisateur_id = :userId
+                ');
+            } else {
+                // Créditer : credit + amount
+                $stmt = $this->db->prepare('
+                    UPDATE utilisateur 
+                    SET credit = credit + :amount 
+                    WHERE utilisateur_id = :userId
+                ');
+            }
+
+            // 2. Exécuter la mise à jour du crédit de l'utilisateur
+            $stmt->execute([
+                ':amount' => $amount,
+                ':userId' => $userId
+            ]);
+
+            // Vérifier que la mise à jour a réussi
+            if ($stmt->rowCount() === 0) {
+                throw new Exception('User not found');
+            }
+
+            // 3. Enregistrer l'opération dans credit_operation
+            $operationStmt = $this->db->prepare('
+                INSERT INTO credit_operation (utilisateur_id, type_operation, montant, date_operation)
+                VALUES (:userId, :type, :montant, NOW())
+            ');
+
+            $operationStmt->execute([
+                ':userId' => $userId,
+                ':type' => $type,
+                ':montant' => $amount
+            ]);
+
+            return true;
+
+        } catch (Exception $e) {
+            throw new Exception('Failed to update credit: ' . $e->getMessage());
+        }
     }
 
     /**

@@ -29,9 +29,9 @@ class ParticipationController
     {
         header('Content-Type: application/json');
 
-        // Récupérer l'ID de la participation
-        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
-        $participationId = $query['id'] ?? null;
+        // Récupérer l'ID de la participation depuis les paramètres dynamiques du routeur
+        $pathParams = $_REQUEST['_path_params'] ?? [];
+        $participationId = $pathParams[0] ?? null;
 
         try {
             // Authentification requise
@@ -81,25 +81,32 @@ class ParticipationController
                 $creditOpRepo
             );
 
-            // Annuler la participation
-            $result = $cancellationService->cancelParticipationAsPassenger($participationId, $userId);
-
-            // Récupérer les détails pour envoyer l'email au chauffeur
-            // (Besoin de récupérer l'ID du trajet et les détails de la participation)
-            $stmt = $db->prepare('SELECT * FROM participation WHERE id = ?');
+            // Récupérer la participation pour obtenir le covoiturage_id
+            $stmt = $db->prepare('SELECT * FROM participation WHERE participation_id = ?');
             $stmt->execute([$participationId]);
             $participation = $stmt->fetch(\PDO::FETCH_ASSOC);
 
-            if ($participation) {
-                $tripId = $participation['covoiturage_id'];
-                $trajet = $trajetRepo->getTrajetDetail($tripId);
-                $driver = $userRepo->getUserById($trajet['user_id']);
+            if (!$participation) {
+                http_response_code(404);
+                echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Participation introuvable']]);
+                return;
+            }
 
+            $tripId = (int)$participation['covoiturage_id'];
+
+            // Annuler la participation (utilise tripId et userId)
+            $result = $cancellationService->cancelParticipationAsPassenger($tripId, $userId);
+
+            // Récupérer les détails pour envoyer l'email au chauffeur
+            $trajet = $trajetRepo->getTrajetDetail($tripId);
+            $driver = $userRepo->getUserById((int)($trajet['utilisateur_id'] ?? 0));
+
+            if ($driver && $trajet) {
                 // Envoyer email au chauffeur
                 $emailService->sendParticipantCancellationToDriver(
                     $driver,
                     $trajet,
-                    $user['prenom'] . ' ' . $user['nom']
+                    $user['pseudo'] ?? ($user['prenom'] . ' ' . $user['nom'])
                 );
             }
 
@@ -108,7 +115,7 @@ class ParticipationController
             echo json_encode([
                 'success' => true,
                 'message' => 'Participation annulée avec succès',
-                'refund_amount' => $result['refund_amount'] ?? 0
+                'refund_amount' => $result['refunded_amount'] ?? 0
             ]);
 
         } catch (Exception $e) {

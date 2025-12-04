@@ -46,6 +46,7 @@
               id="email" 
               name="email" 
               placeholder="votre@email.com"
+              autocomplete="email"
               required
             >
             <small class="form-hint">Format email valide requis</small>
@@ -58,6 +59,7 @@
               id="password" 
               name="password" 
               placeholder="••••••••"
+              autocomplete="new-password"
               minlength="8"
               required
             >
@@ -74,6 +76,7 @@
               id="confirmPassword" 
               name="confirmPassword" 
               placeholder="••••••••"
+              autocomplete="new-password"
               required
             >
           </div>

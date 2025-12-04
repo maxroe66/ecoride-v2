@@ -32,6 +32,7 @@
               id="email" 
               name="email" 
               placeholder="votre@email.com ou votrepseudo"
+              autocomplete="username"
               required
             >
           </div>
@@ -43,6 +44,7 @@
               id="password" 
               name="password" 
               placeholder="••••••••"
+              autocomplete="current-password"
               required
             >
           </div>

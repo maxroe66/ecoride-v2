@@ -24,15 +24,15 @@ class HistoryController
     public static function getUserHistory(): void
     {
         try {
-            // Authentification requise
-            $user = AuthMiddleware::getAuthenticatedUser();
-            if (!$user) {
+            // Authentification requise via middleware
+            $authMw = new AuthMiddleware();
+            $user = $authMw->authenticate();
+            $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
+            if ($userId <= 0) {
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
-
-            $userId = (int)$user['id'];
 
             // Récupérer la base de données
             $db = DatabaseFactory::getConnection();
@@ -85,15 +85,15 @@ class HistoryController
                 echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
                 return;
             }
-            // Authentification requise
-            $user = AuthMiddleware::getAuthenticatedUser();
-            if (!$user) {
+            // Authentification requise via middleware
+            $authMw = new AuthMiddleware();
+            $user = $authMw->authenticate();
+            $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
+            if ($userId <= 0) {
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
-
-            $userId = (int)$user['id'];
 
             // Récupérer la base de données
             $db = DatabaseFactory::getConnection();
