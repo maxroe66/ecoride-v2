@@ -337,4 +337,20 @@ class UserRepository implements UserRepositoryInterface
         // Étape 3: Retourner le crédit (0 si utilisateur non trouvé)
         return (float)($result['credit'] ?? 0.00);
     }
+
+    /**
+     * Récupère un utilisateur par ID sous forme de tableau
+     * @param int $userId - ID de l'utilisateur
+     * @return array - données de l'utilisateur
+     */
+    public function getUserById(int $userId): ?array
+    {
+        $stmt = $this->db->prepare('
+            SELECT utilisateur_id as id, nom, prenom, email, pseudo, telephone, credit, type_utilisateur
+            FROM utilisateur 
+            WHERE utilisateur_id = :id
+        ');
+        $stmt->execute([':id' => $userId]);
+        return $stmt->fetch(PDO::FETCH_ASSOC);
+    }
 }

@@ -6,9 +6,12 @@ use App\Factories\DatabaseFactory;
 use App\Repositories\TrajetRepository;
 use App\Repositories\ParticipationRepository;
 use App\Repositories\UserRepository;
+use App\Repositories\CreditOperationRepository;
 use App\Validators\QueryValidator;
 use App\Services\TripService;
 use App\Services\ParticipationService;
+use App\Services\CancellationService;
+use App\Services\EmailService;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
 use Exception;
@@ -439,6 +442,102 @@ class TrajetController
 
             echo json_encode(['success' => true, 'data' => $data]);
         } catch (Exception $e) {
+            http_response_code(500);
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    /**
+     * Annule un covoiturage en tant que chauffeur
+     * POST /api/trajets/{id}/annuler
+     * Body: { raison?: string }
+     */
+    public static function cancelTrip(): void
+    {
+        header('Content-Type: application/json');
+
+        // Récupérer l'ID du trajet depuis la route
+        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
+        $tripId = $query['id'] ?? null;
+
+        // Valider l'ID
+        if (!$tripId || !is_numeric($tripId) || (int)$tripId <= 0) {
+            http_response_code(400);
+            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => 'ID du trajet invalide']]);
+            return;
+        }
+
+        $tripId = (int)$tripId;
+
+        try {
+            // Authentification requise
+            $user = AuthMiddleware::getAuthenticatedUser();
+            if (!$user) {
+                http_response_code(401);
+                echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
+                return;
+            }
+
+            $userId = (int)$user['id'];
+
+            // Vérifier le token CSRF
+            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+                $csrf = new CsrfMiddleware();
+                if (!$csrf->validateToken()) {
+                    http_response_code(403);
+                    echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_CSRF', 'message' => 'Token CSRF invalide']]);
+                    return;
+                }
+            }
+
+            // Récupérer la raison optionnelle
+            $body = json_decode(file_get_contents('php://input'), true) ?? [];
+            $reason = $body['raison'] ?? null;
+
+            // Récupérer la base de données
+            $db = DatabaseFactory::getConnection();
+
+            // Initialiser les repositories et services
+            $trajetRepo = new TrajetRepository($db);
+            $participationRepo = new ParticipationRepository($db);
+            $userRepo = new UserRepository($db);
+            $creditOpRepo = new CreditOperationRepository($db);
+            $emailService = new EmailService();
+
+            $cancellationService = new CancellationService(
+                $trajetRepo,
+                $participationRepo,
+                $userRepo,
+                $creditOpRepo
+            );
+
+            // Annuler le trajet
+            $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
+
+            // Envoyer les emails de notification aux passagers
+            $trajet = $trajetRepo->getTrajetDetail($tripId);
+            $participants = $participationRepo->findByTrip($tripId);
+
+            foreach ($participants as $participant) {
+                $emailService->sendCancellationNotification(
+                    $participant,
+                    $trajet,
+                    $user['nom'] . ' ' . $user['prenom'],
+                    $trajet['prix'] ?? 0, // Montant du remboursement
+                    $reason
+                );
+            }
+
+            // Retourner la réponse
+            http_response_code(200);
+            echo json_encode([
+                'success' => true,
+                'message' => 'Trajet annulé avec succès',
+                'participants_notified' => count($participants)
+            ]);
+
+        } catch (Exception $e) {
+            error_log('[TrajetController::cancelTrip] Exception : ' . $e->getMessage());
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
