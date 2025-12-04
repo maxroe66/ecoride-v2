@@ -1,0 +1,80 @@
+<?php
+/**
+ * Page d'historique des covoiturages (US10)
+ * Affiche tous les trajets de l'utilisateur (en tant que chauffeur et passager)
+ * Permet d'annuler les trajets/participations
+ */
+?>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EcoRide - Historique des covoiturages</title>
+  
+  <link rel="stylesheet" href="/frontend/css/global.css">
+  <link rel="stylesheet" href="/frontend/css/components/header.css">
+  <link rel="stylesheet" href="/frontend/css/components/footer.css">
+  <link rel="stylesheet" href="/frontend/css/historique.css">
+</head>
+<body>
+  <?php include __DIR__ . '/../templates/layouts/header.php'; ?>
+
+  <main>
+    <div class="historique-container">
+      <!-- En-tête -->
+      <div class="historique-header">
+        <h1>Historique de mes covoiturages</h1>
+        <p>Retrouvez tous vos trajets en tant que chauffeur ou passager</p>
+      </div>
+
+      <!-- Messages d'erreur/succès -->
+      <div id="messageContainer"></div>
+
+      <!-- Filtres -->
+      <div class="filters-section">
+        <label for="statusFilter">Filtrer par statut :</label>
+        <select id="statusFilter">
+          <option value="">-- Tous les trajets --</option>
+          <option value="planifie">Planifiés</option>
+          <option value="en_cours">En cours</option>
+          <option value="termine">Terminés</option>
+          <option value="annule">Annulés</option>
+        </select>
+      </div>
+
+      <!-- Liste des trajets -->
+      <div id="tripsContainer" class="trips-list">
+        <p class="loading">Chargement de vos trajets...</p>
+      </div>
+    </div>
+  </main>
+
+  <?php include __DIR__ . '/../templates/layouts/footer.php'; ?>
+
+  <!-- Modal d'annulation -->
+  <div id="cancelModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>Annuler ce covoiturage</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <form id="cancelForm">
+          <div class="form-group">
+            <label for="cancelReason">Raison d'annulation (optionnel) :</label>
+            <textarea id="cancelReason" placeholder="Décrivez la raison de votre annulation..." maxlength="500"></textarea>
+            <small id="charCount">0/500</small>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="closeModal">Annuler</button>
+            <button type="submit" class="btn-danger">Confirmer l'annulation</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="/frontend/js/historique.js"></script>
+</body>
+</html>

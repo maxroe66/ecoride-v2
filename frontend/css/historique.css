@@ -1,0 +1,469 @@
+/* Historique Page CSS - Mobile First */
+
+/* Container */
+.historique-container {
+  max-width: 100%;
+  margin: 20rem auto;
+  padding: 0 16rem;
+}
+
+/* Header */
+.historique-header {
+  background: var(--color-white);
+  border-radius: 10rem;
+  padding: 20rem;
+  margin-bottom: 20rem;
+  box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.1);
+  border-left: 5rem solid var(--color-green-light);
+}
+
+.historique-header h1 {
+  margin: 0 0 8rem 0;
+  color: var(--color-green-dark);
+  font-size: 24rem;
+  font-weight: 500;
+}
+
+.historique-header p {
+  margin: 0;
+  color: var(--color-green-verydark);
+  font-size: 14rem;
+  opacity: 0.8;
+}
+
+/* Messages */
+#messageContainer {
+  margin-bottom: 20rem;
+  min-height: 0;
+}
+
+.message {
+  padding: 12rem;
+  border-radius: 10rem;
+  margin-bottom: 15rem;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  display: none;
+}
+
+.message.show {
+  display: block;
+  opacity: 1;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border-left: 4rem solid #28a745;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border-left: 4rem solid #dc3545;
+}
+
+.message.info {
+  background-color: #d1ecf1;
+  color: #0c5460;
+  border-left: 4rem solid #17a2b8;
+}
+
+/* Filters */
+.filters-section {
+  background: var(--color-white);
+  border-radius: 10rem;
+  padding: 16rem;
+  margin-bottom: 20rem;
+  display: flex;
+  align-items: center;
+  gap: 12rem;
+  flex-wrap: wrap;
+  box-shadow: 0 1rem 4rem rgba(0, 0, 0, 0.05);
+}
+
+.filters-section label {
+  font-weight: 500;
+  color: var(--color-green-verydark);
+  margin: 0;
+}
+
+.filters-section select {
+  padding: 8rem 12rem;
+  border: 1rem solid var(--color-green-light);
+  border-radius: 6rem;
+  background: var(--color-white);
+  color: var(--color-green-verydark);
+  cursor: pointer;
+  font-size: 14rem;
+  min-width: 200rem;
+}
+
+.filters-section select:hover {
+  border-color: var(--color-green-dark);
+}
+
+.filters-section select:focus {
+  outline: none;
+  border-color: var(--color-green-dark);
+  box-shadow: 0 0 0 3rem rgba(76, 175, 80, 0.1);
+}
+
+/* Trips List */
+.trips-list {
+  display: grid;
+  gap: 16rem;
+}
+
+.loading {
+  text-align: center;
+  color: var(--color-green-verydark);
+  padding: 40rem 20rem;
+  background: var(--color-white);
+  border-radius: 10rem;
+  margin: 0;
+}
+
+/* Trip Card */
+.trip-card {
+  background: var(--color-white);
+  border-radius: 10rem;
+  padding: 16rem;
+  box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  border-left: 5rem solid var(--color-green-light);
+}
+
+.trip-card:hover {
+  box-shadow: 0 4rem 12rem rgba(0, 0, 0, 0.15);
+  transform: translateY(-2rem);
+}
+
+.trip-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12rem;
+  flex-wrap: wrap;
+  gap: 8rem;
+}
+
+.trip-title {
+  margin: 0;
+  color: var(--color-green-dark);
+  font-size: 16rem;
+  font-weight: 500;
+}
+
+.trip-role {
+  display: inline-block;
+  padding: 4rem 8rem;
+  border-radius: 20rem;
+  font-size: 12rem;
+  font-weight: 500;
+}
+
+.trip-role.chauffeur {
+  background-color: #e3f2fd;
+  color: #1565c0;
+}
+
+.trip-role.passager {
+  background-color: #f3e5f5;
+  color: #6a1b9a;
+}
+
+.trip-status {
+  display: inline-block;
+  padding: 4rem 8rem;
+  border-radius: 20rem;
+  font-size: 12rem;
+  font-weight: 500;
+}
+
+.trip-status.planifie {
+  background-color: #fff3e0;
+  color: #e65100;
+}
+
+.trip-status.en_cours {
+  background-color: #e0f2f1;
+  color: #004d40;
+}
+
+.trip-status.termine {
+  background-color: #e8f5e9;
+  color: #1b5e20;
+}
+
+.trip-status.annule {
+  background-color: #ffebee;
+  color: #b71c1c;
+}
+
+/* Trip Details */
+.trip-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12rem;
+  margin-bottom: 12rem;
+}
+
+.trip-detail-item {
+  display: flex;
+  gap: 8rem;
+  align-items: flex-start;
+}
+
+.trip-detail-icon {
+  width: 24rem;
+  height: 24rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-green-light);
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-size: 14rem;
+}
+
+.trip-detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.trip-detail-label {
+  font-size: 12rem;
+  color: var(--color-green-verydark);
+  opacity: 0.7;
+  margin: 0;
+}
+
+.trip-detail-value {
+  font-size: 14rem;
+  color: var(--color-green-verydark);
+  font-weight: 500;
+  margin: 0;
+}
+
+/* Trip Actions */
+.trip-actions {
+  display: flex;
+  gap: 8rem;
+  flex-wrap: wrap;
+  margin-top: 12rem;
+  padding-top: 12rem;
+  border-top: 1rem solid var(--color-green-light);
+}
+
+.btn {
+  padding: 8rem 16rem;
+  border: none;
+  border-radius: 6rem;
+  font-size: 14rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6rem;
+}
+
+.btn-primary {
+  background-color: var(--color-green-light);
+  color: var(--color-white);
+}
+
+.btn-primary:hover {
+  background-color: var(--color-green-dark);
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: var(--color-white);
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+}
+
+.btn-cancel {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background-color: #d0d0d0;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Modal */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.4);
+  animation: fadeIn 0.3s ease;
+}
+
+.modal.show {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.modal-content {
+  background-color: var(--color-white);
+  border-radius: 10rem;
+  box-shadow: 0 4rem 20rem rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 500rem;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(-50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20rem;
+  border-bottom: 1rem solid var(--color-green-light);
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--color-green-dark);
+  font-size: 20rem;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 28rem;
+  cursor: pointer;
+  color: var(--color-green-verydark);
+  padding: 0;
+  width: 32rem;
+  height: 32rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.3s ease;
+}
+
+.close-btn:hover {
+  color: var(--color-green-dark);
+}
+
+.modal-body {
+  padding: 20rem;
+}
+
+/* Form */
+.form-group {
+  margin-bottom: 16rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 6rem;
+  font-weight: 500;
+  color: var(--color-green-verydark);
+  font-size: 14rem;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 10rem;
+  border: 1rem solid var(--color-green-light);
+  border-radius: 6rem;
+  font-family: inherit;
+  font-size: 14rem;
+  color: var(--color-green-verydark);
+  resize: vertical;
+  min-height: 100rem;
+  box-sizing: border-box;
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-green-dark);
+  box-shadow: 0 0 0 3rem rgba(76, 175, 80, 0.1);
+}
+
+#charCount {
+  display: block;
+  margin-top: 4rem;
+  font-size: 12rem;
+  color: var(--color-green-verydark);
+  opacity: 0.7;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12rem;
+  justify-content: flex-end;
+  margin-top: 20rem;
+}
+
+.form-actions button {
+  padding: 10rem 20rem;
+}
+
+/* Responsive */
+@media (max-width: 768rem) {
+  .historique-container {
+    padding: 0 12rem;
+  }
+
+  .trip-details {
+    grid-template-columns: 1fr;
+  }
+
+  .filters-section {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .filters-section select {
+    min-width: auto;
+    width: 100%;
+  }
+
+  .modal-content {
+    width: 95%;
+  }
+
+  .trip-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
