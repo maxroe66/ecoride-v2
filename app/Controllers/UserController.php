@@ -9,6 +9,7 @@ use App\Validators\UserProfileValidator;
 use App\Repositories\VehicleRepository;
 use App\Repositories\MarqueRepository;
 use App\Middleware\AuthMiddleware;
+use App\Middleware\CsrfMiddleware;
 use Exception;
 
 /**
@@ -64,6 +65,9 @@ class UserController
             echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
+
+        // CSRF
+        (new CsrfMiddleware())->validate();
 
         // Récupérer le JSON du corps
         $raw = file_get_contents('php://input');
@@ -193,6 +197,9 @@ class UserController
             return;
         }
 
+        // CSRF
+        (new CsrfMiddleware())->validate();
+
         $vehicleId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($vehicleId <= 0) {
             http_response_code(400);
@@ -239,6 +246,9 @@ class UserController
             echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
+
+        // CSRF
+        (new CsrfMiddleware())->validate();
 
         // ÉTAPE 2 : Récupérer le JSON du corps de la requête
         $raw = file_get_contents('php://input');

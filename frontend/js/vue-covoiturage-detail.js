@@ -363,10 +363,12 @@ function proceedToModal2() {
  */
 async function requestParticipation() {
   try {
+    const csrf = await SessionManager.csrfHeaders();
     const response = await fetch('/api/participations/request', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...csrf
       },
       body: JSON.stringify({
         covoiturage_id: currentCovoiturageId,
@@ -439,10 +441,12 @@ function closeModal2() {
 async function confirmParticipation() {
   try {
     // API 2 : Valider
+    const csrf = await SessionManager.csrfHeaders();
     const validateResponse = await fetch('/api/participations/validate', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...csrf
       },
       body: JSON.stringify({
         participation_id: currentParticipationId
@@ -460,7 +464,8 @@ async function confirmParticipation() {
     const confirmResponse = await fetch('/api/participations/confirm', {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json'
+        'Content-Type': 'application/json',
+        ...csrf
       },
       body: JSON.stringify({
         participation_id: currentParticipationId

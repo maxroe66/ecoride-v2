@@ -57,14 +57,19 @@ Ce document résume le fonctionnement de l'authentification dans EcoRide, dans u
 ### 2.5 Vérification côté serveur (`AuthMiddleware`)
 
 1. `AuthMiddleware::authenticate()` :
-   - récupère le token **uniquement depuis le cookie** via `CookieManager` ;
-   - **ne lit plus** ni header `Authorization`, ni query `?token=`.
+   - récupère le token via `getToken()` avec **ordre de priorité** :
+     1. **Cookie sécurisé** `ecoride_token` via `CookieManager` (utilisé par le frontend web),
+     2. **Header `Authorization: Bearer <token>`** (utilisé pour les tests API avec curl/Postman).
 2. Il appelle `JwtService::validate()` qui :
    - vérifie la **signature HMAC-SHA256** du JWT,
-   - vérifie l’**expiration** du token.
+   - vérifie l'**expiration** du token.
 3. Comportement :
    - si tout est valide → retourne les données utilisateur au contrôleur ;
-   - sinon → renvoie une **erreur 401 “UNAUTHORIZED”**.
+   - sinon → renvoie une **erreur 401 "UNAUTHORIZED"**.
+
+**Justification du double support** :
+- **Cookie** : méthode principale pour le frontend (sécurisé, automatique, HttpOnly)
+- **Authorization header** : permet les tests API manuels (curl, Postman) sans simuler de cookies, tout en maintenant la sécurité JWT
 
 ### 2.6 Déconnexion
 
@@ -151,13 +156,27 @@ Ce document résume le fonctionnement de l'authentification dans EcoRide, dans u
 
 Même si le niveau actuel est déjà solide pour un TP, voici des pistes d’amélioration que l’on pourrait ajouter plus tard :
 
-### 5.1 Token CSRF dédié
+### 5.1 CSRF (déjà implémenté)
 
-- **Idée** : ajouter un token CSRF généré côté serveur et stocké en session, puis l’injecter dans les formulaires ou dans un header personnalisé.
-- À chaque requête POST critique, le serveur vérifierait :
-   - que le cookie (JWT) est présent,
-   - **et** que le token CSRF envoyé correspond à celui en session.
-- Effet : même si un site externe arrive à faire envoyer une requête par ton navigateur (CSRF), il ne connaît pas le token CSRF et la requête sera refusée.
+- Un token CSRF est généré côté serveur et stocké en session.
+- Endpoint pour le récupérer après authentification: `GET /api/csrf-token`.
+- Les requêtes mutatrices doivent inclure l’en-tête `X-CSRF-Token`.
+- Le middleware `CsrfMiddleware` valide le token avec `hash_equals`.
+- Endpoints protégés: logout, avis (POST), trajets (POST), participations (POST), profil (PUT), véhicules (POST/DELETE).
+
+Exemples rapides (curl):
+
+```
+# Récupération du token CSRF
+CSRF=$(curl -s -c cookies.txt -b cookies.txt http://localhost:8080/api/csrf-token | sed -n 's/.*"csrfToken":"\([^" ]*\)".*/\1/p')
+
+# Requête mutatrice avec CSRF
+curl -c cookies.txt -b cookies.txt \
+   -H 'Content-Type: application/json' \
+   -H "X-CSRF-Token: $CSRF" \
+   -d '{"covoiturage_id":1,"note":5,"commentaire":"Test"}' \
+   http://localhost:8080/api/avis
+```
 
 ### 5.2 Limitation des tentatives de connexion (rate limiting)
 
@@ -193,4 +212,45 @@ Même si le niveau actuel est déjà solide pour un TP, voici des pistes d’am�
 
 > "Pour l’authentification d’EcoRide, j’ai choisi d’utiliser des JWT stockés dans un cookie HttpOnly sécurisé plutôt que des sessions PHP classiques. Quand un utilisateur se connecte, le serveur génère un token signé avec une date d’expiration et le place dans un cookie que le navigateur renvoie automatiquement sur chaque requête. Côté frontend, je ne garde que les informations nécessaires à l’affichage, comme le pseudo ou l’email, dans le localStorage, et j’utilise un `SessionManager` pour afficher dynamiquement le bon menu et la page profil. Toutes les routes protégées passent par un `AuthMiddleware` qui lit uniquement le cookie, vérifie la signature et l’expiration du JWT avant de laisser passer. La déconnexion supprime le cookie et nettoie aussi la session côté front. Grâce à ce schéma, le token n’est jamais accessible en JavaScript et le cookie est configuré en HttpOnly, Secure et SameSite=Lax, ce qui renforce la protection contre les attaques XSS et CSRF."
 “Le token JWT n’est jamais accessible en JavaScript, il n’est stocké que dans un cookie HttpOnly sécurisé, et le front ne conserve que des informations minimales d’affichage.”
+
+---
+
+## How to test (signup → login → CSRF → POST)
+
+1) Créer un utilisateur et se connecter
+
+```
+EMAIL="qa$(date +%s)@example.test"; PSEUDO="qauser$(date +%s)"; PASS="Password123!"
+curl -c cookies.txt -b cookies.txt -H 'Content-Type: application/json' \
+   -d "{\"pseudo\":\"$PSEUDO\",\"email\":\"$EMAIL\",\"password\":\"$PASS\"}" \
+   http://localhost:8080/api/auth/signup
+
+curl -c cookies.txt -b cookies.txt -H 'Content-Type: application/json' \
+   -d "{\"email\":\"$EMAIL\",\"password\":\"$PASS\",\"remember\":false}" \
+   http://localhost:8080/api/auth/login
+```
+
+2) Récupérer le token CSRF lié à la session
+
+```
+CSRF=$(curl -s -c cookies.txt -b cookies.txt http://localhost:8080/api/csrf-token | sed -n 's/.*"csrfToken":"\([^" ]*\)".*/\1/p')
+echo "CSRF=$CSRF"
+```
+
+3) Vérifier la protection CSRF sur une requête mutatrice (ex: POST /api/avis)
+
+Sans CSRF (doit échouer 403 CSRF_FAILED):
+```
+curl -c cookies.txt -b cookies.txt -H 'Content-Type: application/json' \
+   -d '{"covoiturage_id":1,"note":5,"commentaire":"Test"}' \
+   http://localhost:8080/api/avis
+```
+
+Avec CSRF (doit réussir ou renvoyer une erreur métier):
+```
+curl -c cookies.txt -b cookies.txt -H 'Content-Type: application/json' \
+   -H "X-CSRF-Token: $CSRF" \
+   -d '{"covoiturage_id":1,"note":5,"commentaire":"Test"}' \
+   http://localhost:8080/api/avis
+```
 

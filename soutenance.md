@@ -1,0 +1,1 @@
+“On utilise un JWT stocké dans un cookie HttpOnly pour l’authentification, et un token CSRF stocké côté serveur (session) + envoyé dans un header pour protéger tous les endpoints mutateurs contre les attaques CSRF.”

@@ -6,6 +6,9 @@
         <testsuite name="EcoRide Services">
             <directory>tests/Services</directory>
         </testsuite>
+        <testsuite name="EcoRide Controllers">
+            <directory>tests/Controllers</directory>
+        </testsuite>
     </testsuites>
     <coverage processUncoveredFiles="true">
         <include>

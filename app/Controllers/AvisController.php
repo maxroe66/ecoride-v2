@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Validators\QueryValidator;
 use App\Services\ReviewService;
 use App\Models\Avis;
+use App\Middleware\CsrfMiddleware;
 
 /**
  * Contrôleur des avis.
@@ -59,6 +60,23 @@ class AvisController
 
     public static function create(): void
     {
+        // Authentifier l'utilisateur via JWT (cookie HttpOnly ou Authorization: Bearer)
+        try {
+            $middleware = new \App\Middleware\AuthMiddleware();
+            $authData = $middleware->authenticate();
+            $authenticatedUserId = (int)($authData['user_id'] ?? 0);
+            if ($authenticatedUserId <= 0) {
+                throw new \Exception('Utilisateur non valide dans le token');
+            }
+        } catch (\Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false,'error' => ['code' => 'UNAUTHORIZED','message' => 'Authentification requise pour créer un avis']]);
+            return;
+        }
+
+        // CSRF: exiger un en-tête X-CSRF-Token valide
+        (new CsrfMiddleware())->validate();
+
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         if (!is_array($json)) {
@@ -80,8 +98,14 @@ class AvisController
             return;
         }
 
+        // Sécurité: ignorer tout utilisateur_id fourni par le client
+        // et utiliser uniquement l'identité authentifiée via JWT.
+        $rideId = $data['rideId'];
+        $rating = $data['rating'];
+        $comment = $data['comment'];
+
         $service = new ReviewService();
-        $ok = $service->create($data['rideId'], $data['userId'], $data['rating'], $data['comment']);
+        $ok = $service->create($rideId, $authenticatedUserId, $rating, $comment);
         if ($ok) {
             http_response_code(201);
             echo json_encode(['success' => true,'data' => ['message' => 'Créé','note' => $data['rating']]]);

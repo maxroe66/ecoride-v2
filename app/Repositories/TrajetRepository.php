@@ -4,6 +4,7 @@ namespace App\Repositories;
 
 use PDO;
 use Exception;
+use App\Models\Trajet;
 
 class TrajetRepository implements TrajetRepositoryInterface
 {
@@ -372,5 +373,90 @@ class TrajetRepository implements TrajetRepositoryInterface
         } catch (Exception $e) {
             throw new Exception('Failed to update seats: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Crée un nouveau trajet
+     * @param Trajet $trajet - Le trajet à créer
+     * @return int - L'ID du trajet créé
+     */
+    public function createTrajet(Trajet $trajet): int
+    {
+        $stmt = $this->db->prepare('
+            INSERT INTO covoiturage (
+                date_depart, heure_depart, lieu_depart, lieu_arrivee,
+                nb_places, prix_personne, statut, est_ecologique,
+                conducteur_id, voiture_id
+            ) VALUES (
+                :date_depart, :heure_depart, :lieu_depart, :lieu_arrivee,
+                :nb_places, :prix_personne, :statut, :est_ecologique,
+                :conducteur_id, :voiture_id
+            )
+        ');
+
+        $stmt->execute([
+            ':date_depart' => $trajet->dateDepart,
+            ':heure_depart' => $trajet->heureDepart,
+            ':lieu_depart' => $trajet->lieuDepart,
+            ':lieu_arrivee' => $trajet->lieuArrivee,
+            ':nb_places' => $trajet->nbPlaces,
+            ':prix_personne' => $trajet->prixPersonne,
+            ':statut' => $trajet->statut,
+            ':est_ecologique' => $trajet->estEcologique ? 1 : 0,
+            ':conducteur_id' => $trajet->conducteurId,
+            ':voiture_id' => $trajet->voitureId,
+        ]);
+
+        return (int)$this->db->lastInsertId();
+    }
+
+    /**
+     * Récupère tous les trajets d'un chauffeur
+     * @param int $userId - L'ID du chauffeur
+     * @return array - Tableau des trajets du chauffeur
+     */
+    public function getTrajetsByUserId(int $userId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT 
+                covoiturage_id,
+                date_depart,
+                heure_depart,
+                lieu_depart,
+                heure_arrivee,
+                lieu_arrivee,
+                nb_places,
+                prix_personne,
+                statut,
+                est_ecologique,
+                conducteur_id,
+                voiture_id
+            FROM covoiturage
+            WHERE conducteur_id = :user_id
+            ORDER BY date_depart DESC
+        ');
+
+        $stmt->execute([':user_id' => $userId]);
+
+        $trajets = [];
+        while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
+            $trajet = new Trajet(
+                $row['date_depart'],
+                $row['heure_depart'],
+                $row['lieu_depart'],
+                $row['lieu_arrivee'],
+                $row['nb_places'],
+                $row['prix_personne'],
+                $row['conducteur_id'],
+                $row['voiture_id'],
+                $row['statut'],
+                (bool)$row['est_ecologique'],
+                $row['heure_arrivee']
+            );
+            $trajet->id = $row['covoiturage_id'];
+            $trajets[] = $trajet;
+        }
+
+        return $trajets;
     }
 }

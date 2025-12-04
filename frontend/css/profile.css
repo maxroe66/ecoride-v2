@@ -315,6 +315,13 @@
   border-radius: 8rem;
 }
 
+/* Upcoming trips (US9) */
+.trip-row { display: flex; justify-content: space-between; align-items: center; gap: 12rem; }
+.trip-title { margin: 0 0 8rem 0; font-size: 16rem; color: var(--color-green-dark); font-weight: 500; }
+.trip-meta { margin: 4rem 0 0 0; color: #555; font-size: 16rem; }
+.trip-price { text-align: right; min-width: 140rem; }
+.trip-price .net { color: #666; font-size: 12rem; }
+
 /* Tablet */
 @media (min-width: 768px) {
   .profile-container { max-width: 720rem; margin: 24rem auto; padding: 0 24rem; }
@@ -341,6 +348,7 @@
   
   .vehicles-list { grid-template-columns: repeat(2, 1fr); }
   .vehicle-form { padding: 18rem; }
+  .trip-row { gap: 16rem; }
   
   .btn-group { flex-direction: row; gap: 16rem; }
   .btn-group .btn, .btn { width: auto; }
@@ -364,5 +372,6 @@
   .vehicles-list { grid-template-columns: repeat(3, 1fr); gap: 16rem; }
   .btn { padding: 12rem 24rem; }
   .dropdown-toggle, .accordion-toggle { padding: 16rem 18rem; }
+  .trip-row { gap: 20rem; }
 }
 

@@ -5,6 +5,9 @@ namespace App\Controllers;
 use App\Factories\DatabaseFactory;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
+use App\Services\CsrfService;
+use App\Middleware\AuthMiddleware;
+use App\Middleware\CsrfMiddleware;
 use App\Validators\QueryValidator;
 
 /**
@@ -74,7 +77,12 @@ class AuthController
 
     public static function logout(): void
     {
+        // Exiger une session authentifiée puis un jeton CSRF valide
         try {
+            $authMw = new AuthMiddleware();
+            $authMw->authenticate();
+            (new CsrfMiddleware())->validate();
+
             $db = DatabaseFactory::getConnection();
             $repo = new UserRepository($db);
             $auth = new AuthService($repo);
@@ -84,5 +92,25 @@ class AuthController
             http_response_code(500);
             echo json_encode(['success' => false,'error' => ['code' => 'LOGOUT_FAILED','message' => $e->getMessage()]]);
         }
+    }
+
+    /**
+     * Endpoint: GET /api/csrf-token
+     * Retourne un token CSRF associé à la session authentifiée
+     */
+    public static function csrf(): void
+    {
+        header('Content-Type: application/json');
+        try {
+            $authMw = new AuthMiddleware();
+            $authMw->authenticate();
+        } catch (\Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
+            return;
+        }
+
+        $token = CsrfService::getToken();
+        echo json_encode(['success' => true, 'data' => ['csrfToken' => $token]]);
     }
 }

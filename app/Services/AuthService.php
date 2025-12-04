@@ -102,20 +102,21 @@ class AuthService
             'type_utilisateur' => $user->type_utilisateur,
         ];
 
-        // Créer le JWT token
+        // Créer le JWT token (non exposé au frontend)
         $token = $this->jwtService->generate([
             'user_id' => $user->id,
             'pseudo' => $user->pseudo,
             'email' => $user->email,
         ]);
 
-        // Créer le cookie sécurisé
+        // Créer le cookie sécurisé contenant le token
         $this->cookieManager->setToken($token);
 
         // Créer aussi la session PHP (pour compatibilité)
         $_SESSION['user'] = $userData;
 
-        return array_merge($userData, ['token' => $token]);
+        // Retourner uniquement les données utilisateur affichables (pas le token)
+        return $userData;
     }
 
     /**

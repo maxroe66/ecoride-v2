@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Profile page loaded');
   
     // Charger le profil utilisateur
-    loadProfile();
+document.addEventListener('DOMContentLoaded', async () => {
     
     // Ajouter les event listeners
     setupEventListeners();
@@ -25,6 +25,10 @@ function setupEventListeners() {
     const logoutBtn = document.getElementById('logoutBtn');
     const vehiclesToggle = document.getElementById('vehiclesToggle');
     const editProfileToggle = document.getElementById('editProfileToggle');
+    const createTripToggle = document.getElementById('createTripToggle');
+    const myTripsToggle = document.getElementById('myTripsToggle');
+    const createTripBtn = document.getElementById('createTripBtn');
+    const openVehiclesManagerFromTrip = document.getElementById('openVehiclesManagerFromTrip');
 
     // ÉTAPE 2 : Ajouter les event listeners sur les boutons
     // Quand on clique sur addVehicleBtn, appeller addVehicleForm()
@@ -62,6 +66,55 @@ function setupEventListeners() {
         editProfileToggle.addEventListener('click', () => {
             toggleAccordion('editProfileToggle', 'editProfileSection');
         });
+    }
+
+    if (createTripToggle) {
+        createTripToggle.addEventListener('click', () => {
+            toggleAccordion('createTripToggle', 'createTripSection');
+        });
+    }
+
+    if (myTripsToggle) {
+        myTripsToggle.addEventListener('click', () => {
+            const section = document.getElementById('myTripsSection');
+            const wasClosed = section && (section.style.display === 'none' || section.style.display === '');
+            toggleAccordion('myTripsToggle', 'myTripsSection');
+            if (wasClosed) setTimeout(loadUpcomingTrips, 50);
+        });
+    }
+
+    if (createTripBtn) {
+        createTripBtn.addEventListener('click', createTrip);
+    }
+
+    if (openVehiclesManagerFromTrip) {
+        openVehiclesManagerFromTrip.addEventListener('click', () => {
+            // Ouvre la gestion des véhicules et scroll vers la section
+            const manageBtn = document.getElementById('manageVehiclesBtn');
+            if (manageBtn) {
+                const manager = document.getElementById('vehiclesManager');
+                const wasHidden = !manager || manager.style.display === 'none' || manager.style.display === '';
+                manageBtn.click();
+                if (wasHidden) {
+                    setTimeout(() => manager?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
+                } else {
+                    manager?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            }
+        });
+    }
+
+    // Aperçu du prix net (prix - 2)
+    const priceInput = document.getElementById('createTripPrice');
+    if (priceInput) {
+        const updateNet = () => {
+            const v = parseFloat(priceInput.value || '0');
+            const net = Math.max(0, (isNaN(v) ? 0 : v) - 2);
+            const lbl = document.getElementById('createTripNetPreview');
+            if (lbl) lbl.textContent = `Vous recevrez ${net.toFixed(2)} crédit(s) nets (prix - 2)`;
+        };
+        priceInput.addEventListener('input', updateNet);
+        updateNet();
     }
 
     // ÉTAPE 4 : Ajouter les event listeners sur les radio buttons de rôle
@@ -178,6 +231,8 @@ function loadExistingVehicles() {
 
                 vehiclesDisplayContainer.innerHTML = '';
                 vehiclesDisplayContainer.appendChild(vehiclesList);
+                // Remplir le select de création de trajet
+                populateTripVehicleSelect(result.data);
                 // Si le manager est ouvert, re-render la liste avec actions
                 const manager = document.getElementById('vehiclesManager');
                 if (manager && manager.style.display === 'block') {
@@ -187,12 +242,171 @@ function loadExistingVehicles() {
                 vehiclesDisplayContainer.innerHTML = '<p style="text-align: center; color: #999;">Aucun véhicule enregistré</p>';
                 const managerList = document.getElementById('vehiclesManagerList');
                 if (managerList) managerList.innerHTML = '<p style="text-align: center; color: #999;">Aucun véhicule enregistré</p>';
+                // Vider le select de création de trajet
+                populateTripVehicleSelect([]);
             }
         })
         .catch(error => {
             console.error('Erreur lors du chargement des véhicules:', error);
             document.getElementById('vehiclesDisplayContainer').innerHTML = '<p style="text-align: center; color: #999;">Erreur lors du chargement</p>';
         });
+}
+
+/**
+ * Remplit le select des véhicules dans la section création de trajet
+ */
+function populateTripVehicleSelect(vehicles) {
+    const select = document.getElementById('createTripVehicle');
+    if (!select) return;
+    select.innerHTML = '<option value="">-- Sélectionner un véhicule --</option>';
+    if (Array.isArray(vehicles)) {
+        vehicles.forEach(v => {
+            const opt = document.createElement('option');
+            opt.value = v.id;
+            opt.textContent = `${v.modele} • ${v.immatriculation} • ${v.nb_places} places`;
+            select.appendChild(opt);
+        });
+    }
+}
+
+/**
+ * Charge et affiche les prochains trajets du chauffeur
+ */
+function loadUpcomingTrips() {
+        const container = document.getElementById('createTripUpcomingList');
+        if (!container) return;
+        container.innerHTML = '<p style="text-align:center;color:#999;">Chargement...</p>';
+
+        fetch('/api/user/trajets')
+                .then(r => r.json())
+                .then(result => {
+                        if (!result.success) {
+                                container.innerHTML = '<p style="text-align:center;color:#999;">Impossible de charger les trajets</p>';
+                                return;
+                        }
+                        const trips = Array.isArray(result.data) ? result.data : [];
+                        if (trips.length === 0) {
+                                container.innerHTML = '<p style="text-align:center;color:#999;">Aucun trajet à venir</p>';
+                                return;
+                        }
+                        container.innerHTML = '';
+                        trips
+                            .sort((a,b) => (a.date_depart + ' ' + (a.heure_depart||'')).localeCompare(b.date_depart + ' ' + (b.heure_depart||'')))
+                            .forEach(t => {
+                                const net = Math.max(0, (parseFloat(t.prix_personne || 0) - 2));
+                                const card = document.createElement('div');
+                                card.className = 'vehicle-card';
+                                card.innerHTML = `
+                                    <div class="trip-row">
+                                        <div>
+                                            <h4 class="trip-title">${escapeHtml(t.lieu_depart)} ➝ ${escapeHtml(t.lieu_arrivee)}</h4>
+                                            <p class="trip-meta">
+                                                ${escapeHtml(t.date_depart)} • ${escapeHtml(t.heure_depart || '')} • ${t.nb_places} places
+                                            </p>
+                                        </div>
+                                        <div class="trip-price">
+                                            <div><strong>${Number(t.prix_personne).toFixed(2)}</strong> cr./pers</div>
+                                            <div class="net">net: ${net.toFixed(2)} cr.</div>
+                                        </div>
+                                    </div>
+                                `;
+                                container.appendChild(card);
+                            });
+                })
+                .catch(err => {
+                        console.error('Erreur chargement trajets chauffeur:', err);
+                        container.innerHTML = '<p style="text-align:center;color:#999;">Erreur réseau</p>';
+                });
+}
+
+/**
+ * Création de trajet (US9)
+ */
+async function createTrip() {
+    const user = SessionManager.getUser();
+    if (!user) {
+        window.location.href = '/login';
+        return;
+    }
+
+    // Ne permettre qu'aux rôles chauffeur / chauffeur_passager
+    const role = user.role || 'passager';
+    if (!(role === 'chauffeur' || role === 'chauffeur_passager')) {
+        showMessage('Seuls les chauffeurs peuvent créer des trajets.', 'error');
+        return;
+    }
+
+    const departure = (document.getElementById('createTripDeparture')?.value || '').trim();
+    const arrival = (document.getElementById('createTripArrival')?.value || '').trim();
+    const date = document.getElementById('createTripDate')?.value || '';
+    const time = document.getElementById('createTripTime')?.value || '';
+    const seats = parseInt(document.getElementById('createTripSeats')?.value || '0', 10);
+    const price = parseFloat(document.getElementById('createTripPrice')?.value || '0');
+    const vehicleId = parseInt(document.getElementById('createTripVehicle')?.value || '0', 10);
+
+    // Validation côté client (miroir du backend)
+    if (!departure || !arrival) {
+        showMessage('Adresse de départ et d\'arrivée requises', 'error');
+        return;
+    }
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+        showMessage('Date invalide (YYYY-MM-DD)', 'error');
+        return;
+    }
+    if (!/^\d{2}:\d{2}$/.test(time)) {
+        showMessage('Heure invalide (HH:MM)', 'error');
+        return;
+    }
+    if (!(seats >= 1 && seats <= 8)) {
+        showMessage('Nombre de places entre 1 et 8', 'error');
+        return;
+    }
+    if (!(price >= 2)) {
+        showMessage('Prix par personne doit être ≥ 2 crédits', 'error');
+        return;
+    }
+    if (!(vehicleId > 0)) {
+        showMessage('Veuillez sélectionner un véhicule', 'error');
+        return;
+    }
+
+    const payload = {
+        lieu_depart: departure,
+        lieu_arrivee: arrival,
+        date_depart: date,
+        heure_depart: time,
+        nb_places: seats,
+        prix_personne: price,
+        voiture_id: vehicleId
+    };
+
+    try {
+        const csrf = await SessionManager.csrfHeaders();
+        const r = await fetch('/api/trajets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...csrf },
+            body: JSON.stringify(payload)
+        });
+        const result = await r.json();
+        if (result.success) {
+            showMessage('Trajet créé avec succès ! ' + (result.message || ''), 'success');
+            document.getElementById('createTripDeparture').value = '';
+            document.getElementById('createTripArrival').value = '';
+            document.getElementById('createTripDate').value = '';
+            document.getElementById('createTripTime').value = '';
+            document.getElementById('createTripSeats').value = '';
+            document.getElementById('createTripPrice').value = '';
+            document.getElementById('createTripVehicle').value = '';
+            if (document.getElementById('createTripUpcomingList')) {
+                loadUpcomingTrips();
+            }
+        } else {
+            showMessage(result.error?.message || 'Création de trajet impossible', 'error');
+        }
+    } catch (err) {
+        console.error('Erreur création trajet:', err);
+        showMessage('Erreur réseau lors de la création du trajet', 'error');
+    }
 }
 
 /**
@@ -248,35 +462,32 @@ function renderVehiclesManagerList(vehicles) {
     });
 }
 
-function deleteVehicle(vehicleId) {
+async function deleteVehicle(vehicleId) {
     if (!confirm('Supprimer ce véhicule ?')) return;
-    fetch(`/api/user/vehicles?id=${encodeURIComponent(vehicleId)}`, { method: 'DELETE' })
-        .then(r => r.json())
-        .then(result => {
-            if (result.success) {
-                showMessage('Véhicule supprimé', 'success');
-                // Recharger les 2 vues
-                loadExistingVehicles();
-                loadVehiclesManager();
-                // Mettre à jour le compteur local pour la validation chauffeur
-                window._existingVehiclesCount = Math.max(0, (window._existingVehiclesCount || 1) - 1);
-            } else {
-                showMessage(result.error?.message || 'Suppression impossible', 'error');
-            }
-        })
-        .catch(err => {
-            console.error('Erreur suppression véhicule:', err);
-            showMessage('Erreur réseau lors de la suppression', 'error');
-        });
+    try {
+        const csrf = await SessionManager.csrfHeaders();
+        const r = await fetch(`/api/user/vehicles?id=${encodeURIComponent(vehicleId)}`, { method: 'DELETE', headers: { ...csrf } });
+        const result = await r.json();
+        if (result.success) {
+            showMessage('Véhicule supprimé', 'success');
+            loadExistingVehicles();
+            loadVehiclesManager();
+            window._existingVehiclesCount = Math.max(0, (window._existingVehiclesCount || 1) - 1);
+        } else {
+            showMessage(result.error?.message || 'Suppression impossible', 'error');
+        }
+    } catch (err) {
+        console.error('Erreur suppression véhicule:', err);
+        showMessage('Erreur réseau lors de la suppression', 'error');
+    }
 }
 
 /**
  * Charge les préférences existantes de l'utilisateur
  */
-function loadExistingPreferences() {
-    fetch('/api/user/preferences')
-        .then(r => r.json())
-        .then(result => {
+async function loadExistingPreferences() {
+    const r = await fetch('/api/user/preferences');
+    const result = await r.json();
             if (!result.success) return;
             const prefs = result.data || {};
             const selFumeur = document.querySelector('select[name="preference_fumeur"]');
@@ -302,8 +513,7 @@ function loadExistingPreferences() {
                     document.getElementById('prefAutres').textContent = autres !== '---' ? autres : '---';
                 }
             }
-        })
-        .catch(err => console.error('Erreur préférences:', err));
+        
 }
 
 /**
@@ -533,6 +743,12 @@ function onRoleChange(role) {
         vehiclesSection.style.display = 'block';
         preferencesSection.style.display = 'block';
         if (prefRow) prefRow.style.display = 'table-row';
+        // Afficher la section création de trajet si présente
+        const createToggle = document.getElementById('createTripToggle');
+        const createSection = document.getElementById('createTripSection');
+        if (createToggle && createSection && createSection.style.display !== 'block') {
+            // Laisser fermé par défaut; l'utilisateur peut l'ouvrir.
+        }
     }
 }
 
@@ -610,7 +826,7 @@ function addVehicleForm() {
 /**
  * Sauvegarde un véhicule directement via l'API
  */
-function saveVehicleDirectly(formIndex) {
+async function saveVehicleDirectly(formIndex) {
     const vehicleForm = document.getElementById(`vehicle-form-${formIndex}`);
     
     if (!vehicleForm) return;
@@ -642,30 +858,26 @@ function saveVehicleDirectly(formIndex) {
     };
 
     // Envoyer à l'API
-    fetch('/api/user/vehicles', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
+    try {
+        const csrf = await SessionManager.csrfHeaders();
+        const response = await fetch('/api/user/vehicles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...csrf },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
         if (result.success) {
             showMessage(`Véhicule "${result.data.modele}" ajouté avec succès !`, 'success');
-            // Supprimer le formulaire du DOM
             vehicleForm.remove();
-            // Recharger les véhicules affichés
             loadExistingVehicles();
             loadVehiclesManager();
         } else {
             showMessage(result.error?.message || 'Erreur lors de l\'ajout du véhicule', 'error');
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Erreur:', error);
         showMessage('Une erreur est survenue : ' + error.message, 'error');
-    });
+    }
 }
 
 /**
