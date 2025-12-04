@@ -6,11 +6,19 @@ class CsrfService
 {
     private const SESSION_KEY = 'csrf_token';
 
-    public static function getToken(): string
+    /**
+     * Assure que la session PHP est active (évite duplication)
+     */
+    private static function ensureSession(): void
     {
         if (session_status() !== PHP_SESSION_ACTIVE) {
             session_start();
         }
+    }
+
+    public static function getToken(): string
+    {
+        self::ensureSession();
         if (empty($_SESSION[self::SESSION_KEY])) {
             $_SESSION[self::SESSION_KEY] = bin2hex(random_bytes(32));
         }
@@ -19,9 +27,7 @@ class CsrfService
 
     public static function validate(?string $provided): bool
     {
-        if (session_status() !== PHP_SESSION_ACTIVE) {
-            session_start();
-        }
+        self::ensureSession();
         $expected = $_SESSION[self::SESSION_KEY] ?? '';
         return $provided !== null && $provided !== '' && $expected !== '' && hash_equals($expected, $provided);
     }

@@ -34,17 +34,21 @@ class ParticipationController
         $participationId = $pathParams[0] ?? null;
 
         try {
-            // Authentification requise
-            $user = AuthMiddleware::getAuthenticatedUser();
-            if (!$user) {
+            // 1. AUTHENTIFICATION
+            try {
+                $authMw = new AuthMiddleware();
+                $userData = $authMw->authenticate();
+                $userId = (int)$userData['user_id'];
+            } catch (Exception $e) {
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
 
-            $userId = (int)$user['id'];
+            // 2. CSRF
+            (new CsrfMiddleware())->validate();
 
-            // Valider les paramètres
+            // 3. Valider les paramètres
             try {
                 $validated = CancellationValidator::validateParticipationCancellation((int)$participationId, $userId);
                 $participationId = $validated['participation_id'];
@@ -52,16 +56,6 @@ class ParticipationController
                 http_response_code(400);
                 echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
                 return;
-            }
-
-            // Vérifier le token CSRF
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $csrf = new CsrfMiddleware();
-                if (!$csrf->validateToken()) {
-                    http_response_code(403);
-                    echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_CSRF', 'message' => 'Token CSRF invalide']]);
-                    return;
-                }
             }
 
             // Récupérer la base de données
@@ -94,8 +88,16 @@ class ParticipationController
 
             $tripId = (int)$participation['covoiturage_id'];
 
-            // Annuler la participation (utilise tripId et userId)
-            $result = $cancellationService->cancelParticipationAsPassenger($tripId, $userId);
+            // Transaction pour garantir atomicité des mises à jour
+            $db->beginTransaction();
+            try {
+                // Annuler la participation (utilise tripId et userId)
+                $result = $cancellationService->cancelParticipationAsPassenger($tripId, $userId);
+                $db->commit();
+            } catch (\Exception $inner) {
+                $db->rollBack();
+                throw $inner;
+            }
 
             // Récupérer les détails pour envoyer l'email au chauffeur
             $trajet = $trajetRepo->getTrajetDetail($tripId);

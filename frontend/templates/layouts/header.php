@@ -41,6 +41,12 @@
       <li class="nav-item" id="authContainer">
         <!-- Rempli par JavaScript (header.js) -->
       </li>
+      <!-- Solde de crédits (affiché si connecté) -->
+      <li class="nav-item" id="creditContainer" style="display:none;">
+        <span class="nav-link">
+          Crédit: <strong id="creditBalance">0</strong>
+        </span>
+      </li>
     </ul>
   </nav>
 </header>

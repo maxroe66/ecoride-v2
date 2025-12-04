@@ -432,6 +432,9 @@ class TrajetController
             $upcoming = array_values(array_filter($trajets, function (array $t) use ($now) {
                 $date = $t['date_depart'] ?? null;
                 $time = $t['heure_depart'] ?? '00:00:00';
+                $status = $t['statut'] ?? null;
+                // Exclure les trajets annulés du listing des prochains trajets
+                if ($status === 'annule') return false;
                 if (!$date) return true; // si manque d'info date, ne pas filtrer
                 try {
                     $dt = new \DateTime($date . ' ' . ($time ?: '00:00:00'));
@@ -462,25 +465,22 @@ class TrajetController
         $tripId = $pathParams[0] ?? null;
 
         try {
-            // Authentification requise
+            // 1. AUTHENTIFICATION
             try {
                 $authMw = new AuthMiddleware();
-                $user = $authMw->authenticate();
+                $userData = $authMw->authenticate();
             } catch (Exception $e) {
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
 
-            $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
+            $userId = (int)$userData['user_id'];
 
-            // Vérifier le token CSRF
-            if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-                $csrf = new CsrfMiddleware();
-                $csrf->validate(); // répond 403 JSON si invalide
-            }
+            // 2. CSRF
+            (new CsrfMiddleware())->validate();
 
-            // Récupérer la raison optionnelle
+            // 3. Récupérer la raison optionnelle
             $body = json_decode(file_get_contents('php://input'), true) ?? [];
             $reason = $body['raison'] ?? null;
 
@@ -512,8 +512,16 @@ class TrajetController
                 $creditOpRepo
             );
 
-            // Annuler le trajet
-            $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
+            // Transaction pour garantir atomicité des mises à jour
+            $db->beginTransaction();
+            try {
+                // Annuler le trajet
+                $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
+                $db->commit();
+            } catch (\Exception $inner) {
+                $db->rollBack();
+                throw $inner;
+            }
 
             // Envoyer les emails de notification aux passagers
             $trajet = $trajetRepo->getTrajetDetail($tripId);

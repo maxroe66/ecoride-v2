@@ -32,10 +32,12 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('userLoggedIn', () => {
     initializeAuthMenu();
     attachUserMenuListeners();
+    updateCreditBalance();
   });
 
   window.addEventListener('userLoggedOut', () => {
     initializeAuthMenu();
+    hideCreditBalance();
   });
 
   // Initialiser les écouteurs du menu utilisateur
@@ -60,6 +62,7 @@ document.addEventListener('DOMContentLoaded', function() {
  */
 function initializeAuthMenu() {
   const authContainer = document.getElementById('authContainer');
+  const creditContainer = document.getElementById('creditContainer');
   if (!authContainer) return;
 
   // Vérifier que SessionManager est chargé
@@ -93,6 +96,11 @@ function initializeAuthMenu() {
     `;
     // Réattacher les écouteurs après avoir créé le menu
     attachUserMenuListeners();
+    // Afficher le solde de crédits
+    if (creditContainer) {
+      creditContainer.style.display = '';
+      updateCreditBalance();
+    }
   } else {
     // Boutons connexion/inscription
     authContainer.innerHTML = `
@@ -101,7 +109,47 @@ function initializeAuthMenu() {
         <a href="/signup" class="nav-link btn btn-primary">Inscription</a>
       </div>
     `;
+    hideCreditBalance();
   }
+}
+async function updateCreditBalance() {
+  const creditContainer = document.getElementById('creditContainer');
+  const creditBalanceEl = document.getElementById('creditBalance');
+  if (!creditContainer || !creditBalanceEl) return;
+
+  // Seulement si authentifié
+  if (!SessionManager.isAuthenticated()) {
+    hideCreditBalance();
+    return;
+  }
+
+  try {
+    const resp = await fetch('/api/user/credit', {
+      method: 'GET',
+      headers: {
+        'Accept': 'application/json'
+      },
+      credentials: 'include'
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    if (json && json.success && json.data && typeof json.data.credit !== 'undefined') {
+      creditBalanceEl.textContent = String(json.data.credit);
+      creditContainer.style.display = '';
+    } else {
+      hideCreditBalance();
+    }
+  } catch (e) {
+    console.warn('Impossible de récupérer le crédit utilisateur:', e);
+    hideCreditBalance();
+  }
+}
+
+function hideCreditBalance() {
+  const creditContainer = document.getElementById('creditContainer');
+  const creditBalanceEl = document.getElementById('creditBalance');
+  if (creditContainer) creditContainer.style.display = 'none';
+  if (creditBalanceEl) creditBalanceEl.textContent = '0';
 }
 
 /**

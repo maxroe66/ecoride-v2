@@ -82,11 +82,18 @@ class Bootstrap
         $router->add('POST', '/api/participations/validate', [TrajetController::class, 'validateParticipation']);
         $router->add('POST', '/api/participations/confirm', [TrajetController::class, 'confirmParticipation']);
 
+        // Historique (US10)
+        $router->add('GET', '/api/historique/trajets', [\App\Controllers\HistoryController::class, 'getUserHistory']);
+        // Variante filtrée par statut via chemin dédié pour éviter conflit de même path
+        $router->add('GET', '/api/historique/trajets/filtre', [\App\Controllers\HistoryController::class, 'getHistoryByStatus']);
+
         // User Profile (US8)
         $router->add('GET', '/api/user/vehicles', [UserController::class, 'getVehicles']);
         $router->add('POST', '/api/user/vehicles', [UserController::class, 'addVehicle']);
         $router->add('DELETE', '/api/user/vehicles', [UserController::class, 'deleteVehicle']);
         $router->add('GET', '/api/user/preferences', [UserController::class, 'getPreferences']);
+        // Crédit utilisateur (US10)
+        $router->add('GET', '/api/user/credit', [UserController::class, 'getCredit']);
         $router->add('PUT', '/api/user/profile', [UserController::class, 'updateProfile']);
 
         // Historique des covoiturages (US10)

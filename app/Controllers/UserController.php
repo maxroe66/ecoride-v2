@@ -18,6 +18,37 @@ use Exception;
 class UserController
 {
     /**
+     * Endpoint : GET /api/user/credit
+     * Retourne le solde de crédits de l'utilisateur authentifié
+     */
+    public static function getCredit(): void
+    {
+        header('Content-Type: application/json');
+
+        try {
+            $middleware = new AuthMiddleware();
+            $userData = $middleware->authenticate();
+            $userId = (int)$userData['user_id'];
+        } catch (Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            return;
+        }
+
+        try {
+            $db = DatabaseFactory::getConnection();
+            $userRepo = new UserRepository($db);
+            $credit = $userRepo->getCredit($userId);
+
+            http_response_code(200);
+            echo json_encode(['success' => true, 'data' => ['credit' => $credit]]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+        }
+    }
+    /**
      * Endpoint : GET /api/user/preferences
      * Récupère les préférences de l'utilisateur authentifié
      */
