@@ -54,9 +54,7 @@ class Bootstrap
         // Avis
         $router->add('GET', '/api/avis', [AvisController::class, 'list']);
         $router->add('GET', '/api/avis/stats', [AvisController::class, 'stats']);
-        $router->add('POST', '/api/avis', [AvisController::class, 'create'], [function () {
-            (new \App\Middleware\AuthMiddleware())->authenticate();
-        }]);
+        $router->add('POST', '/api/avis', [AvisController::class, 'create']);
         // Trajets
         $router->add('GET', '/api/trajets', [TrajetController::class, 'search']);
         $router->add('POST', '/api/trajets', [TrajetController::class, 'create']);
