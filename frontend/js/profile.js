@@ -6,11 +6,15 @@
 document.addEventListener('DOMContentLoaded', () => {
   console.log('Profile page loaded');
   
-    // Charger le profil utilisateur
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    // Ajouter les event listeners
-    setupEventListeners();
+  // Ajouter les event listeners
+  setupEventListeners();
+
+    // Charger les informations du profil
+    try {
+        loadProfile();
+    } catch (e) {
+        console.error('Erreur chargement profil:', e);
+    }
 });
 
 /**
@@ -385,6 +389,7 @@ async function createTrip() {
         const r = await fetch('/api/trajets', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json', ...csrf },
+            credentials: 'include',
             body: JSON.stringify(payload)
         });
         const result = await r.json();
@@ -650,43 +655,43 @@ function updateProfile() {
     // ÉTAPE 5 : Envoyer les données à l'API
     console.log('Données à envoyer:', data);
 
-    fetch('/api/user/profile', {
-        method: 'PUT',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
-        // ÉTAPE 6 : Gérer la réponse
-        console.log('Réponse API complète:', result);
-        if (result.success) {
-            console.log('Données reçues de l\'API:', result.data);
-            // Mettre à jour le SessionManager avec les nouvelles données
-            const updatedUser = {
-                utilisateur_id: result.data.utilisateur_id,
-                pseudo: result.data.pseudo,
-                email: result.data.email,
-                credit: result.data.credit,
-                role: result.data.role
-            };
-            console.log('Objet à sauvegarder dans SessionManager:', updatedUser);
-            SessionManager.setUser(updatedUser);
+    ;(async () => {
+        try {
+            const csrf = await SessionManager.csrfHeaders();
+            const response = await fetch('/api/user/profile', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', ...csrf },
+                body: JSON.stringify(data)
+            });
+            const result = await response.json();
+            // ÉTAPE 6 : Gérer la réponse
+            console.log('Réponse API complète:', result);
+            if (result.success) {
+                console.log('Données reçues de l\'API:', result.data);
+                // Mettre à jour le SessionManager avec les nouvelles données
+                const updatedUser = {
+                    utilisateur_id: result.data.utilisateur_id,
+                    pseudo: result.data.pseudo,
+                    email: result.data.email,
+                    credit: result.data.credit,
+                    role: result.data.role
+                };
+                console.log('Objet à sauvegarder dans SessionManager:', updatedUser);
+                SessionManager.setUser(updatedUser);
 
-            showMessage('Profil mis à jour avec succès !', 'success');
-            // Recharger la page après 1.5 secondes
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
-        } else {
-            showMessage(result.error?.message || 'Erreur lors de la mise à jour', 'error');
+                showMessage('Profil mis à jour avec succès !', 'success');
+                // Recharger la page après 1.5 secondes
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                showMessage(result.error?.message || 'Erreur lors de la mise à jour', 'error');
+            }
+        } catch (error) {
+            console.error('Erreur:', error);
+            showMessage('Une erreur est survenue : ' + error.message, 'error');
         }
-    })
-    .catch(error => {
-        console.error('Erreur:', error);
-        showMessage('Une erreur est survenue : ' + error.message, 'error');
-    });
+    })();
 }
 
 /**

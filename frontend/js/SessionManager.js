@@ -55,7 +55,7 @@ class SessionManager {
      */
     static async refreshCsrfToken() {
         try {
-            const resp = await fetch('/api/csrf-token', { method: 'GET' });
+            const resp = await fetch('/api/csrf-token', { method: 'GET', credentials: 'include' });
             if (!resp.ok) return null;
             const data = await resp.json();
             const token = data?.data?.csrfToken || null;

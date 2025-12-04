@@ -425,23 +425,23 @@ class TrajetController
         try {
             $db = \App\Factories\DatabaseFactory::getConnection();
             $repo = new \App\Repositories\TrajetRepository($db);
-            $trajets = $repo->getTrajetsByUserId($userId);
+            $trajets = $repo->getTrajetsByUserId($userId); // retourne déjà des arrays enrichis
 
-            // Ne garder que les trajets à venir
-            $nowDate = new \DateTime('now');
-            $upcoming = array_values(array_filter($trajets, function ($t) use ($nowDate) {
+            // Ne garder que les trajets à venir (format array: keys 'date_depart', 'heure_depart')
+            $now = new \DateTime('now');
+            $upcoming = array_values(array_filter($trajets, function (array $t) use ($now) {
+                $date = $t['date_depart'] ?? null;
+                $time = $t['heure_depart'] ?? '00:00:00';
+                if (!$date) return true; // si manque d'info date, ne pas filtrer
                 try {
-                    $dt = new \DateTime($t->dateDepart . ' ' . ($t->heureDepart ?: '00:00:00'));
-                    return $dt >= $nowDate; 
+                    $dt = new \DateTime($date . ' ' . ($time ?: '00:00:00'));
+                    return $dt >= $now;
                 } catch (\Throwable $e) {
-                    return true; // en doute, on affiche
+                    return true;
                 }
             }));
 
-            // Mapper vers arrays simples
-            $data = array_map(fn($t) => $t->toArray(), $upcoming);
-
-            echo json_encode(['success' => true, 'data' => $data]);
+            echo json_encode(['success' => true, 'data' => $upcoming]);
         } catch (Exception $e) {
             http_response_code(500);
             echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
@@ -457,29 +457,27 @@ class TrajetController
     {
         header('Content-Type: application/json');
 
-        // Récupérer l'ID du trajet depuis la route
-        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
-        $tripId = $query['id'] ?? null;
+        // Récupérer l'ID du trajet depuis les paramètres dynamiques du routeur
+        $pathParams = $_REQUEST['_path_params'] ?? [];
+        $tripId = $pathParams[0] ?? null;
 
         try {
             // Authentification requise
-            $user = AuthMiddleware::getAuthenticatedUser();
-            if (!$user) {
+            try {
+                $authMw = new AuthMiddleware();
+                $user = $authMw->authenticate();
+            } catch (Exception $e) {
                 http_response_code(401);
                 echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
 
-            $userId = (int)$user['id'];
+            $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
 
             // Vérifier le token CSRF
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $csrf = new CsrfMiddleware();
-                if (!$csrf->validateToken()) {
-                    http_response_code(403);
-                    echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_CSRF', 'message' => 'Token CSRF invalide']]);
-                    return;
-                }
+                $csrf->validate(); // répond 403 JSON si invalide
             }
 
             // Récupérer la raison optionnelle

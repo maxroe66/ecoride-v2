@@ -8,6 +8,8 @@ use App\Controllers\AuthController;
 use App\Controllers\AvisController;
 use App\Controllers\TrajetController;
 use App\Controllers\UserController;
+use App\Controllers\HistoryController;
+use App\Controllers\ParticipationController;
 use App\Middleware\AuthMiddleware;
 
 // Nettoyage: suppression des anciens imports legacy non utilisés
@@ -16,6 +18,13 @@ class Bootstrap
 {
     public function __construct()
     {
+        // Désactiver l'affichage HTML des erreurs pour éviter de casser les réponses JSON
+        // Les erreurs seront loguées côté serveur mais non affichées dans les réponses API.
+        ini_set('display_errors', '0');
+        ini_set('html_errors', '0');
+        // Conserver le reporting complet pour les logs
+        error_reporting(E_ALL);
+
         Env::load();
         // Démarrer la session pour l'accès aux données utilisateur
         if (session_status() === PHP_SESSION_NONE) {
@@ -79,6 +88,13 @@ class Bootstrap
         $router->add('DELETE', '/api/user/vehicles', [UserController::class, 'deleteVehicle']);
         $router->add('GET', '/api/user/preferences', [UserController::class, 'getPreferences']);
         $router->add('PUT', '/api/user/profile', [UserController::class, 'updateProfile']);
+
+        // Historique des covoiturages (US10)
+        $router->add('GET', '/api/historique/trajets', [HistoryController::class, 'getUserHistory']);
+
+        // Annulation de trajets (US10) - routes dynamiques paraméttriques
+        $router->add('POST', '/api/trajets/{id}/annuler', [TrajetController::class, 'cancelTrip']);
+        $router->add('POST', '/api/participations/{id}/annuler', [ParticipationController::class, 'cancelParticipation']);
 
         header('Content-Type: application/json');
         if ($router->dispatch()) {

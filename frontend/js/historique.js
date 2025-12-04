@@ -11,6 +11,11 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Historique page loaded');
   
   // Charger l'historique
+  // Définir le filtre par défaut sur "planifie" pour n'afficher que les trajets planifiés
+  const statusFilterEl = document.getElementById('statusFilter');
+  if (statusFilterEl) {
+    statusFilterEl.value = 'planifie';
+  }
   loadHistory();
   
   // Setup event listeners
@@ -85,7 +90,18 @@ async function loadHistory() {
       return;
     }
     
-    displayTrips(allTrips);
+    // Appliquer le filtre actif si présent
+    const statusFilterEl = document.getElementById('statusFilter');
+    const activeStatus = statusFilterEl ? statusFilterEl.value : '';
+    if (activeStatus) {
+      const filtered = allTrips.filter(t => {
+        const s = t.statut || t.statut_participation || null;
+        return s === activeStatus;
+      });
+      displayTrips(filtered);
+    } else {
+      displayTrips(allTrips);
+    }
     
   } catch (error) {
     console.error('Erreur:', error);
@@ -304,8 +320,26 @@ async function submitCancellation(e) {
   const reason = document.getElementById('cancelReason').value;
   
   try {
-    // Récupérer le token CSRF
-    const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+    // Récupérer le token CSRF via le SessionManager (stockage local)
+    // NOTE maintenance: si le SessionManager n'est pas chargé ou si
+    // la récupération échoue, on utilise un fallback depuis localStorage
+    // afin d'envoyer quand même le header `X-CSRF-Token` attendu côté serveur.
+    // Si absent, tenter un rafraîchissement avant le premier appel
+    let csrfHeaders = await (window.SessionManager?.csrfHeaders?.() || Promise.resolve({}));
+    if (!csrfHeaders['X-CSRF-Token']) {
+      const refreshed = await (window.SessionManager?.refreshCsrfToken?.() || Promise.resolve(null));
+      if (refreshed) {
+        csrfHeaders = { 'X-CSRF-Token': refreshed };
+      } else {
+        // Fallback: lire directement le token depuis le localStorage si présent
+        try {
+          const localToken = localStorage.getItem('ecoride_csrf');
+          if (localToken) {
+            csrfHeaders = { 'X-CSRF-Token': localToken };
+          }
+        } catch (_) {}
+      }
+    }
     
     let url, body;
     
@@ -319,29 +353,57 @@ async function submitCancellation(e) {
       body = JSON.stringify({});
     }
     
-    const response = await fetch(url, {
+    let response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken || ''
+        ...csrfHeaders
       },
+      credentials: 'include',
       body: body
     });
     
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.error?.message || 'Erreur lors de l\'annulation');
+    // Lire la réponse sous forme de texte pour gérer les erreurs HTML
+    let raw = await response.text();
+    let parsed = null;
+    try {
+      parsed = raw ? JSON.parse(raw) : null;
+    } catch (_) {
+      parsed = null; // ce n'est pas du JSON, probablement une page HTML d'erreur
     }
-    
-    const data = await response.json();
+
+    // Si CSRF échec, tenter un rafraîchissement et réessayer une fois
+    if (!response.ok && (parsed?.error?.code === 'CSRF_FAILED' || response.status === 403)) {
+      const refreshed = await (window.SessionManager?.refreshCsrfToken?.() || Promise.resolve(null));
+      if (refreshed) {
+        csrfHeaders = { 'X-CSRF-Token': refreshed };
+        response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            ...csrfHeaders
+          },
+          credentials: 'include',
+          body: body
+        });
+        raw = await response.text();
+        try { parsed = raw ? JSON.parse(raw) : null; } catch (_) { parsed = null; }
+      }
+    }
+
+    if (!response.ok) {
+      const serverMsg = parsed?.error?.message || parsed?.message || '';
+      const detail = serverMsg || (raw ? raw.slice(0, 200) : '');
+      throw new Error(detail || 'Erreur lors de l\'annulation');
+    }
+
+    const data = parsed || {};
     
     showMessage('Covoiturage annulé avec succès! Les participants ont été notifiés.', 'success');
     closeModal();
     
-    // Recharger l'historique
-    setTimeout(() => {
-      loadHistory();
-    }, 1000);
+    // Recharger l'historique immédiatement
+    await loadHistory();
     
   } catch (error) {
     console.error('Erreur:', error);

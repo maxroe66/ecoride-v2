@@ -13,7 +13,8 @@ class CsrfMiddleware
     public function validate(): void
     {
         $header = $_SERVER['HTTP_X_CSRF_TOKEN'] ?? null;
-        if (!CsrfService::validate($header)) {
+        $isValid = CsrfService::validate($header);
+        if (!$isValid) {
             http_response_code(403);
             header('Content-Type: application/json');
             echo json_encode(['success' => false, 'error' => ['code' => 'CSRF_FAILED', 'message' => 'Invalid CSRF token']]);
