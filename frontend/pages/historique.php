@@ -26,6 +26,11 @@
       <div class="historique-header">
         <h1>Historique de mes covoiturages</h1>
         <p>Retrouvez tous vos trajets en tant que chauffeur ou passager</p>
+        <div class="credit-summary" id="creditSummary" style="display:none;">
+          <div class="credit-item"><span>Total gagnés:</span> <strong id="totalCredit">0</strong></div>
+          <div class="credit-item"><span>Total utilisés:</span> <strong id="totalDebit">0</strong></div>
+          <div class="credit-item"><span>Solde:</span> <strong id="currentBalance">0</strong></div>
+        </div>
       </div>
 
       <!-- Messages d'erreur/succès -->

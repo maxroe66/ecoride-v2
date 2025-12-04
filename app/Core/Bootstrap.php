@@ -94,6 +94,7 @@ class Bootstrap
         $router->add('GET', '/api/user/preferences', [UserController::class, 'getPreferences']);
         // Crédit utilisateur (US10)
         $router->add('GET', '/api/user/credit', [UserController::class, 'getCredit']);
+        $router->add('GET', '/api/user/credit/operations', [UserController::class, 'getCreditOperations']);
         $router->add('PUT', '/api/user/profile', [UserController::class, 'updateProfile']);
 
         // Historique des covoiturages (US10)

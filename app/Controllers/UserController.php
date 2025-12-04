@@ -48,6 +48,60 @@ class UserController
             echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
+
+    /**
+     * Endpoint : GET /api/user/credit/operations
+     * Retourne l'historique des opérations de crédit/débit et des totaux
+     */
+    public static function getCreditOperations(): void
+    {
+        header('Content-Type: application/json');
+
+        try {
+            $middleware = new AuthMiddleware();
+            $userData = $middleware->authenticate();
+            $userId = (int)$userData['user_id'];
+        } catch (Exception $e) {
+            http_response_code(401);
+            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            return;
+        }
+
+        try {
+            $db = DatabaseFactory::getConnection();
+            $userRepo = new UserRepository($db);
+            $creditRepo = new \App\Repositories\CreditOperationRepository($db);
+
+            $operations = $creditRepo->findByUser($userId, null);
+            $balance = $userRepo->getCredit($userId);
+
+            // Calculer les totaux
+            $totalCredit = 0.0;
+            $totalDebit = 0.0;
+            foreach ($operations as $op) {
+                if (($op['type_operation'] ?? '') === 'credit') {
+                    $totalCredit += (float)$op['montant'];
+                } elseif (($op['type_operation'] ?? '') === 'debit') {
+                    $totalDebit += (float)$op['montant'];
+                }
+            }
+
+            http_response_code(200);
+            echo json_encode([
+                'success' => true,
+                'data' => [
+                    'balance' => $balance,
+                    'total_credit' => $totalCredit,
+                    'total_debit' => $totalDebit,
+                    'operations' => $operations
+                ]
+            ]);
+        } catch (Exception $e) {
+            http_response_code(500);
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+        }
+    }
     /**
      * Endpoint : GET /api/user/preferences
      * Récupère les préférences de l'utilisateur authentifié

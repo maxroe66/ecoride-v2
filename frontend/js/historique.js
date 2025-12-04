@@ -16,6 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (statusFilterEl) {
     statusFilterEl.value = 'planifie';
   }
+  loadCreditSummary();
   loadHistory();
   
   // Setup event listeners
@@ -61,6 +62,40 @@ function setupEventListeners() {
       }
     });
   }
+}
+/**
+ * Charge et affiche le résumé des crédits (gagnés, utilisés, solde)
+ */
+async function loadCreditSummary() {
+  const summary = document.getElementById('creditSummary');
+  const totalCreditEl = document.getElementById('totalCredit');
+  const totalDebitEl = document.getElementById('totalDebit');
+  const balanceEl = document.getElementById('currentBalance');
+  if (!summary || !totalCreditEl || !totalDebitEl || !balanceEl) return;
+
+  try {
+    const resp = await fetch('/api/user/credit/operations', {
+      method: 'GET',
+      headers: { 'Accept': 'application/json' },
+      credentials: 'include'
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const json = await resp.json();
+    if (!json.success) throw new Error(json.error?.message || 'Erreur API');
+    const { total_credit, total_debit, balance } = json.data || {};
+    totalCreditEl.textContent = formatCreditNumber(total_credit);
+    totalDebitEl.textContent = formatCreditNumber(total_debit);
+    balanceEl.textContent = formatCreditNumber(balance);
+    summary.style.display = '';
+  } catch (e) {
+    console.warn('Résumé des crédits indisponible:', e);
+    summary.style.display = 'none';
+  }
+}
+
+function formatCreditNumber(n) {
+  const num = Number(n || 0);
+  return num.toLocaleString('fr-FR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
 }
 
 /**
