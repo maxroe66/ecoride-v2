@@ -100,6 +100,7 @@ class AuthService
             'prenom' => $user->prenom,
             'credit' => $user->credit,
             'type_utilisateur' => $user->type_utilisateur,
+            'role' => $user->role ?? 'passager',
         ];
 
         // Créer le JWT token (non exposé au frontend)
