@@ -7,6 +7,7 @@ use App\Repositories\ParticipationRepository;
 use App\Repositories\TrajetRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\CreditOperationRepository;
+use App\Validators\CancellationValidator;
 use App\Services\CancellationService;
 use App\Services\EmailService;
 use App\Middleware\AuthMiddleware;
@@ -32,15 +33,6 @@ class ParticipationController
         parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
         $participationId = $query['id'] ?? null;
 
-        // Valider l'ID
-        if (!$participationId || !is_numeric($participationId) || (int)$participationId <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => 'ID de participation invalide']]);
-            return;
-        }
-
-        $participationId = (int)$participationId;
-
         try {
             // Authentification requise
             $user = AuthMiddleware::getAuthenticatedUser();
@@ -51,6 +43,16 @@ class ParticipationController
             }
 
             $userId = (int)$user['id'];
+
+            // Valider les paramètres
+            try {
+                $validated = CancellationValidator::validateParticipationCancellation((int)$participationId, $userId);
+                $participationId = $validated['participation_id'];
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                return;
+            }
 
             // Vérifier le token CSRF
             if ($_SERVER['REQUEST_METHOD'] === 'POST') {

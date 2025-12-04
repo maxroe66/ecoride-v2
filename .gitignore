@@ -35,8 +35,6 @@
 !/app/Helpers/.gitkeep
 !/app/Services/*.php
 !/app/Services/.gitkeep
-/app/Validators/*
-!/app/Validators/.gitkeep
 
 # Eviter inclusion fichiers sensibles accidentels
 *.pem

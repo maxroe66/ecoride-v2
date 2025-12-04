@@ -6,6 +6,7 @@ use App\Factories\DatabaseFactory;
 use App\Repositories\ParticipationRepository;
 use App\Repositories\TrajetRepository;
 use App\Services\HistoryService;
+use App\Validators\CancellationValidator;
 use App\Middleware\AuthMiddleware;
 use Exception;
 
@@ -69,15 +70,21 @@ class HistoryController
         parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
         $status = $query['status'] ?? null;
 
-        // Valider le statut
-        $validStatuses = ['planifie', 'en_cours', 'termine', 'annule'];
-        if (!$status || !in_array($status, $validStatuses)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_STATUS', 'message' => 'Statut invalide. Statuts acceptés: ' . implode(', ', $validStatuses)]]);
-            return;
-        }
-
         try {
+            // Valider le statut
+            if (!$status) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => ['code' => 'MISSING_STATUS', 'message' => 'Paramètre status requis']]);
+                return;
+            }
+
+            try {
+                $status = CancellationValidator::validateStatusFilter($status);
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                return;
+            }
             // Authentification requise
             $user = AuthMiddleware::getAuthenticatedUser();
             if (!$user) {

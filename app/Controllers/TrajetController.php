@@ -8,6 +8,7 @@ use App\Repositories\ParticipationRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\CreditOperationRepository;
 use App\Validators\QueryValidator;
+use App\Validators\CancellationValidator;
 use App\Services\TripService;
 use App\Services\ParticipationService;
 use App\Services\CancellationService;
@@ -460,15 +461,6 @@ class TrajetController
         parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
         $tripId = $query['id'] ?? null;
 
-        // Valider l'ID
-        if (!$tripId || !is_numeric($tripId) || (int)$tripId <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => 'ID du trajet invalide']]);
-            return;
-        }
-
-        $tripId = (int)$tripId;
-
         try {
             // Authentification requise
             $user = AuthMiddleware::getAuthenticatedUser();
@@ -493,6 +485,17 @@ class TrajetController
             // Récupérer la raison optionnelle
             $body = json_decode(file_get_contents('php://input'), true) ?? [];
             $reason = $body['raison'] ?? null;
+
+            // Valider les paramètres
+            try {
+                $validated = CancellationValidator::validateTripCancellation((int)$tripId, $userId, $reason);
+                $tripId = $validated['trip_id'];
+                $reason = $validated['reason'];
+            } catch (Exception $e) {
+                http_response_code(400);
+                echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                return;
+            }
 
             // Récupérer la base de données
             $db = DatabaseFactory::getConnection();
