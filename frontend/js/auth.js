@@ -39,8 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
           return;
         }
 
-        // Succès - enregistrer la session et rediriger
+        // Succès - enregistrer la session, récupérer CSRF puis rediriger
         SessionManager.setUser(data.data);
+        try { await SessionManager.refreshCsrfToken(); } catch (_) {}
         window.location.href = data.redirect || '/';
       } catch (error) {
         showError(errorMsg, 'Erreur réseau : ' + error.message);

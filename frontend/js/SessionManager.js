@@ -8,6 +8,7 @@
 
 class SessionManager {
     static STORAGE_KEY = 'ecoride_user';
+    static CSRF_KEY = 'ecoride_csrf';
 
     /**
      * Retourne true si l'utilisateur est connecté
@@ -36,6 +37,42 @@ class SessionManager {
      */
     static getToken() {
         return null;
+    }
+
+    /**
+     * Récupère le token CSRF depuis le stockage local
+     */
+    static getCsrfToken() {
+        try {
+            return localStorage.getItem(this.CSRF_KEY) || null;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    /**
+     * Rafraîchit le token CSRF depuis l'API protégée
+     */
+    static async refreshCsrfToken() {
+        try {
+            const resp = await fetch('/api/csrf-token', { method: 'GET' });
+            if (!resp.ok) return null;
+            const data = await resp.json();
+            const token = data?.data?.csrfToken || null;
+            if (token) localStorage.setItem(this.CSRF_KEY, token);
+            return token;
+        } catch (_) {
+            return null;
+        }
+    }
+
+    /**
+     * Entêtes à ajouter pour requêtes mutantes (CSRF)
+     */
+    static async csrfHeaders() {
+        let token = this.getCsrfToken();
+        if (!token) token = await this.refreshCsrfToken();
+        return token ? { 'X-CSRF-Token': token } : {};
     }
 
     /**
@@ -70,6 +107,7 @@ class SessionManager {
     static clearSession() {
         try {
             localStorage.removeItem(this.STORAGE_KEY);
+            localStorage.removeItem(this.CSRF_KEY);
             
             // Dispatcher un événement pour que les composants réagissent
             window.dispatchEvent(new CustomEvent('userLoggedOut'));
@@ -84,9 +122,10 @@ class SessionManager {
      */
     static async logout() {
         try {
+            const csrf = await this.csrfHeaders();
             const response = await fetch('/api/auth/logout', {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' }
+                headers: { 'Content-Type': 'application/json', ...csrf }
             });
 
             if (response.ok) {

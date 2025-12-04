@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Validators\QueryValidator;
 use App\Services\ReviewService;
 use App\Models\Avis;
+use App\Middleware\CsrfMiddleware;
 
 /**
  * Contrôleur des avis.
@@ -72,6 +73,9 @@ class AvisController
             echo json_encode(['success' => false,'error' => ['code' => 'UNAUTHORIZED','message' => 'Authentification requise pour créer un avis']]);
             return;
         }
+
+        // CSRF: exiger un en-tête X-CSRF-Token valide
+        (new CsrfMiddleware())->validate();
 
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);

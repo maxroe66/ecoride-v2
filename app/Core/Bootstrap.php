@@ -51,6 +51,8 @@ class Bootstrap
         $router->add('POST', '/api/auth/signup', [AuthController::class, 'signup']);
         $router->add('POST', '/api/auth/login', [AuthController::class, 'login']);
         $router->add('POST', '/api/auth/logout', [AuthController::class, 'logout']);
+        // CSRF token (après auth pour usage côté front)
+        $router->add('GET', '/api/csrf-token', [AuthController::class, 'csrf']);
         // Avis
         $router->add('GET', '/api/avis', [AvisController::class, 'list']);
         $router->add('GET', '/api/avis/stats', [AvisController::class, 'stats']);

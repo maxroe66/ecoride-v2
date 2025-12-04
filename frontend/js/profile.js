@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   console.log('Profile page loaded');
   
     // Charger le profil utilisateur
-    loadProfile();
+document.addEventListener('DOMContentLoaded', async () => {
     
     // Ajouter les event listeners
     setupEventListeners();
@@ -322,7 +322,7 @@ function loadUpcomingTrips() {
 /**
  * Création de trajet (US9)
  */
-function createTrip() {
+async function createTrip() {
     const user = SessionManager.getUser();
     if (!user) {
         window.location.href = '/login';
@@ -380,18 +380,16 @@ function createTrip() {
         voiture_id: vehicleId
     };
 
-    fetch('/api/trajets', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(payload)
-    })
-    .then(r => r.json())
-    .then(result => {
+    try {
+        const csrf = await SessionManager.csrfHeaders();
+        const r = await fetch('/api/trajets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...csrf },
+            body: JSON.stringify(payload)
+        });
+        const result = await r.json();
         if (result.success) {
             showMessage('Trajet créé avec succès ! ' + (result.message || ''), 'success');
-            // Reset simple
             document.getElementById('createTripDeparture').value = '';
             document.getElementById('createTripArrival').value = '';
             document.getElementById('createTripDate').value = '';
@@ -399,18 +397,16 @@ function createTrip() {
             document.getElementById('createTripSeats').value = '';
             document.getElementById('createTripPrice').value = '';
             document.getElementById('createTripVehicle').value = '';
-            // Rafraîchir la liste des prochains trajets si visible
             if (document.getElementById('createTripUpcomingList')) {
                 loadUpcomingTrips();
             }
         } else {
             showMessage(result.error?.message || 'Création de trajet impossible', 'error');
         }
-    })
-    .catch(err => {
+    } catch (err) {
         console.error('Erreur création trajet:', err);
         showMessage('Erreur réseau lors de la création du trajet', 'error');
-    });
+    }
 }
 
 /**
@@ -466,35 +462,32 @@ function renderVehiclesManagerList(vehicles) {
     });
 }
 
-function deleteVehicle(vehicleId) {
+async function deleteVehicle(vehicleId) {
     if (!confirm('Supprimer ce véhicule ?')) return;
-    fetch(`/api/user/vehicles?id=${encodeURIComponent(vehicleId)}`, { method: 'DELETE' })
-        .then(r => r.json())
-        .then(result => {
-            if (result.success) {
-                showMessage('Véhicule supprimé', 'success');
-                // Recharger les 2 vues
-                loadExistingVehicles();
-                loadVehiclesManager();
-                // Mettre à jour le compteur local pour la validation chauffeur
-                window._existingVehiclesCount = Math.max(0, (window._existingVehiclesCount || 1) - 1);
-            } else {
-                showMessage(result.error?.message || 'Suppression impossible', 'error');
-            }
-        })
-        .catch(err => {
-            console.error('Erreur suppression véhicule:', err);
-            showMessage('Erreur réseau lors de la suppression', 'error');
-        });
+    try {
+        const csrf = await SessionManager.csrfHeaders();
+        const r = await fetch(`/api/user/vehicles?id=${encodeURIComponent(vehicleId)}`, { method: 'DELETE', headers: { ...csrf } });
+        const result = await r.json();
+        if (result.success) {
+            showMessage('Véhicule supprimé', 'success');
+            loadExistingVehicles();
+            loadVehiclesManager();
+            window._existingVehiclesCount = Math.max(0, (window._existingVehiclesCount || 1) - 1);
+        } else {
+            showMessage(result.error?.message || 'Suppression impossible', 'error');
+        }
+    } catch (err) {
+        console.error('Erreur suppression véhicule:', err);
+        showMessage('Erreur réseau lors de la suppression', 'error');
+    }
 }
 
 /**
  * Charge les préférences existantes de l'utilisateur
  */
-function loadExistingPreferences() {
-    fetch('/api/user/preferences')
-        .then(r => r.json())
-        .then(result => {
+async function loadExistingPreferences() {
+    const r = await fetch('/api/user/preferences');
+    const result = await r.json();
             if (!result.success) return;
             const prefs = result.data || {};
             const selFumeur = document.querySelector('select[name="preference_fumeur"]');
@@ -520,8 +513,7 @@ function loadExistingPreferences() {
                     document.getElementById('prefAutres').textContent = autres !== '---' ? autres : '---';
                 }
             }
-        })
-        .catch(err => console.error('Erreur préférences:', err));
+        
 }
 
 /**
@@ -834,7 +826,7 @@ function addVehicleForm() {
 /**
  * Sauvegarde un véhicule directement via l'API
  */
-function saveVehicleDirectly(formIndex) {
+async function saveVehicleDirectly(formIndex) {
     const vehicleForm = document.getElementById(`vehicle-form-${formIndex}`);
     
     if (!vehicleForm) return;
@@ -866,30 +858,26 @@ function saveVehicleDirectly(formIndex) {
     };
 
     // Envoyer à l'API
-    fetch('/api/user/vehicles', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(data)
-    })
-    .then(response => response.json())
-    .then(result => {
+    try {
+        const csrf = await SessionManager.csrfHeaders();
+        const response = await fetch('/api/user/vehicles', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', ...csrf },
+            body: JSON.stringify(data)
+        });
+        const result = await response.json();
         if (result.success) {
             showMessage(`Véhicule "${result.data.modele}" ajouté avec succès !`, 'success');
-            // Supprimer le formulaire du DOM
             vehicleForm.remove();
-            // Recharger les véhicules affichés
             loadExistingVehicles();
             loadVehiclesManager();
         } else {
             showMessage(result.error?.message || 'Erreur lors de l\'ajout du véhicule', 'error');
         }
-    })
-    .catch(error => {
+    } catch (error) {
         console.error('Erreur:', error);
         showMessage('Une erreur est survenue : ' + error.message, 'error');
-    });
+    }
 }
 
 /**

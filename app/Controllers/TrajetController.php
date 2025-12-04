@@ -10,6 +10,7 @@ use App\Validators\QueryValidator;
 use App\Services\TripService;
 use App\Services\ParticipationService;
 use App\Middleware\AuthMiddleware;
+use App\Middleware\CsrfMiddleware;
 use Exception;
 
 /**
@@ -151,6 +152,9 @@ class TrajetController
             return;
         }
 
+        // 1bis. CSRF
+        (new CsrfMiddleware())->validate();
+
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
@@ -212,6 +216,9 @@ class TrajetController
             return;
         }
 
+        // 1bis. CSRF
+        (new CsrfMiddleware())->validate();
+
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
@@ -272,6 +279,9 @@ class TrajetController
             return;
         }
 
+        // 1bis. CSRF
+        (new CsrfMiddleware())->validate();
+
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
@@ -329,6 +339,9 @@ class TrajetController
             echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
+
+        // CSRF
+        (new CsrfMiddleware())->validate();
 
         // 2. Récupérer les données JSON
         $raw = file_get_contents('php://input');

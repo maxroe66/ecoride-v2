@@ -14,6 +14,9 @@ final class TripServiceTest extends TestCase
             public function searchTrajetsWithFilters(string $dep,string $arr,string $date,?bool $eco,?float $price,?int $dur,?int $rating): array { return $this->s; }
             public function getNextAvailableDates(string $dep,string $arr,int $limit): array { return $this->d; }
             public function getNextAvailableDatesWithFilters(string $dep,string $arr,int $limit,?bool $eco,?float $price,?int $dur,?int $rating): array { return $this->d; }
+            public function getTrajetDetail(int $id): array { return []; }
+            public function createTrajet(\App\Models\Trajet $trajet): int { return 1; }
+            public function getTrajetsByUserId(int $userId): array { return []; }
         };
     }
 
