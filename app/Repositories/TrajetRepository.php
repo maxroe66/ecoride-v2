@@ -459,4 +459,38 @@ class TrajetRepository implements TrajetRepositoryInterface
 
         return $trajets;
     }
+
+    public function updateStatus(int $trajetId, string $newStatus): bool
+    {
+        // Étape 1: Préparer
+        $stmt = $this->db->prepare('
+            UPDATE covoiturage SET statut = :statut WHERE covoiturage_id = :id
+        ');
+        
+        // Étape 2: Exécuter
+        $stmt->execute([
+            ':statut' => $newStatus,
+            ':id' => $trajetId
+        ]);
+        
+        // Étape 3: Retourner si au moins une ligne a été affectée
+        return $stmt->rowCount() > 0;
+    }
+
+    public function updatePlaces(int $trajetId, int $nbPlaces): bool
+    {
+        // Étape 1: Préparer
+        $stmt = $this->db->prepare('
+            UPDATE covoiturage SET nb_places = nb_places + :nbPlaces WHERE covoiturage_id = :id
+        ');
+        
+        // Étape 2: Exécuter
+        $stmt->execute([
+            ':nbPlaces' => $nbPlaces,
+            ':id' => $trajetId
+        ]);
+        
+        // Étape 3: Retourner si au moins une ligne a été affectée
+        return $stmt->rowCount() > 0;
+    }
 }
