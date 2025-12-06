@@ -13,8 +13,7 @@ use App\Services\TripService;
 use App\Services\ParticipationService;
 use App\Services\CancellationService;
 use App\Services\EmailService;
-use App\Middleware\AuthMiddleware;
-use App\Middleware\CsrfMiddleware;
+use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
 
@@ -133,19 +132,8 @@ class TrajetController
      */
     public static function requestParticipation(): void
     {
-        // Définir le header avant toute sortie
-        // 1. AUTHENTIFICATION
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
-            return;
-        }
-
-        // 1bis. CSRF
-        (new CsrfMiddleware())->validate();
+        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
+        $userId = ControllerHelper::getAuthUserId();
 
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
@@ -190,19 +178,8 @@ class TrajetController
      */
     public static function validateParticipation(): void
     {
-        // Définir le header avant toute sortie
-        // 1. AUTHENTIFICATION
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
-            return;
-        }
-
-        // 1bis. CSRF
-        (new CsrfMiddleware())->validate();
+        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
+        $userId = ControllerHelper::getAuthUserId();
 
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
@@ -246,19 +223,8 @@ class TrajetController
      */
     public static function confirmParticipation(): void
     {
-        // Définir le header avant toute sortie
-        // 1. AUTHENTIFICATION
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
-            return;
-        }
-
-        // 1bis. CSRF
-        (new CsrfMiddleware())->validate();
+        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
+        $userId = ControllerHelper::getAuthUserId();
 
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
@@ -301,18 +267,8 @@ class TrajetController
      */
     public static function create(): void
     {
-        // 1. Vérifier l'authentification
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
-
-        // CSRF
-        (new CsrfMiddleware())->validate();
+        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
+        $userId = ControllerHelper::getAuthUserId();
 
         // 2. Récupérer les données JSON
         $raw = file_get_contents('php://input');
@@ -416,25 +372,11 @@ class TrajetController
     public static function cancelTrip(): void
     {
         // Récupérer l'ID du trajet depuis les paramètres dynamiques du routeur
-        $pathParams = $_REQUEST['_path_params'] ?? [];
-        $tripId = $pathParams[0] ?? null;
+        $tripId = ControllerHelper::getPathParam(0);
+        $userId = ControllerHelper::getAuthUserId();
 
         try {
-            // 1. AUTHENTIFICATION
-            try {
-                $authMw = new AuthMiddleware();
-                $userData = $authMw->authenticate();
-            } catch (Exception $e) {
-                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
-                return;
-            }
-
-            $userId = (int)$userData['user_id'];
-
-            // 2. CSRF
-            (new CsrfMiddleware())->validate();
-
-            // 3. Récupérer la raison optionnelle
+            // 1. Récupérer la raison optionnelle
             $body = json_decode(file_get_contents('php://input'), true) ?? [];
             $reason = $body['raison'] ?? null;
 

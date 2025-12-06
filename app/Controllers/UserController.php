@@ -8,8 +8,7 @@ use App\Services\UserService;
 use App\Validators\UserProfileValidator;
 use App\Repositories\VehicleRepository;
 use App\Repositories\MarqueRepository;
-use App\Middleware\AuthMiddleware;
-use App\Middleware\CsrfMiddleware;
+use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
 
@@ -24,14 +23,7 @@ class UserController
      */
     public static function getCredit(): void
     {
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
+        $userId = ControllerHelper::getAuthUserId();
 
         try {
             $db = DatabaseFactory::getConnection();
@@ -52,14 +44,7 @@ class UserController
      */
     public static function getCreditOperations(): void
     {
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
+        $userId = ControllerHelper::getAuthUserId();
 
         try {
             $db = DatabaseFactory::getConnection();
@@ -101,14 +86,7 @@ class UserController
      */
     public static function getPreferences(): void
     {
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
+        $userId = ControllerHelper::getAuthUserId();
 
         try {
             $db = DatabaseFactory::getConnection();
@@ -128,17 +106,7 @@ class UserController
      */
     public static function addVehicle(): void
     {
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
-
-        // CSRF
-        (new CsrfMiddleware())->validate();
+        $userId = ControllerHelper::getAuthUserId();
 
         // Récupérer le JSON du corps
         $raw = file_get_contents('php://input');
@@ -205,14 +173,7 @@ class UserController
      */
     public static function getVehicles(): void
     {
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
+        $userId = ControllerHelper::getAuthUserId();
 
         try {
             $db = DatabaseFactory::getConnection();
@@ -249,17 +210,7 @@ class UserController
      */
     public static function deleteVehicle(): void
     {
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
-
-        // CSRF
-        (new CsrfMiddleware())->validate();
+        $userId = ControllerHelper::getAuthUserId();
 
         $vehicleId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($vehicleId <= 0) {
@@ -291,25 +242,14 @@ class UserController
      */
     public static function updateProfile(): void
     {
-        // Définir le header avant toute sortie
-        // ÉTAPE 1 : AUTHENTIFICATION via AuthMiddleware
-        try {
-            $middleware = new AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
-            return;
-        }
+        // RÉCUPERER L'UTILISATEUR AUTHENTIFIÉ
+        $userId = ControllerHelper::getAuthUserId();
 
-        // CSRF
-        (new CsrfMiddleware())->validate();
-
-        // ÉTAPE 2 : Récupérer le JSON du corps de la requête
+        // ÉTAPE 1 : Récupérer le JSON du corps de la requête
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         
-        // ÉTAPE 3 : Vérifier que c'est du JSON valide
+        // ÉTAPE 2 : Vérifier que c'est du JSON valide
         if (!is_array($json)) {
             Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
             return;

@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Validators\QueryValidator;
 use App\Services\ReviewService;
 use App\Models\Avis;
-use App\Middleware\CsrfMiddleware;
+use App\Helpers\ControllerHelper;
 use App\Core\Response;
 
 /**
@@ -59,21 +59,8 @@ class AvisController
 
     public static function create(): void
     {
-        // Authentifier l'utilisateur via JWT (cookie HttpOnly ou Authorization: Bearer)
-        try {
-            $middleware = new \App\Middleware\AuthMiddleware();
-            $authData = $middleware->authenticate();
-            $authenticatedUserId = (int)($authData['user_id'] ?? 0);
-            if ($authenticatedUserId <= 0) {
-                throw new \Exception('Utilisateur non valide dans le token');
-            }
-        } catch (\Exception $e) {
-            Response::json(401, ['success' => false,'error' => ['code' => 'UNAUTHORIZED','message' => 'Authentification requise pour créer un avis']]);
-            return;
-        }
-
-        // CSRF: exiger un en-tête X-CSRF-Token valide
-        (new CsrfMiddleware())->validate();
+        // RÉcupérer l'utilisateur authentifié (via middleware)
+        $authenticatedUserId = ControllerHelper::getAuthUserId();
 
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);

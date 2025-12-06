@@ -10,8 +10,7 @@ use App\Repositories\CreditOperationRepository;
 use App\Validators\CancellationValidator;
 use App\Services\CancellationService;
 use App\Services\EmailService;
-use App\Middleware\AuthMiddleware;
-use App\Middleware\CsrfMiddleware;
+use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
 
@@ -29,24 +28,11 @@ class ParticipationController
     public static function cancelParticipation(): void
     {
         // Récupérer l'ID de la participation depuis les paramètres dynamiques du routeur
-        $pathParams = $_REQUEST['_path_params'] ?? [];
-        $participationId = $pathParams[0] ?? null;
+        $participationId = ControllerHelper::getPathParam(0);
+        $userId = ControllerHelper::getAuthUserId();
 
         try {
-            // 1. AUTHENTIFICATION
-            try {
-                $authMw = new AuthMiddleware();
-                $userData = $authMw->authenticate();
-                $userId = (int)$userData['user_id'];
-            } catch (Exception $e) {
-                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
-                return;
-            }
-
-            // 2. CSRF
-            (new CsrfMiddleware())->validate();
-
-            // 3. Valider les paramètres
+            // 1. Valider les paramètres
             try {
                 $validated = CancellationValidator::validateParticipationCancellation((int)$participationId, $userId);
                 $participationId = $validated['participation_id'];

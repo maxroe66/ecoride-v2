@@ -10,7 +10,7 @@ use App\Controllers\TrajetController;
 use App\Controllers\UserController;
 use App\Controllers\HistoryController;
 use App\Controllers\ParticipationController;
-use App\Middleware\AuthMiddleware;
+use App\Middleware\MiddlewareFactory as MW;
 
 // Nettoyage: suppression des anciens imports legacy non utilisés
 
@@ -59,50 +59,50 @@ class Bootstrap
         // Auth
         $router->add('POST', '/api/auth/signup', [AuthController::class, 'signup']);
         $router->add('POST', '/api/auth/login', [AuthController::class, 'login']);
-        $router->add('POST', '/api/auth/logout', [AuthController::class, 'logout']);
+        $router->add('POST', '/api/auth/logout', [AuthController::class, 'logout'], MW::authAndCsrf());
         // CSRF token (après auth pour usage côté front)
-        $router->add('GET', '/api/csrf-token', [AuthController::class, 'csrf']);
+        $router->add('GET', '/api/csrf-token', [AuthController::class, 'csrf'], [MW::auth()]);
         // Avis
         $router->add('GET', '/api/avis', [AvisController::class, 'list']);
         $router->add('GET', '/api/avis/stats', [AvisController::class, 'stats']);
-        $router->add('POST', '/api/avis', [AvisController::class, 'create']);
+        $router->add('POST', '/api/avis', [AvisController::class, 'create'], MW::authAndCsrf());
         // Trajets
         $router->add('GET', '/api/trajets', [TrajetController::class, 'search']);
-        $router->add('POST', '/api/trajets', [TrajetController::class, 'create']);
+        $router->add('POST', '/api/trajets', [TrajetController::class, 'create'], MW::authAndCsrf());
         $router->add('GET', '/api/trajets/detail', [TrajetController::class, 'show']);
         // Alias corrigé: chemin attendu par le frontend `/api/trajets/suggestions`
         $router->add('GET', '/api/trajets/suggestions', [TrajetController::class, 'suggestions']);
         // Conserver l'ancien alias si déjà utilisé quelque part
         $router->add('GET', '/api/trajets-suggestions', [TrajetController::class, 'suggestions']);
         // Mes trajets (chauffeur connecté)
-        $router->add('GET', '/api/user/trajets', [TrajetController::class, 'myTrips']);
+        $router->add('GET', '/api/user/trajets', [TrajetController::class, 'myTrips'], [MW::auth()]);
 
         // Participations (authentification gérée à l'intérieur du contrôleur)
-        $router->add('POST', '/api/participations/request', [TrajetController::class, 'requestParticipation']);
-        $router->add('POST', '/api/participations/validate', [TrajetController::class, 'validateParticipation']);
-        $router->add('POST', '/api/participations/confirm', [TrajetController::class, 'confirmParticipation']);
+        $router->add('POST', '/api/participations/request', [TrajetController::class, 'requestParticipation'], MW::authAndCsrf());
+        $router->add('POST', '/api/participations/validate', [TrajetController::class, 'validateParticipation'], MW::authAndCsrf());
+        $router->add('POST', '/api/participations/confirm', [TrajetController::class, 'confirmParticipation'], MW::authAndCsrf());
 
         // Historique (US10)
-        $router->add('GET', '/api/historique/trajets', [\App\Controllers\HistoryController::class, 'getUserHistory']);
+        $router->add('GET', '/api/historique/trajets', [HistoryController::class, 'getUserHistory'], [MW::auth()]);
         // Variante filtrée par statut via chemin dédié pour éviter conflit de même path
-        $router->add('GET', '/api/historique/trajets/filtre', [\App\Controllers\HistoryController::class, 'getHistoryByStatus']);
+        $router->add('GET', '/api/historique/trajets/filtre', [HistoryController::class, 'getHistoryByStatus'], [MW::auth()]);
 
         // User Profile (US8)
-        $router->add('GET', '/api/user/vehicles', [UserController::class, 'getVehicles']);
-        $router->add('POST', '/api/user/vehicles', [UserController::class, 'addVehicle']);
-        $router->add('DELETE', '/api/user/vehicles', [UserController::class, 'deleteVehicle']);
-        $router->add('GET', '/api/user/preferences', [UserController::class, 'getPreferences']);
+        $router->add('GET', '/api/user/vehicles', [UserController::class, 'getVehicles'], [MW::auth()]);
+        $router->add('POST', '/api/user/vehicles', [UserController::class, 'addVehicle'], MW::authAndCsrf());
+        $router->add('DELETE', '/api/user/vehicles', [UserController::class, 'deleteVehicle'], MW::authAndCsrf());
+        $router->add('GET', '/api/user/preferences', [UserController::class, 'getPreferences'], [MW::auth()]);
         // Crédit utilisateur (US10)
-        $router->add('GET', '/api/user/credit', [UserController::class, 'getCredit']);
-        $router->add('GET', '/api/user/credit/operations', [UserController::class, 'getCreditOperations']);
-        $router->add('PUT', '/api/user/profile', [UserController::class, 'updateProfile']);
+        $router->add('GET', '/api/user/credit', [UserController::class, 'getCredit'], [MW::auth()]);
+        $router->add('GET', '/api/user/credit/operations', [UserController::class, 'getCreditOperations'], [MW::auth()]);
+        $router->add('PUT', '/api/user/profile', [UserController::class, 'updateProfile'], MW::authAndCsrf());
 
         // Historique des covoiturages (US10)
-        $router->add('GET', '/api/historique/trajets', [HistoryController::class, 'getUserHistory']);
+        $router->add('GET', '/api/historique/trajets', [HistoryController::class, 'getUserHistory'], [MW::auth()]);
 
         // Annulation de trajets (US10) - routes dynamiques paraméttriques
-        $router->add('POST', '/api/trajets/{id}/annuler', [TrajetController::class, 'cancelTrip']);
-        $router->add('POST', '/api/participations/{id}/annuler', [ParticipationController::class, 'cancelParticipation']);
+        $router->add('POST', '/api/trajets/{id}/annuler', [TrajetController::class, 'cancelTrip'], MW::authAndCsrf());
+        $router->add('POST', '/api/participations/{id}/annuler', [ParticipationController::class, 'cancelParticipation'], MW::authAndCsrf());
 
         header('Content-Type: application/json');
         if ($router->dispatch()) {
@@ -129,24 +129,6 @@ class Bootstrap
         } else {
             http_response_code(404);
             echo '<h1>404 - Page non trouvée</h1>';
-        }
-    }
-
-    // Anciennes méthodes legacy retirées après migration.
-
-    /**
-     * Valide l'authentification avec JWT
-     * Retourne les données utilisateur ou lance une exception 401
-     */
-    private function requireAuth(): array
-    {
-        try {
-            $middleware = new AuthMiddleware();
-            return $middleware->authenticate();
-        } catch (\Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => $e->getMessage()]]);
-            exit();
         }
     }
 }

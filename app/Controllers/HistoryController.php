@@ -7,7 +7,7 @@ use App\Repositories\ParticipationRepository;
 use App\Repositories\TrajetRepository;
 use App\Services\HistoryService;
 use App\Validators\CancellationValidator;
-use App\Middleware\AuthMiddleware;
+use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
 
@@ -25,14 +25,8 @@ class HistoryController
     public static function getUserHistory(): void
     {
         try {
-            // Authentification requise via middleware
-            $authMw = new AuthMiddleware();
-            $user = $authMw->authenticate();
-            $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
-            if ($userId <= 0) {
-                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
-                return;
-            }
+            // Récupérer l'utilisateur authentifié (via middleware)
+            $userId = ControllerHelper::getAuthUserId();
 
             // Récupérer la base de données
             $db = DatabaseFactory::getConnection();
@@ -81,14 +75,9 @@ class HistoryController
                 Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
                 return;
             }
-            // Authentification requise via middleware
-            $authMw = new AuthMiddleware();
-            $user = $authMw->authenticate();
-            $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
-            if ($userId <= 0) {
-                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
-                return;
-            }
+            
+            // Récupérer l'utilisateur authentifié (via middleware)
+            $userId = ControllerHelper::getAuthUserId();
 
             // Récupérer la base de données
             $db = DatabaseFactory::getConnection();

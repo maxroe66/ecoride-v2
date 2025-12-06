@@ -71,12 +71,7 @@ class AuthController
 
     public static function logout(): void
     {
-        // Exiger une session authentifiée puis un jeton CSRF valide
         try {
-            $authMw = new AuthMiddleware();
-            $authMw->authenticate();
-            (new CsrfMiddleware())->validate();
-
             $db = DatabaseFactory::getConnection();
             $repo = new UserRepository($db);
             $auth = new AuthService($repo);
@@ -93,14 +88,6 @@ class AuthController
      */
     public static function csrf(): void
     {
-        try {
-            $authMw = new AuthMiddleware();
-            $authMw->authenticate();
-        } catch (\Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
-            return;
-        }
-
         $token = CsrfService::getToken();
         Response::json(200, ['success' => true, 'data' => ['csrfToken' => $token]]);
     }
