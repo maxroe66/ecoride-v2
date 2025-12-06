@@ -2,14 +2,9 @@
 
 namespace App\Controllers;
 
+use App\Factories\ServiceLocator as SL;
 use App\Factories\DatabaseFactory;
-use App\Repositories\ParticipationRepository;
-use App\Repositories\TrajetRepository;
-use App\Repositories\UserRepository;
-use App\Repositories\CreditOperationRepository;
 use App\Validators\CancellationValidator;
-use App\Services\CancellationService;
-use App\Services\EmailService;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
@@ -41,24 +36,14 @@ class ParticipationController
                 return;
             }
 
-            // Récupérer la base de données
+            // Initialiser les services via ServiceLocator
+            $cancellationService = SL::getCancellationService();
+            $emailService = SL::getEmailService();
+            $trajetRepo = SL::getTrajetRepository();
+            $userRepo = SL::getUserRepository();
+
+            // Récupérer la participation pour obtenir le covoiturage_id (requête PDO directe)
             $db = DatabaseFactory::getConnection();
-
-            // Initialiser les repositories et services
-            $trajetRepo = new TrajetRepository($db);
-            $participationRepo = new ParticipationRepository($db);
-            $userRepo = new UserRepository($db);
-            $creditOpRepo = new CreditOperationRepository($db);
-            $emailService = new EmailService();
-
-            $cancellationService = new CancellationService(
-                $trajetRepo,
-                $participationRepo,
-                $userRepo,
-                $creditOpRepo
-            );
-
-            // Récupérer la participation pour obtenir le covoiturage_id
             $stmt = $db->prepare('SELECT * FROM participation WHERE participation_id = ?');
             $stmt->execute([$participationId]);
             $participation = $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -70,16 +55,8 @@ class ParticipationController
 
             $tripId = (int)$participation['covoiturage_id'];
 
-            // Transaction pour garantir atomicité des mises à jour
-            $db->beginTransaction();
-            try {
-                // Annuler la participation (utilise tripId et userId)
-                $result = $cancellationService->cancelParticipationAsPassenger($tripId, $userId);
-                $db->commit();
-            } catch (\Exception $inner) {
-                $db->rollBack();
-                throw $inner;
-            }
+            // Annuler la participation (transaction gérée par le service)
+            $result = $cancellationService->cancelParticipationAsPassenger($tripId, $userId);
 
             // Récupérer les détails pour envoyer l'email au chauffeur
             $trajet = $trajetRepo->getTrajetDetail($tripId);

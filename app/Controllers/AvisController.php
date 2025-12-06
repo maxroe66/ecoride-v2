@@ -2,8 +2,8 @@
 
 namespace App\Controllers;
 
+use App\Factories\ServiceLocator as SL;
 use App\Validators\QueryValidator;
-use App\Services\ReviewService;
 use App\Models\Avis;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
@@ -25,7 +25,7 @@ class AvisController
             return;
         }
 
-        $service = new ReviewService();
+        $service = SL::getReviewService();
         $avis = $service->listForRide($rideId);
         $payload = array_map(fn(Avis $a) => [
             'covoiturage_id' => $a->rideId,
@@ -51,7 +51,7 @@ class AvisController
             Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_PARAM','message' => 'Paramètre covoiturage_id requis']]);
             return;
         }
-        $service = new ReviewService();
+        $service = SL::getReviewService();
         $avg = $service->averageForRide($rideId);
         $count = $service->countForRide($rideId);
         Response::json(200, ['success' => true,'data' => ['covoiturage_id' => $rideId,'average' => $avg,'count' => $count]]);
@@ -89,7 +89,7 @@ class AvisController
         $rating = $data['rating'];
         $comment = $data['comment'];
 
-        $service = new ReviewService();
+        $service = SL::getReviewService();
         $ok = $service->create($rideId, $authenticatedUserId, $rating, $comment);
         if ($ok) {
             Response::json(201, ['success' => true,'data' => ['message' => 'Créé','note' => $data['rating']]]);

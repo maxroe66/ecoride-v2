@@ -2,13 +2,9 @@
 
 namespace App\Controllers;
 
-use App\Factories\DatabaseFactory;
-use App\Repositories\UserRepository;
-use App\Services\UserService;
+use App\Factories\ServiceLocator as SL;
 use App\Validators\UserProfileValidator;
 use App\Validators\QueryValidator;
-use App\Repositories\VehicleRepository;
-use App\Repositories\MarqueRepository;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
@@ -27,8 +23,7 @@ class UserController
         $userId = ControllerHelper::getAuthUserId();
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $userRepo = new UserRepository($db);
+            $userRepo = SL::getUserRepository();
             $credit = $userRepo->getCredit($userId);
 
             Response::json(200, ['success' => true, 'data' => ['credit' => $credit]]);
@@ -48,9 +43,8 @@ class UserController
         $userId = ControllerHelper::getAuthUserId();
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $userRepo = new UserRepository($db);
-            $creditRepo = new \App\Repositories\CreditOperationRepository($db);
+            $userRepo = SL::getUserRepository();
+            $creditRepo = SL::getCreditOperationRepository();
 
             $operations = $creditRepo->findByUser($userId, null);
             $balance = $userRepo->getCredit($userId);
@@ -90,8 +84,7 @@ class UserController
         $userId = ControllerHelper::getAuthUserId();
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $userRepo = new UserRepository($db);
+            $userRepo = SL::getUserRepository();
             $prefs = $userRepo->getPreferences($userId);
 
             Response::json(200, ['success' => true, 'data' => $prefs]);
@@ -130,9 +123,8 @@ class UserController
         }
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $vehicleRepo = new VehicleRepository($db);
-            $marqueRepo = new MarqueRepository($db);
+            $vehicleRepo = SL::getVehicleRepository();
+            $marqueRepo = SL::getMarqueRepository();
 
             // Résoudre la marque à partir du libellé
             $marqueId = $marqueRepo->findOrCreateByName(trim((string)$json['marque']));
@@ -179,8 +171,7 @@ class UserController
         $userId = ControllerHelper::getAuthUserId();
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $vehicleRepo = new VehicleRepository($db);
+            $vehicleRepo = SL::getVehicleRepository();
             $vehicles = $vehicleRepo->findByUserId($userId);
 
             // Convertir les objets Vehicules en tableau pour JSON
@@ -222,8 +213,7 @@ class UserController
         }
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $vehicleRepo = new VehicleRepository($db);
+            $vehicleRepo = SL::getVehicleRepository();
             $deleted = $vehicleRepo->deleteByIdForUser($vehicleId, $userId);
 
             if (!$deleted) {
@@ -270,10 +260,7 @@ class UserController
         
         // ÉTAPE 5 : Appeler UserService pour mettre à jour le profil
         try {
-            $db = DatabaseFactory::getConnection();
-            $userRepo = new UserRepository($db);
-            $vehicleRepo = new VehicleRepository($db);
-            $userService = new UserService($userRepo, $vehicleRepo);
+            $userService = SL::getUserService();
             
             $userUpdated = $userService->updateProfile(
                 $userId,

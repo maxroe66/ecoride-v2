@@ -2,19 +2,12 @@
 
 namespace App\Controllers;
 
-use App\Factories\DatabaseFactory;
-use App\Repositories\TrajetRepository;
-use App\Repositories\ParticipationRepository;
-use App\Repositories\UserRepository;
-use App\Repositories\CreditOperationRepository;
+use App\Factories\ServiceLocator as SL;
+use App\Services\TripService;
 use App\Validators\QueryValidator;
 use App\Validators\CancellationValidator;
 use App\Validators\TripValidator;
 use App\Validators\ParticipationValidator;
-use App\Services\TripService;
-use App\Services\ParticipationService;
-use App\Services\CancellationService;
-use App\Services\EmailService;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
@@ -43,8 +36,7 @@ class TrajetController
         $filters = QueryValidator::extractFilters($query);
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $service = new TripService(new TrajetRepository($db));
+            $service = SL::getTripService();
             $trajets = $service->search(
                 $validated['departure'],
                 $validated['arrival'],
@@ -72,8 +64,7 @@ class TrajetController
         }
         $filters = QueryValidator::extractFilters($query);
         try {
-            $db = DatabaseFactory::getConnection();
-            $service = new TripService(new TrajetRepository($db));
+            $service = SL::getTripService();
             $suggestions = $service->suggestions(
                 $validated['departure'],
                 $validated['arrival'],
@@ -106,8 +97,7 @@ class TrajetController
         }
 
         try {
-            $db = DatabaseFactory::getConnection();
-            $service = new TripService(new TrajetRepository($db));
+            $service = SL::getTripService();
             $detail = $service->detail($id);
 
             // Log temporaire pour debug : affiche le détail et les avis récupérés
@@ -152,12 +142,7 @@ class TrajetController
         
         // 3. LOGIQUE MÉTIER
         try {
-            $db = DatabaseFactory::getConnection();
-            $service = new ParticipationService(
-                new ParticipationRepository($db),
-                new TrajetRepository($db),
-                new UserRepository($db)
-            );
+            $service = SL::getParticipationService();
 
             // Appeler le service et retourner le résultat
             $result = $service->requestParticipation($userId, $covoiturageId, $nbPlaces);
@@ -192,12 +177,7 @@ class TrajetController
 
         // 3. LOGIQUE MÉTIER
         try {
-            $db = DatabaseFactory::getConnection();
-            $service = new ParticipationService(
-                new ParticipationRepository($db),
-                new TrajetRepository($db),
-                new UserRepository($db)
-            );
+            $service = SL::getParticipationService();
 
             // Appeler le service et retourner le résultat
             $result = $service->validateParticipation($participationId);
@@ -232,12 +212,7 @@ class TrajetController
 
         // 3. LOGIQUE MÉTIER
         try {
-            $db = DatabaseFactory::getConnection();
-            $service = new ParticipationService(
-                new ParticipationRepository($db),
-                new TrajetRepository($db),
-                new UserRepository($db)
-            );
+            $service = SL::getParticipationService();
 
             // Appeler le service et retourner le résultat
             $result = $service->confirmParticipation($participationId);
@@ -269,10 +244,8 @@ class TrajetController
         }
 
         try {
-            $db = DatabaseFactory::getConnection();
-            
             // 3. Vérifier que l'utilisateur est chauffeur
-            $userRepo = new UserRepository($db);
+            $userRepo = SL::getUserRepository();
             $user = $userRepo->findById($userId);
             
             if (!$user || !in_array($user->role, ['chauffeur', 'chauffeur_passager'])) {
@@ -282,7 +255,7 @@ class TrajetController
 
             // 4. Vérifier que le véhicule appartient au chauffeur
             if (!empty($data['voiture_id'])) {
-                $vehicleRepo = new \App\Repositories\VehicleRepository($db);
+                $vehicleRepo = SL::getVehicleRepository();
                 $vehicles = $vehicleRepo->findByUserId($userId);
                 $vehicleIds = array_map(fn($v) => $v->id, $vehicles);
                 
@@ -293,7 +266,7 @@ class TrajetController
             }
 
             // 5. Créer le trajet via le service
-            $service = new TripService(new TrajetRepository($db));
+            $service = SL::getTripService();
             $trajet = $service->createTrip($data, $userId);
 
             // 6. Retourner le trajet créé avec message d'avertissement
@@ -326,8 +299,7 @@ class TrajetController
         }
 
         try {
-            $db = \App\Factories\DatabaseFactory::getConnection();
-            $repo = new \App\Repositories\TrajetRepository($db);
+            $repo = SL::getTrajetRepository();
             $trajets = $repo->getTrajetsByUserId($userId); // retourne déjà des arrays enrichis
 
             // Ne garder que les trajets à venir (format array: keys 'date_depart', 'heure_depart')
@@ -379,33 +351,14 @@ class TrajetController
                 return;
             }
 
-            // Récupérer la base de données
-            $db = DatabaseFactory::getConnection();
+            // Initialiser les services via ServiceLocator
+            $cancellationService = SL::getCancellationService();
+            $emailService = SL::getEmailService();
+            $trajetRepo = SL::getTrajetRepository();
+            $participationRepo = SL::getParticipationRepository();
 
-            // Initialiser les repositories et services
-            $trajetRepo = new TrajetRepository($db);
-            $participationRepo = new ParticipationRepository($db);
-            $userRepo = new UserRepository($db);
-            $creditOpRepo = new CreditOperationRepository($db);
-            $emailService = new EmailService();
-
-            $cancellationService = new CancellationService(
-                $trajetRepo,
-                $participationRepo,
-                $userRepo,
-                $creditOpRepo
-            );
-
-            // Transaction pour garantir atomicité des mises à jour
-            $db->beginTransaction();
-            try {
-                // Annuler le trajet
-                $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
-                $db->commit();
-            } catch (\Exception $inner) {
-                $db->rollBack();
-                throw $inner;
-            }
+            // Annuler le trajet (transaction gérée dans le service)
+            $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
 
             // Envoyer les emails de notification aux passagers
             $trajet = $trajetRepo->getTrajetDetail($tripId);

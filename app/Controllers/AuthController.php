@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Factories\DatabaseFactory;
+use App\Factories\ServiceLocator as SL;
 use App\Repositories\UserRepository;
 use App\Services\AuthService;
 use App\Services\CsrfService;
@@ -30,9 +31,7 @@ class AuthController
             return;
         }
         try {
-            $db = DatabaseFactory::getConnection();
-            $repo = new UserRepository($db);
-            $auth = new AuthService($repo);
+            $auth = SL::getAuthService();
             $data = $auth->signup($data['pseudo'],$data['email'],$data['password']);
             Response::json(201, ['success' => true,'data' => $data]);
         } catch (\Exception $e) {
@@ -53,9 +52,7 @@ class AuthController
             return;
         }
         try {
-            $db = DatabaseFactory::getConnection();
-            $repo = new UserRepository($db);
-            $auth = new AuthService($repo);
+            $auth = SL::getAuthService();
             $userData = $auth->login($data['emailOrPseudo'],$data['password']);
             Response::json(200, ['success' => true,'data' => $userData,'redirect' => '/']);
         } catch (\Exception $e) {
@@ -66,9 +63,7 @@ class AuthController
     public static function logout(): void
     {
         try {
-            $db = DatabaseFactory::getConnection();
-            $repo = new UserRepository($db);
-            $auth = new AuthService($repo);
+            $auth = SL::getAuthService();
             $auth->logout();
             Response::json(200, ['success' => true,'data' => ['message' => 'Déconnexion réussie']]);
         } catch (\Exception $e) {

@@ -2,10 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Factories\DatabaseFactory;
-use App\Repositories\ParticipationRepository;
-use App\Repositories\TrajetRepository;
-use App\Services\HistoryService;
+use App\Factories\ServiceLocator as SL;
 use App\Validators\CancellationValidator;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
@@ -28,13 +25,8 @@ class HistoryController
             // Récupérer l'utilisateur authentifié (via middleware)
             $userId = ControllerHelper::getAuthUserId();
 
-            // Récupérer la base de données
-            $db = DatabaseFactory::getConnection();
-
-            // Initialiser le service avec les repositories
-            $trajetRepo = new TrajetRepository($db);
-            $participationRepo = new ParticipationRepository($db);
-            $historyService = new HistoryService($trajetRepo, $participationRepo);
+            // Initialiser le service via ServiceLocator
+            $historyService = SL::getHistoryService();
 
             // Récupérer l'historique
             $history = $historyService->getUserTripHistory($userId);
@@ -79,13 +71,8 @@ class HistoryController
             // Récupérer l'utilisateur authentifié (via middleware)
             $userId = ControllerHelper::getAuthUserId();
 
-            // Récupérer la base de données
-            $db = DatabaseFactory::getConnection();
-
-            // Initialiser le service
-            $trajetRepo = new TrajetRepository($db);
-            $participationRepo = new ParticipationRepository($db);
-            $historyService = new HistoryService($trajetRepo, $participationRepo);
+            // Initialiser le service via ServiceLocator
+            $historyService = SL::getHistoryService();
 
             // Récupérer l'historique complet
             $fullHistory = $historyService->getUserTripHistory($userId);
