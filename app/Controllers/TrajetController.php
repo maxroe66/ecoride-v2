@@ -136,32 +136,15 @@ class TrajetController
         }
 
         try {
-            // 3. Vérifier que l'utilisateur est chauffeur
-            $userRepo = SL::getUserRepository();
-            $user = $userRepo->findById($userId);
-            
-            if (!$user || !in_array($user->role, ['chauffeur', 'chauffeur_passager'])) {
-                Response::json(403, ['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Seuls les chauffeurs peuvent créer des trajets']]);
-                return;
-            }
+            // 3. Valider le rôle chauffeur et la propriété du véhicule
+            TripValidator::validateDriverRole($userId);
+            TripValidator::validateVehicleOwnership($userId, (int)($data['voiture_id'] ?? 0));
 
-            // 4. Vérifier que le véhicule appartient au chauffeur
-            if (!empty($data['voiture_id'])) {
-                $vehicleRepo = SL::getVehicleRepository();
-                $vehicles = $vehicleRepo->findByUserId($userId);
-                $vehicleIds = array_map(fn($v) => $v->id, $vehicles);
-                
-                if (!in_array((int)$data['voiture_id'], $vehicleIds)) {
-                    Response::json(403, ['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Ce véhicule ne vous appartient pas']]);
-                    return;
-                }
-            }
-
-            // 5. Créer le trajet via le service
+            // 4. Créer le trajet via le service
             $service = SL::getTripService();
             $trajet = $service->createTrip($data, $userId);
 
-            // 6. Retourner le trajet créé avec message d'avertissement
+            // 5. Retourner le trajet créé avec message d'avertissement
             Response::json(201, [
                 'success' => true,
                 'data' => $trajet,
