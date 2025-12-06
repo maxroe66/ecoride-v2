@@ -8,6 +8,7 @@ use App\Repositories\TrajetRepository;
 use App\Services\HistoryService;
 use App\Validators\CancellationValidator;
 use App\Middleware\AuthMiddleware;
+use App\Core\Response;
 use Exception;
 
 /**
@@ -29,8 +30,7 @@ class HistoryController
             $user = $authMw->authenticate();
             $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
             if ($userId <= 0) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
+                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
 
@@ -46,8 +46,7 @@ class HistoryController
             $history = $historyService->getUserTripHistory($userId);
 
             // Retourner la réponse
-            http_response_code(200);
-            echo json_encode([
+            Response::json(200, [
                 'success' => true,
                 'data' => $history,
                 'count' => count($history)
@@ -55,8 +54,7 @@ class HistoryController
 
         } catch (Exception $e) {
             error_log('[HistoryController] Exception : ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
 
@@ -73,16 +71,14 @@ class HistoryController
         try {
             // Valider le statut
             if (!$status) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => ['code' => 'MISSING_STATUS', 'message' => 'Paramètre status requis']]);
+                Response::json(400, ['success' => false, 'error' => ['code' => 'MISSING_STATUS', 'message' => 'Paramètre status requis']]);
                 return;
             }
 
             try {
                 $status = CancellationValidator::validateStatusFilter($status);
             } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
                 return;
             }
             // Authentification requise via middleware
@@ -90,8 +86,7 @@ class HistoryController
             $user = $authMw->authenticate();
             $userId = (int)($user['user_id'] ?? $user['id'] ?? 0);
             if ($userId <= 0) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
+                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
 
@@ -111,8 +106,7 @@ class HistoryController
             $filtered = array_values($filtered); // Réindexer le tableau
 
             // Retourner la réponse
-            http_response_code(200);
-            echo json_encode([
+            Response::json(200, [
                 'success' => true,
                 'data' => $filtered,
                 'count' => count($filtered)
@@ -120,8 +114,7 @@ class HistoryController
 
         } catch (Exception $e) {
             error_log('[HistoryController] Exception : ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
 }
