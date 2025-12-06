@@ -112,8 +112,10 @@ class UserController
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+        try {
+            QueryValidator::validateJsonInput($json);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]]);
             return;
         }
 
@@ -250,8 +252,10 @@ class UserController
         $json = json_decode($raw, true);
         
         // ÉTAPE 2 : Vérifier que c'est du JSON valide
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+        try {
+            QueryValidator::validateJsonInput($json);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]]);
             return;
         }
         

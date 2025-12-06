@@ -95,5 +95,19 @@ class TripValidator
             'conducteur_id' => $conducteurId
         ];
     }
+
+    /**
+     * Valide un ID de trajet
+     * @param mixed $id - ID à valider
+     * @return int - ID validé
+     * @throws Exception si l'ID est invalide
+     */
+    public static function validateTripId($id): int
+    {
+        if (!$id || !is_numeric($id) || (int)$id <= 0) {
+            throw new Exception('ID de trajet invalide', 400);
+        }
+        return (int)$id;
+    }
     
 }

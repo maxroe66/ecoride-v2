@@ -180,4 +180,18 @@ class QueryValidator
             'comment' => $avisData['comment']
         ];
     }
+
+    /**
+     * Valide que le corps de la requête est un JSON valide
+     * @param mixed $json - données à valider
+     * @return array - JSON validé
+     * @throws \Exception si le JSON est invalide
+     */
+    public static function validateJsonInput($json): array
+    {
+        if (!is_array($json)) {
+            throw new \Exception('Corps JSON invalide', 400);
+        }
+        return $json;
+    }
 }

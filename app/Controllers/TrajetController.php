@@ -9,6 +9,8 @@ use App\Repositories\UserRepository;
 use App\Repositories\CreditOperationRepository;
 use App\Validators\QueryValidator;
 use App\Validators\CancellationValidator;
+use App\Validators\TripValidator;
+use App\Validators\ParticipationValidator;
 use App\Services\TripService;
 use App\Services\ParticipationService;
 use App\Services\CancellationService;
@@ -96,13 +98,12 @@ class TrajetController
         parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
         $id = $query['id'] ?? null;
 
-        // Valider que l'ID est un entier positif
-        if (!$id || !is_numeric($id) || (int)$id <= 0) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => 'ID invalide']]);
+        try {
+            $id = TripValidator::validateTripId($id);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => $e->getMessage()]]);
             return;
         }
-
-        $id = (int)$id;
 
         try {
             $db = DatabaseFactory::getConnection();
@@ -138,18 +139,14 @@ class TrajetController
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
-            return;
-        }
-
-        // Extraire covoiturage_id et nb_places du JSON
-        $covoiturageId = $json['covoiturage_id'] ?? null;
-        $nbPlaces = $json['nb_places'] ?? null;
-
-        // Valider que ces champs existent et sont des entiers > 0
-        if (!is_int($covoiturageId) || $covoiturageId <= 0 || !is_int($nbPlaces) || $nbPlaces <= 0) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => 'covoiturage_id et nb_places doivent être des entiers positifs']]);
+        
+        try {
+            QueryValidator::validateJsonInput($json);
+            $validated = ParticipationValidator::validateParticipationRequest($json);
+            $covoiturageId = $validated['covoiturage_id'];
+            $nbPlaces = $validated['nb_places'];
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
             return;
         }
         
@@ -184,17 +181,12 @@ class TrajetController
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
-            return;
-        }
-
-        // Extraire participation_id du JSON
-        $participationId = $json['participation_id'] ?? null;
-
-        // Valider que participation_id est un entier > 0
-        if (!is_int($participationId) || $participationId <= 0) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
+        
+        try {
+            QueryValidator::validateJsonInput($json);
+            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
             return;
         }
 
@@ -229,17 +221,12 @@ class TrajetController
         // 2. LIRE ET VALIDER LE JSON
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
-            return;
-        }
-
-        // Extraire participation_id du JSON
-        $participationId = $json['participation_id'] ?? null;
-
-        // Valider que participation_id est un entier > 0
-        if (!is_int($participationId) || $participationId <= 0) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
+        
+        try {
+            QueryValidator::validateJsonInput($json);
+            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
             return;
         }
 
@@ -274,8 +261,10 @@ class TrajetController
         $raw = file_get_contents('php://input');
         $data = json_decode($raw, true);
         
-        if (!is_array($data)) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+        try {
+            QueryValidator::validateJsonInput($data);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]]);
             return;
         }
 

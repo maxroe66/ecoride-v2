@@ -21,12 +21,9 @@ class AuthController
     {
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
-            return;
-        }
-        // Validation centralisée
+        
         try {
+            QueryValidator::validateJsonInput($json);
             $data = QueryValidator::validateSignup($json);
         } catch (\Exception $e) {
             Response::json(400, ['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
@@ -47,15 +44,12 @@ class AuthController
     {
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
-            return;
-        }
-        // Validation centralisée
+        
         try {
+            QueryValidator::validateJsonInput($json);
             $data = QueryValidator::validateLogin($json);
         } catch (\Exception $e) {
-            Response::json(400, ['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false,'error' => ['code' => 'VALIDATION_ERROR','message' => $e->getMessage()]]);
             return;
         }
         try {

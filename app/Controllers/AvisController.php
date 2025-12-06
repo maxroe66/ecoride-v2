@@ -64,8 +64,11 @@ class AvisController
 
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
-        if (!is_array($json)) {
-            Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
+        
+        try {
+            QueryValidator::validateJsonInput($json);
+        } catch (\Exception $e) {
+            Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_JSON','message' => $e->getMessage()]]);
             return;
         }
         // Validation complète via QueryValidator tout en conservant format d'erreur
