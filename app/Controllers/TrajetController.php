@@ -15,6 +15,7 @@ use App\Services\CancellationService;
 use App\Services\EmailService;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
+use App\Core\Response;
 use Exception;
 
 /**
@@ -32,10 +33,9 @@ class TrajetController
         try {
             $validated = QueryValidator::validateTrajetSearch($query); // exception 400 pour erreurs
         } catch (\Exception $e) {
-            http_response_code(400);
             $msg = $e->getMessage();
             $code = str_contains($msg, 'Format de date') ? 'INVALID_DATE' : 'MISSING_FIELDS';
-            echo json_encode(['success' => false,'error' => ['code' => $code,'message' => $msg]]);
+            Response::json(400, ['success' => false,'error' => ['code' => $code,'message' => $msg]]);
             return;
         }
 
@@ -54,11 +54,9 @@ class TrajetController
                 $filters['minRating']
             );
             $payload = array_map(fn($t) => TripService::normalize($t), $trajets);
-            http_response_code(200);
-            echo json_encode(['success' => true,'data' => ['items' => $payload,'count' => count($payload)]]);
+            Response::json(200, ['success' => true,'data' => ['items' => $payload,'count' => count($payload)]]);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
+            Response::json(500, ['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
         }
     }
 
@@ -68,8 +66,7 @@ class TrajetController
         try {
             $validated = QueryValidator::validateDateSuggestions($query);
         } catch (\Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
             return;
         }
         $filters = QueryValidator::extractFilters($query);
@@ -85,11 +82,9 @@ class TrajetController
                 $filters['maxDuration'],
                 $filters['minRating']
             );
-            http_response_code(200);
-            echo json_encode(['success' => true,'data' => ['suggestions' => $suggestions]]);
+            Response::json(200, ['success' => true,'data' => ['suggestions' => $suggestions]]);
         } catch (\Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
+            Response::json(500, ['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
         }
     }
 
@@ -104,8 +99,7 @@ class TrajetController
 
         // Valider que l'ID est un entier positif
         if (!$id || !is_numeric($id) || (int)$id <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => 'ID invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => 'ID invalide']]);
             return;
         }
 
@@ -121,18 +115,15 @@ class TrajetController
 
             // Si vide, le trajet n'existe pas
             if (empty($detail)) {
-                http_response_code(404);
-                echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Trajet introuvable']]);
+                Response::json(404, ['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Trajet introuvable']]);
                 return;
             }
 
             // Retourner le détail
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => $detail]);
+            Response::json(200, ['success' => true, 'data' => $detail]);
         } catch (\Exception $e) {
             error_log('[TrajetController] Exception : ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
     /**
@@ -143,16 +134,13 @@ class TrajetController
     public static function requestParticipation(): void
     {
         // Définir le header avant toute sortie
-        header('Content-Type: application/json');
-
         // 1. AUTHENTIFICATION
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
 
@@ -163,8 +151,7 @@ class TrajetController
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         if (!is_array($json)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
             return;
         }
 
@@ -174,8 +161,7 @@ class TrajetController
 
         // Valider que ces champs existent et sont des entiers > 0
         if (!is_int($covoiturageId) || $covoiturageId <= 0 || !is_int($nbPlaces) || $nbPlaces <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => 'covoiturage_id et nb_places doivent être des entiers positifs']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => 'covoiturage_id et nb_places doivent être des entiers positifs']]);
             return;
         }
         
@@ -190,12 +176,10 @@ class TrajetController
 
             // Appeler le service et retourner le résultat
             $result = $service->requestParticipation($userId, $covoiturageId, $nbPlaces);
-            http_response_code(201);
-            echo json_encode(['success' => true, 'data' => $result]);
+            Response::json(201, ['success' => true, 'data' => $result]);
             
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
         }
     }
 
@@ -207,16 +191,13 @@ class TrajetController
     public static function validateParticipation(): void
     {
         // Définir le header avant toute sortie
-        header('Content-Type: application/json');
-
         // 1. AUTHENTIFICATION
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
 
@@ -227,8 +208,7 @@ class TrajetController
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         if (!is_array($json)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
             return;
         }
 
@@ -237,8 +217,7 @@ class TrajetController
 
         // Valider que participation_id est un entier > 0
         if (!is_int($participationId) || $participationId <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
             return;
         }
 
@@ -253,12 +232,10 @@ class TrajetController
 
             // Appeler le service et retourner le résultat
             $result = $service->validateParticipation($participationId);
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => $result]);
+            Response::json(200, ['success' => true, 'data' => $result]);
             
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
         }
     }
 
@@ -270,16 +247,13 @@ class TrajetController
     public static function confirmParticipation(): void
     {
         // Définir le header avant toute sortie
-        header('Content-Type: application/json');
-
         // 1. AUTHENTIFICATION
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
 
@@ -290,8 +264,7 @@ class TrajetController
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         if (!is_array($json)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
             return;
         }
 
@@ -300,8 +273,7 @@ class TrajetController
 
         // Valider que participation_id est un entier > 0
         if (!is_int($participationId) || $participationId <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_PARTICIPATION_ID', 'message' => 'participation_id doit être un entier positif']]);
             return;
         }
 
@@ -316,12 +288,10 @@ class TrajetController
 
             // Appeler le service et retourner le résultat
             $result = $service->confirmParticipation($participationId);
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => $result]);
+            Response::json(200, ['success' => true, 'data' => $result]);
             
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
         }
     }
 
@@ -331,16 +301,13 @@ class TrajetController
      */
     public static function create(): void
     {
-        header('Content-Type: application/json');
-
         // 1. Vérifier l'authentification
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -352,8 +319,7 @@ class TrajetController
         $data = json_decode($raw, true);
         
         if (!is_array($data)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
             return;
         }
 
@@ -365,8 +331,7 @@ class TrajetController
             $user = $userRepo->findById($userId);
             
             if (!$user || !in_array($user->role, ['chauffeur', 'chauffeur_passager'])) {
-                http_response_code(403);
-                echo json_encode(['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Seuls les chauffeurs peuvent créer des trajets']]);
+                Response::json(403, ['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Seuls les chauffeurs peuvent créer des trajets']]);
                 return;
             }
 
@@ -377,8 +342,7 @@ class TrajetController
                 $vehicleIds = array_map(fn($v) => $v->id, $vehicles);
                 
                 if (!in_array((int)$data['voiture_id'], $vehicleIds)) {
-                    http_response_code(403);
-                    echo json_encode(['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Ce véhicule ne vous appartient pas']]);
+                    Response::json(403, ['success' => false, 'error' => ['code' => 'FORBIDDEN', 'message' => 'Ce véhicule ne vous appartient pas']]);
                     return;
                 }
             }
@@ -388,19 +352,16 @@ class TrajetController
             $trajet = $service->createTrip($data, $userId);
 
             // 6. Retourner le trajet créé avec message d'avertissement
-            http_response_code(201);
-            echo json_encode([
+            Response::json(201, [
                 'success' => true,
                 'data' => $trajet,
                 'message' => 'Trajet créé avec succès. Rappel : 2 crédits seront prélevés par la plateforme pour chaque participation.'
             ]);
 
         } catch (\App\Validators\Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
 
@@ -409,16 +370,13 @@ class TrajetController
      */
     public static function myTrips(): void
     {
-        header('Content-Type: application/json');
-
         // Authentifier l'utilisateur
         try {
             $middleware = new \App\Middleware\AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -444,10 +402,9 @@ class TrajetController
                 }
             }));
 
-            echo json_encode(['success' => true, 'data' => $upcoming]);
+            Response::json(200, ['success' => true, 'data' => $upcoming]);
         } catch (Exception $e) {
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
 
@@ -458,8 +415,6 @@ class TrajetController
      */
     public static function cancelTrip(): void
     {
-        header('Content-Type: application/json');
-
         // Récupérer l'ID du trajet depuis les paramètres dynamiques du routeur
         $pathParams = $_REQUEST['_path_params'] ?? [];
         $tripId = $pathParams[0] ?? null;
@@ -470,8 +425,7 @@ class TrajetController
                 $authMw = new AuthMiddleware();
                 $userData = $authMw->authenticate();
             } catch (Exception $e) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
+                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
 
@@ -490,8 +444,7 @@ class TrajetController
                 $tripId = $validated['trip_id'];
                 $reason = $validated['reason'];
             } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
                 return;
             }
 
@@ -538,8 +491,7 @@ class TrajetController
             }
 
             // Retourner la réponse
-            http_response_code(200);
-            echo json_encode([
+            Response::json(200, [
                 'success' => true,
                 'message' => 'Trajet annulé avec succès',
                 'participants_notified' => count($participants)
@@ -547,8 +499,7 @@ class TrajetController
 
         } catch (Exception $e) {
             error_log('[TrajetController::cancelTrip] Exception : ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
 }

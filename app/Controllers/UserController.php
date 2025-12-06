@@ -10,6 +10,7 @@ use App\Repositories\VehicleRepository;
 use App\Repositories\MarqueRepository;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
+use App\Core\Response;
 use Exception;
 
 /**
@@ -23,15 +24,12 @@ class UserController
      */
     public static function getCredit(): void
     {
-        header('Content-Type: application/json');
-
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -40,12 +38,11 @@ class UserController
             $userRepo = new UserRepository($db);
             $credit = $userRepo->getCredit($userId);
 
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => ['credit' => $credit]]);
+            Response::json(200, ['success' => true, 'data' => ['credit' => $credit]]);
         } catch (Exception $e) {
-            http_response_code(500);
-            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
 
@@ -55,15 +52,12 @@ class UserController
      */
     public static function getCreditOperations(): void
     {
-        header('Content-Type: application/json');
-
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -86,8 +80,7 @@ class UserController
                 }
             }
 
-            http_response_code(200);
-            echo json_encode([
+            Response::json(200, [
                 'success' => true,
                 'data' => [
                     'balance' => $balance,
@@ -97,9 +90,9 @@ class UserController
                 ]
             ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
     /**
@@ -108,15 +101,12 @@ class UserController
      */
     public static function getPreferences(): void
     {
-        header('Content-Type: application/json');
-
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -125,12 +115,11 @@ class UserController
             $userRepo = new UserRepository($db);
             $prefs = $userRepo->getPreferences($userId);
 
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => $prefs]);
+            Response::json(200, ['success' => true, 'data' => $prefs]);
         } catch (Exception $e) {
-            http_response_code(500);
-            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
     /**
@@ -139,15 +128,12 @@ class UserController
      */
     public static function addVehicle(): void
     {
-        header('Content-Type: application/json');
-
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -159,8 +145,7 @@ class UserController
         $json = json_decode($raw, true);
         
         if (!is_array($json)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
             return;
         }
 
@@ -168,8 +153,7 @@ class UserController
         $required = ['modele', 'marque', 'couleur', 'date_premiere_immatriculation', 'nb_places', 'energie', 'immatriculation'];
         foreach ($required as $field) {
             if (empty($json[$field])) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => ['code' => 'MISSING_FIELD', 'message' => "Le champ '$field' est requis"]]);
+                Response::json(400, ['success' => false, 'error' => ['code' => 'MISSING_FIELD', 'message' => "Le champ '$field' est requis"]]);
                 return;
             }
         }
@@ -197,8 +181,7 @@ class UserController
 
             $vehicleId = $vehicleRepo->create($vehicle);
 
-            http_response_code(201);
-            echo json_encode([
+            Response::json(201, [
                 'success' => true,
                 'data' => [
                     'id' => $vehicleId,
@@ -210,9 +193,9 @@ class UserController
                 ]
             ]);
         } catch (Exception $e) {
-            http_response_code(500);
-            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
 
@@ -222,15 +205,12 @@ class UserController
      */
     public static function getVehicles(): void
     {
-        header('Content-Type: application/json');
-
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -255,12 +235,11 @@ class UserController
                 ];
             }, $vehicles);
 
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => $vehiclesArray]);
+            Response::json(200, ['success' => true, 'data' => $vehiclesArray]);
         } catch (Exception $e) {
-            http_response_code(500);
-            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
 
@@ -270,15 +249,12 @@ class UserController
      */
     public static function deleteVehicle(): void
     {
-        header('Content-Type: application/json');
-
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
             return;
         }
 
@@ -287,8 +263,7 @@ class UserController
 
         $vehicleId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
         if ($vehicleId <= 0) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => 'Paramètre id manquant ou invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => 'Paramètre id manquant ou invalide']]);
             return;
         }
 
@@ -298,17 +273,15 @@ class UserController
             $deleted = $vehicleRepo->deleteByIdForUser($vehicleId, $userId);
 
             if (!$deleted) {
-                http_response_code(404);
-                echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Véhicule introuvable ou ne vous appartient pas']]);
+                Response::json(404, ['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Véhicule introuvable ou ne vous appartient pas']]);
                 return;
             }
 
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => ['id' => $vehicleId, 'message' => 'Véhicule supprimé']]);
+            Response::json(200, ['success' => true, 'data' => ['id' => $vehicleId, 'message' => 'Véhicule supprimé']]);
         } catch (Exception $e) {
-            http_response_code(500);
-            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
         }
     }
 
@@ -319,16 +292,13 @@ class UserController
     public static function updateProfile(): void
     {
         // Définir le header avant toute sortie
-        header('Content-Type: application/json');
-
         // ÉTAPE 1 : AUTHENTIFICATION via AuthMiddleware
         try {
             $middleware = new AuthMiddleware();
             $userData = $middleware->authenticate();
             $userId = (int)$userData['user_id'];
         } catch (Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
+            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise. Veuillez vous connecter.']]);
             return;
         }
 
@@ -341,8 +311,7 @@ class UserController
         
         // ÉTAPE 3 : Vérifier que c'est du JSON valide
         if (!is_array($json)) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => 'Corps JSON invalide']]);
             return;
         }
         
@@ -350,8 +319,7 @@ class UserController
         try {
             $validatedData = UserProfileValidator::validateUpdateProfile($json);
         } catch (Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
             return;
         }
         
@@ -370,12 +338,11 @@ class UserController
             );
             
             // ÉTAPE 6 : Retourner une réponse JSON de succès
-            http_response_code(200);
-            echo json_encode(['success' => true, 'data' => $userUpdated->toArray()]);
+            Response::json(200, ['success' => true, 'data' => $userUpdated->toArray()]);
         } catch (Exception $e) {
-            http_response_code(422);
-            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Mise à jour impossible' : $e->getMessage();
-            echo json_encode(['success' => false, 'error' => ['code' => 'UPDATE_FAILED', 'message' => $errorMsg]]);
+                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Mise à jour impossible' : $e->getMessage();
+
+            Response::json(422, ['success' => false, 'error' => ['code' => 'UPDATE_FAILED', 'message' => $errorMsg]]);
         }
     }
 }
