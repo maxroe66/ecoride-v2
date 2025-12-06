@@ -7,15 +7,14 @@ use App\Services\TripService;
 use App\Validators\QueryValidator;
 use App\Validators\CancellationValidator;
 use App\Validators\TripValidator;
-use App\Validators\ParticipationValidator;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
 
 /**
  * Contrôleur des trajets.
- * Routes: GET /api/trajets, GET /api/trajets-suggestions
- * Conserve format des réponses et codes d'erreur du legacy.
+ * Routes: GET /api/trajets, POST /api/trajets, GET /api/user/trajets, etc.
+ * Gestion des trajets (recherche, création, annulation) - les participations sont dans ParticipationController
  */
 class TrajetController
 {
@@ -117,113 +116,6 @@ class TrajetController
         }
     }
     /**
-     * Demander une participation à un covoiturage
-     * POST /api/participations/request
-     * Body: { covoiturage_id, nb_places }
-     */
-    public static function requestParticipation(): void
-    {
-        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
-        $userId = ControllerHelper::getAuthUserId();
-
-        // 2. LIRE ET VALIDER LE JSON
-        $raw = file_get_contents('php://input');
-        $json = json_decode($raw, true);
-        
-        try {
-            QueryValidator::validateJsonInput($json);
-            $validated = ParticipationValidator::validateParticipationRequest($json);
-            $covoiturageId = $validated['covoiturage_id'];
-            $nbPlaces = $validated['nb_places'];
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
-            return;
-        }
-        
-        // 3. LOGIQUE MÉTIER
-        try {
-            $service = SL::getParticipationService();
-
-            // Appeler le service et retourner le résultat
-            $result = $service->requestParticipation($userId, $covoiturageId, $nbPlaces);
-            Response::json(201, ['success' => true, 'data' => $result]);
-            
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
-        }
-    }
-
-    /**
-     * Valider une participation (1ère confirmation)
-     * POST /api/participations/validate
-     * Body: { participation_id }
-     */
-    public static function validateParticipation(): void
-    {
-        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
-        $userId = ControllerHelper::getAuthUserId();
-
-        // 2. LIRE ET VALIDER LE JSON
-        $raw = file_get_contents('php://input');
-        $json = json_decode($raw, true);
-        
-        try {
-            QueryValidator::validateJsonInput($json);
-            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
-            return;
-        }
-
-        // 3. LOGIQUE MÉTIER
-        try {
-            $service = SL::getParticipationService();
-
-            // Appeler le service et retourner le résultat
-            $result = $service->validateParticipation($participationId);
-            Response::json(200, ['success' => true, 'data' => $result]);
-            
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
-        }
-    }
-
-    /**
-     * Confirmer une participation (2ème confirmation finale)
-     * POST /api/participations/confirm
-     * Body: { participation_id }
-     */
-    public static function confirmParticipation(): void
-    {
-        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
-        $userId = ControllerHelper::getAuthUserId();
-
-        // 2. LIRE ET VALIDER LE JSON
-        $raw = file_get_contents('php://input');
-        $json = json_decode($raw, true);
-        
-        try {
-            QueryValidator::validateJsonInput($json);
-            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
-            return;
-        }
-
-        // 3. LOGIQUE MÉTIER
-        try {
-            $service = SL::getParticipationService();
-
-            // Appeler le service et retourner le résultat
-            $result = $service->confirmParticipation($participationId);
-            Response::json(200, ['success' => true, 'data' => $result]);
-            
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
-        }
-    }
-
-    /**
      * Endpoint : POST /api/trajets
      * Crée un nouveau trajet
      */
@@ -300,24 +192,8 @@ class TrajetController
 
         try {
             $repo = SL::getTrajetRepository();
-            $trajets = $repo->getTrajetsByUserId($userId); // retourne déjà des arrays enrichis
-
-            // Ne garder que les trajets à venir (format array: keys 'date_depart', 'heure_depart')
-            $now = new \DateTime('now');
-            $upcoming = array_values(array_filter($trajets, function (array $t) use ($now) {
-                $date = $t['date_depart'] ?? null;
-                $time = $t['heure_depart'] ?? '00:00:00';
-                $status = $t['statut'] ?? null;
-                // Exclure les trajets annulés du listing des prochains trajets
-                if ($status === 'annule') return false;
-                if (!$date) return true; // si manque d'info date, ne pas filtrer
-                try {
-                    $dt = new \DateTime($date . ' ' . ($time ?: '00:00:00'));
-                    return $dt >= $now;
-                } catch (\Throwable $e) {
-                    return true;
-                }
-            }));
+            $trajets = $repo->getTrajetsByUserId($userId);
+            $upcoming = self::filterUpcomingTrips($trajets);
 
             Response::json(200, ['success' => true, 'data' => $upcoming]);
         } catch (Exception $e) {
@@ -363,13 +239,15 @@ class TrajetController
             // Envoyer les emails de notification aux passagers
             $trajet = $trajetRepo->getTrajetDetail($tripId);
             $participants = $participationRepo->findByTrip($tripId);
+            $driver = SL::getUserRepository()->getUserById($userId);
+            $driverName = $driver ? ($driver['nom'] . ' ' . $driver['prenom']) : 'Le chauffeur';
 
             foreach ($participants as $participant) {
                 $emailService->sendCancellationNotification(
                     $participant,
                     $trajet,
-                    $user['nom'] . ' ' . $user['prenom'],
-                    $trajet['prix'] ?? 0, // Montant du remboursement
+                    $driverName,
+                    $trajet['prix'] ?? 0,
                     $reason
                 );
             }
@@ -385,5 +263,34 @@ class TrajetController
             error_log('[TrajetController::cancelTrip] Exception : ' . $e->getMessage());
             Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
+    }
+
+    /**
+     * Filtre les trajets pour ne garder que ceux à venir (non annulés, date future)
+     * @param array $trajets Liste des trajets
+     * @return array Trajets à venir réindexés
+     */
+    private static function filterUpcomingTrips(array $trajets): array
+    {
+        $now = new \DateTime('now');
+        return array_values(array_filter($trajets, function (array $t) use ($now) {
+            // Exclure les trajets annulés
+            if (($t['statut'] ?? null) === 'annule') {
+                return false;
+            }
+
+            $date = $t['date_depart'] ?? null;
+            if (!$date) {
+                return true; // Garder si pas de date (sécurité)
+            }
+
+            try {
+                $time = $t['heure_depart'] ?? '00:00:00';
+                $dt = new \DateTime($date . ' ' . $time);
+                return $dt >= $now;
+            } catch (\Throwable $e) {
+                return true; // En cas d'erreur, garder le trajet par sécurité
+            }
+        }));
     }
 }

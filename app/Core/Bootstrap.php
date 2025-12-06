@@ -77,10 +77,10 @@ class Bootstrap
         // Mes trajets (chauffeur connecté)
         $router->add('GET', '/api/user/trajets', [TrajetController::class, 'myTrips'], [MW::auth()]);
 
-        // Participations (authentification gérée à l'intérieur du contrôleur)
-        $router->add('POST', '/api/participations/request', [TrajetController::class, 'requestParticipation'], MW::authAndCsrf());
-        $router->add('POST', '/api/participations/validate', [TrajetController::class, 'validateParticipation'], MW::authAndCsrf());
-        $router->add('POST', '/api/participations/confirm', [TrajetController::class, 'confirmParticipation'], MW::authAndCsrf());
+        // Participations - Gestion des demandes et confirmations
+        $router->add('POST', '/api/participations/request', [ParticipationController::class, 'requestParticipation'], MW::authAndCsrf());
+        $router->add('POST', '/api/participations/validate', [ParticipationController::class, 'validateParticipation'], MW::authAndCsrf());
+        $router->add('POST', '/api/participations/confirm', [ParticipationController::class, 'confirmParticipation'], MW::authAndCsrf());
 
         // Historique (US10)
         $router->add('GET', '/api/historique/trajets', [HistoryController::class, 'getUserHistory'], [MW::auth()]);

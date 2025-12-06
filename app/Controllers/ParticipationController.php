@@ -5,13 +5,15 @@ namespace App\Controllers;
 use App\Factories\ServiceLocator as SL;
 use App\Factories\DatabaseFactory;
 use App\Validators\CancellationValidator;
+use App\Validators\QueryValidator;
+use App\Validators\ParticipationValidator;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
 
 /**
  * Contrôleur pour les participations aux covoiturages.
- * Routes: POST /api/participations/{id}/annuler
+ * Routes: POST /api/participations/request, /validate, /confirm, /{id}/annuler
  */
 class ParticipationController
 {
@@ -82,6 +84,87 @@ class ParticipationController
         } catch (Exception $e) {
             error_log('[ParticipationController::cancelParticipation] Exception : ' . $e->getMessage());
             Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    /**
+     * Demander une participation à un covoiturage
+     * POST /api/participations/request
+     * Body: { covoiturage_id, nb_places }
+     */
+    public static function requestParticipation(): void
+    {
+        $userId = ControllerHelper::getAuthUserId();
+        $json = json_decode(file_get_contents('php://input'), true);
+        
+        try {
+            QueryValidator::validateJsonInput($json);
+            $validated = ParticipationValidator::validateParticipationRequest($json);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
+            return;
+        }
+        
+        try {
+            $service = SL::getParticipationService();
+            $result = $service->requestParticipation($userId, $validated['covoiturage_id'], $validated['nb_places']);
+            Response::json(201, ['success' => true, 'data' => $result]);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    /**
+     * Valider une participation (1ère confirmation)
+     * POST /api/participations/validate
+     * Body: { participation_id }
+     */
+    public static function validateParticipation(): void
+    {
+        $userId = ControllerHelper::getAuthUserId();
+        $json = json_decode(file_get_contents('php://input'), true);
+        
+        try {
+            QueryValidator::validateJsonInput($json);
+            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
+            return;
+        }
+
+        try {
+            $service = SL::getParticipationService();
+            $result = $service->validateParticipation($participationId);
+            Response::json(200, ['success' => true, 'data' => $result]);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+        }
+    }
+
+    /**
+     * Confirmer une participation (2ème confirmation finale)
+     * POST /api/participations/confirm
+     * Body: { participation_id }
+     */
+    public static function confirmParticipation(): void
+    {
+        $userId = ControllerHelper::getAuthUserId();
+        $json = json_decode(file_get_contents('php://input'), true);
+        
+        try {
+            QueryValidator::validateJsonInput($json);
+            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
+            return;
+        }
+
+        try {
+            $service = SL::getParticipationService();
+            $result = $service->confirmParticipation($participationId);
+            Response::json(200, ['success' => true, 'data' => $result]);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
         }
     }
 }
