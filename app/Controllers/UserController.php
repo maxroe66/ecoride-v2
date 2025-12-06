@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\Factories\ServiceLocator as SL;
 use App\Validators\UserProfileValidator;
 use App\Validators\QueryValidator;
+use App\Validators\VehicleValidator;
 use App\Helpers\ControllerHelper;
 use App\Core\Response;
 use Exception;
@@ -28,9 +29,7 @@ class UserController
 
             Response::json(200, ['success' => true, 'data' => ['credit' => $credit]]);
         } catch (Exception $e) {
-                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+            self::handleError($e);
         }
     }
 
@@ -70,9 +69,7 @@ class UserController
                 ]
             ]);
         } catch (Exception $e) {
-                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+            self::handleError($e);
         }
     }
     /**
@@ -89,9 +86,7 @@ class UserController
 
             Response::json(200, ['success' => true, 'data' => $prefs]);
         } catch (Exception $e) {
-                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+            self::handleError($e);
         }
     }
     /**
@@ -108,18 +103,10 @@ class UserController
         
         try {
             QueryValidator::validateJsonInput($json);
+            $validatedData = VehicleValidator::validateVehicleCreation($json);
         } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]]);
+            Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
             return;
-        }
-
-        // Valider les champs requis
-        $required = ['modele', 'marque', 'couleur', 'date_premiere_immatriculation', 'nb_places', 'energie', 'immatriculation'];
-        foreach ($required as $field) {
-            if (empty($json[$field])) {
-                Response::json(400, ['success' => false, 'error' => ['code' => 'MISSING_FIELD', 'message' => "Le champ '$field' est requis"]]);
-                return;
-            }
         }
 
         try {
@@ -127,19 +114,19 @@ class UserController
             $marqueRepo = SL::getMarqueRepository();
 
             // Résoudre la marque à partir du libellé
-            $marqueId = $marqueRepo->findOrCreateByName(trim((string)$json['marque']));
+            $marqueId = $marqueRepo->findOrCreateByName($validatedData['marque']);
 
             // Créer le véhicule
             $vehicle = new \App\Models\Vehicules(
-                $json['modele'],
+                $validatedData['modele'],
                 $marqueId,
-                $json['immatriculation'],
-                $json['energie'],
-                (int)$json['nb_places'],
+                $validatedData['immatriculation'],
+                $validatedData['energie'],
+                $validatedData['nb_places'],
                 $userId,
-                $json['couleur'] ?? null,
-                $json['date_premiere_immatriculation'] ?? null,
-                $json['energie'] === 'electrique' ? true : false
+                $validatedData['couleur'],
+                $validatedData['date_premiere_immatriculation'],
+                $validatedData['energie'] === 'electrique' ? true : false
             );
 
             $vehicleId = $vehicleRepo->create($vehicle);
@@ -148,17 +135,15 @@ class UserController
                 'success' => true,
                 'data' => [
                     'id' => $vehicleId,
-                    'modele' => $json['modele'],
-                    'marque' => $json['marque'],
-                    'couleur' => $json['couleur'],
-                    'immatriculation' => $json['immatriculation'],
+                    'modele' => $validatedData['modele'],
+                    'marque' => $validatedData['marque'],
+                    'couleur' => $validatedData['couleur'],
+                    'immatriculation' => $validatedData['immatriculation'],
                     'message' => 'Véhicule ajouté avec succès'
                 ]
             ]);
         } catch (Exception $e) {
-                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+            self::handleError($e);
         }
     }
 
@@ -192,9 +177,7 @@ class UserController
 
             Response::json(200, ['success' => true, 'data' => $vehiclesArray]);
         } catch (Exception $e) {
-                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+            self::handleError($e);
         }
     }
 
@@ -206,9 +189,14 @@ class UserController
     {
         $userId = ControllerHelper::getAuthUserId();
 
-        $vehicleId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-        if ($vehicleId <= 0) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => 'Paramètre id manquant ou invalide']]);
+        // Extraire le paramètre id de la query string
+        $queryParams = [];
+        parse_str($_SERVER['QUERY_STRING'] ?? '', $queryParams);
+
+        try {
+            $vehicleId = VehicleValidator::validateVehicleId($queryParams['id'] ?? 0);
+        } catch (Exception $e) {
+            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
             return;
         }
 
@@ -223,9 +211,7 @@ class UserController
 
             Response::json(200, ['success' => true, 'data' => ['id' => $vehicleId, 'message' => 'Véhicule supprimé']]);
         } catch (Exception $e) {
-                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
-
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
+            self::handleError($e);
         }
     }
 
@@ -272,9 +258,18 @@ class UserController
             // ÉTAPE 6 : Retourner une réponse JSON de succès
             Response::json(200, ['success' => true, 'data' => $userUpdated->toArray()]);
         } catch (Exception $e) {
-                        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Mise à jour impossible' : $e->getMessage();
-
+            $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Mise à jour impossible' : $e->getMessage();
             Response::json(422, ['success' => false, 'error' => ['code' => 'UPDATE_FAILED', 'message' => $errorMsg]]);
         }
+    }
+
+    /**
+     * Gère les erreurs communes dans les endpoints
+     * @param Exception $e L'exception levée
+     */
+    private static function handleError(Exception $e): void
+    {
+        $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Erreur serveur' : $e->getMessage();
+        Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $errorMsg]]);
     }
 }
