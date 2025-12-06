@@ -177,18 +177,11 @@ class TrajetController
 
     /**
      * Liste les prochains trajets du chauffeur connecté
+     * GET /api/user/trajets
      */
     public static function myTrips(): void
     {
-        // Authentifier l'utilisateur
-        try {
-            $middleware = new \App\Middleware\AuthMiddleware();
-            $userData = $middleware->authenticate();
-            $userId = (int)$userData['user_id'];
-        } catch (Exception $e) {
-            Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise.']]);
-            return;
-        }
+        $userId = ControllerHelper::getAuthUserId();
 
         try {
             $repo = SL::getTrajetRepository();
