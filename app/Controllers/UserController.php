@@ -6,6 +6,7 @@ use App\Factories\DatabaseFactory;
 use App\Repositories\UserRepository;
 use App\Services\UserService;
 use App\Validators\UserProfileValidator;
+use App\Validators\QueryValidator;
 use App\Repositories\VehicleRepository;
 use App\Repositories\MarqueRepository;
 use App\Helpers\ControllerHelper;
