@@ -6,6 +6,7 @@ use App\Validators\QueryValidator;
 use App\Services\ReviewService;
 use App\Models\Avis;
 use App\Middleware\CsrfMiddleware;
+use App\Core\Response;
 
 /**
  * Contrôleur des avis.
@@ -20,8 +21,7 @@ class AvisController
         try {
             $rideId = QueryValidator::validateRideId($query); // Exception 400 si invalide
         } catch (\Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_PARAM','message' => 'Paramètre covoiturage_id requis']]);
+            Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_PARAM','message' => 'Paramètre covoiturage_id requis']]);
             return;
         }
 
@@ -35,7 +35,7 @@ class AvisController
             'date_creation' => $a->createdAt->format('Y-m-d H:i:s')
         ], $avis);
 
-        echo json_encode(['success' => true,'data' => [
+        Response::json(200, ['success' => true,'data' => [
             'items' => $payload,
             'count' => count($payload),
             'average' => $service->averageForRide($rideId)
@@ -48,14 +48,13 @@ class AvisController
         try {
             $rideId = QueryValidator::validateRideId($query);
         } catch (\Exception $e) {
-            http_response_code(400);
-            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_PARAM','message' => 'Paramètre covoiturage_id requis']]);
+            Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_PARAM','message' => 'Paramètre covoiturage_id requis']]);
             return;
         }
         $service = new ReviewService();
         $avg = $service->averageForRide($rideId);
         $count = $service->countForRide($rideId);
-        echo json_encode(['success' => true,'data' => ['covoiturage_id' => $rideId,'average' => $avg,'count' => $count]]);
+        Response::json(200, ['success' => true,'data' => ['covoiturage_id' => $rideId,'average' => $avg,'count' => $count]]);
     }
 
     public static function create(): void
@@ -69,8 +68,7 @@ class AvisController
                 throw new \Exception('Utilisateur non valide dans le token');
             }
         } catch (\Exception $e) {
-            http_response_code(401);
-            echo json_encode(['success' => false,'error' => ['code' => 'UNAUTHORIZED','message' => 'Authentification requise pour créer un avis']]);
+            Response::json(401, ['success' => false,'error' => ['code' => 'UNAUTHORIZED','message' => 'Authentification requise pour créer un avis']]);
             return;
         }
 
@@ -80,21 +78,18 @@ class AvisController
         $raw = file_get_contents('php://input');
         $json = json_decode($raw, true);
         if (!is_array($json)) {
-            http_response_code(400);
-            echo json_encode(['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
+            Response::json(400, ['success' => false,'error' => ['code' => 'INVALID_JSON','message' => 'Corps JSON invalide']]);
             return;
         }
         // Validation complète via QueryValidator tout en conservant format d'erreur
         try {
             $data = QueryValidator::validateAvisCreation($json);
         } catch (\App\Exceptions\ValidationException $ve) {
-            http_response_code(422);
-            echo json_encode(['success' => false,'error' => ['code' => 'VALIDATION_FAILED','messages' => $ve->errors]]);
+            Response::json(422, ['success' => false,'error' => ['code' => 'VALIDATION_FAILED','messages' => $ve->errors]]);
             return;
         } catch (\Exception $e) {
             // Erreur de note etc. (déjà status dans exception mais on force 422 pour cohérence format actuel)
-            http_response_code(422);
-            echo json_encode(['success' => false,'error' => ['code' => 'VALIDATION_FAILED','messages' => [$e->getMessage()]]]);
+            Response::json(422, ['success' => false,'error' => ['code' => 'VALIDATION_FAILED','messages' => [$e->getMessage()]]]);
             return;
         }
 
@@ -107,11 +102,9 @@ class AvisController
         $service = new ReviewService();
         $ok = $service->create($rideId, $authenticatedUserId, $rating, $comment);
         if ($ok) {
-            http_response_code(201);
-            echo json_encode(['success' => true,'data' => ['message' => 'Créé','note' => $data['rating']]]);
+            Response::json(201, ['success' => true,'data' => ['message' => 'Créé','note' => $data['rating']]]);
         } else {
-            http_response_code(500);
-            echo json_encode(['success' => false,'error' => ['code' => 'PERSIST_FAILED','message' => 'Échec enregistrement avis']]);
+            Response::json(500, ['success' => false,'error' => ['code' => 'PERSIST_FAILED','message' => 'Échec enregistrement avis']]);
         }
     }
 }
