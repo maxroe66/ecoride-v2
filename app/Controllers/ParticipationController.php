@@ -12,6 +12,7 @@ use App\Services\CancellationService;
 use App\Services\EmailService;
 use App\Middleware\AuthMiddleware;
 use App\Middleware\CsrfMiddleware;
+use App\Core\Response;
 use Exception;
 
 /**
@@ -27,8 +28,6 @@ class ParticipationController
      */
     public static function cancelParticipation(): void
     {
-        header('Content-Type: application/json');
-
         // Récupérer l'ID de la participation depuis les paramètres dynamiques du routeur
         $pathParams = $_REQUEST['_path_params'] ?? [];
         $participationId = $pathParams[0] ?? null;
@@ -40,8 +39,7 @@ class ParticipationController
                 $userData = $authMw->authenticate();
                 $userId = (int)$userData['user_id'];
             } catch (Exception $e) {
-                http_response_code(401);
-                echo json_encode(['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
+                Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 return;
             }
 
@@ -53,8 +51,7 @@ class ParticipationController
                 $validated = CancellationValidator::validateParticipationCancellation((int)$participationId, $userId);
                 $participationId = $validated['participation_id'];
             } catch (Exception $e) {
-                http_response_code(400);
-                echo json_encode(['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
                 return;
             }
 
@@ -81,8 +78,7 @@ class ParticipationController
             $participation = $stmt->fetch(\PDO::FETCH_ASSOC);
 
             if (!$participation) {
-                http_response_code(404);
-                echo json_encode(['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Participation introuvable']]);
+                Response::json(404, ['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Participation introuvable']]);
                 return;
             }
 
@@ -102,19 +98,19 @@ class ParticipationController
             // Récupérer les détails pour envoyer l'email au chauffeur
             $trajet = $trajetRepo->getTrajetDetail($tripId);
             $driver = $userRepo->getUserById((int)($trajet['utilisateur_id'] ?? 0));
+            $passenger = $userRepo->getUserById($userId);
 
-            if ($driver && $trajet) {
+            if ($driver && $trajet && $passenger) {
                 // Envoyer email au chauffeur
                 $emailService->sendParticipantCancellationToDriver(
                     $driver,
                     $trajet,
-                    $user['pseudo'] ?? ($user['prenom'] . ' ' . $user['nom'])
+                    $passenger['pseudo'] ?? ($passenger['prenom'] . ' ' . $passenger['nom'])
                 );
             }
 
             // Retourner la réponse
-            http_response_code(200);
-            echo json_encode([
+            Response::json(200, [
                 'success' => true,
                 'message' => 'Participation annulée avec succès',
                 'refund_amount' => $result['refunded_amount'] ?? 0
@@ -122,8 +118,7 @@ class ParticipationController
 
         } catch (Exception $e) {
             error_log('[ParticipationController::cancelParticipation] Exception : ' . $e->getMessage());
-            http_response_code(500);
-            echo json_encode(['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
         }
     }
 }
