@@ -41,16 +41,16 @@ class Vehicules
     public function toArray(): array
     {
         return [
-            'voiture_id' => $this->id ?? null,
-            'modele' => $this->modele,
+            'id' => $this->id ?? null,
             'marque_id' => $this->marque_id,
-            'immatriculation' => $this->immatriculation,
-            'energie' => $this->energie,
-            'nb_places' => $this->nb_places,
-            'est_ecologique' => (bool)$this->est_ecologique,
+            'marque' => $this->marque_libelle ?? null,
+            'modele' => $this->modele,
             'couleur' => $this->couleur,
+            'immatriculation' => $this->immatriculation,
             'date_premiere_immatriculation' => $this->date_premiere_immatriculation,
-            'utilisateur_id' => $this->utilisateur_id,
+            'nb_places' => $this->nb_places,
+            'energie' => $this->energie,
+            'est_ecologique' => (bool)$this->est_ecologique
         ];
     }
 }

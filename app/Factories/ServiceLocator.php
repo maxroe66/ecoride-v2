@@ -18,7 +18,8 @@ use App\Services\{
     HistoryService,
     CancellationService,
     EmailService,
-    ReviewService
+    ReviewService,
+    VehicleService
 };
 use PDO;
 
@@ -47,6 +48,7 @@ class ServiceLocator
     private static ?CancellationService $cancellationService = null;
     private static ?EmailService $emailService = null;
     private static ?ReviewService $reviewService = null;
+    private static ?VehicleService $vehicleService = null;
 
     /**
      * Obtient la connexion PDO (singleton)
@@ -190,6 +192,14 @@ class ServiceLocator
         return self::$reviewService;
     }
 
+    public static function getVehicleService(): VehicleService
+    {
+        if (self::$vehicleService === null) {
+            self::$vehicleService = new VehicleService();
+        }
+        return self::$vehicleService;
+    }
+
     /**
      * Réinitialise toutes les instances (utile pour les tests)
      */
@@ -210,5 +220,6 @@ class ServiceLocator
         self::$cancellationService = null;
         self::$emailService = null;
         self::$reviewService = null;
+        self::$vehicleService = null;
     }
 }

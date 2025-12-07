@@ -110,37 +110,12 @@ class UserController
         }
 
         try {
-            $vehicleRepo = SL::getVehicleRepository();
-            $marqueRepo = SL::getMarqueRepository();
-
-            // Résoudre la marque à partir du libellé
-            $marqueId = $marqueRepo->findOrCreateByName($validatedData['marque']);
-
-            // Créer le véhicule
-            $vehicle = new \App\Models\Vehicules(
-                $validatedData['modele'],
-                $marqueId,
-                $validatedData['immatriculation'],
-                $validatedData['energie'],
-                $validatedData['nb_places'],
-                $userId,
-                $validatedData['couleur'],
-                $validatedData['date_premiere_immatriculation'],
-                $validatedData['energie'] === 'electrique' ? true : false
-            );
-
-            $vehicleId = $vehicleRepo->create($vehicle);
+            $vehicleService = SL::getVehicleService();
+            $vehicleData = $vehicleService->createVehicle($userId, $validatedData);
 
             Response::json(201, [
                 'success' => true,
-                'data' => [
-                    'id' => $vehicleId,
-                    'modele' => $validatedData['modele'],
-                    'marque' => $validatedData['marque'],
-                    'couleur' => $validatedData['couleur'],
-                    'immatriculation' => $validatedData['immatriculation'],
-                    'message' => 'Véhicule ajouté avec succès'
-                ]
+                'data' => array_merge($vehicleData, ['message' => 'Véhicule ajouté avec succès'])
             ]);
         } catch (Exception $e) {
             self::handleError($e);
@@ -159,21 +134,7 @@ class UserController
             $vehicleRepo = SL::getVehicleRepository();
             $vehicles = $vehicleRepo->findByUserId($userId);
 
-            // Convertir les objets Vehicules en tableau pour JSON
-            $vehiclesArray = array_map(function ($vehicle) {
-                return [
-                    'id' => $vehicle->id,
-                    'marque_id' => $vehicle->marque_id,
-                    'marque' => $vehicle->marque_libelle ?? null,
-                    'modele' => $vehicle->modele,
-                    'couleur' => $vehicle->couleur,
-                    'immatriculation' => $vehicle->immatriculation,
-                    'date_premiere_immatriculation' => $vehicle->date_premiere_immatriculation,
-                    'nb_places' => $vehicle->nb_places,
-                    'energie' => $vehicle->energie,
-                    'est_ecologique' => (bool)$vehicle->est_ecologique
-                ];
-            }, $vehicles);
+            $vehiclesArray = array_map(fn($v) => $v->toArray(), $vehicles);
 
             Response::json(200, ['success' => true, 'data' => $vehiclesArray]);
         } catch (Exception $e) {
