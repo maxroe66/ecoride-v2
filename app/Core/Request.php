@@ -44,4 +44,22 @@ class Request
         $decoded = json_decode($raw, true);
         return is_array($decoded) ? $decoded : [];
     }
+
+    /**
+     * Retourne le corps JSON décodé de la requête
+     * @return array Corps JSON décodé ou tableau vide
+     */
+    public function getJsonBody(): array
+    {
+        return $this->json;
+    }
+
+    /**
+     * Retourne les paramètres de query string
+     * @return array Paramètres GET
+     */
+    public function getQueryParams(): array
+    {
+        return $this->query;
+    }
 }

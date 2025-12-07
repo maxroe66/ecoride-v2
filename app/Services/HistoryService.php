@@ -42,4 +42,28 @@ class HistoryService
         usort($history, fn($a, $b) => strtotime($b['date_depart']) - strtotime($a['date_depart']));
         return $history;
     }
+
+    /**
+     * Récupère l'historique filtré par statut
+     * 
+     * @param int $userId ID de l'utilisateur
+     * @param string $status Statut à filtrer (planifie, en_cours, termine, annule)
+     * @return array Historique filtré
+     */
+    public function getUserTripHistoryByStatus(int $userId, string $status): array
+    {
+        // Récupérer l'historique complet
+        $fullHistory = $this->getUserTripHistory($userId);
+
+        // Filtrer par statut
+        // Pour les trajets (chauffeur) : utiliser 'statut'
+        // Pour les participations (passager) : utiliser 'statut_participation'
+        $filtered = array_filter($fullHistory, function($trip) use ($status) {
+            $tripStatus = $trip['statut'] ?? $trip['statut_participation'] ?? null;
+            return $tripStatus === $status;
+        });
+
+        // Réindexer le tableau (pour avoir des indices 0, 1, 2... au lieu de 0, 3, 7...)
+        return array_values($filtered);
+    }
 }

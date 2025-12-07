@@ -49,13 +49,16 @@ class Router
         $method = strtoupper($_SERVER['REQUEST_METHOD'] ?? 'GET');
         $path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
 
+        // Créer l'objet Request une seule fois
+        $request = new Request();
+
         // D'abord, chercher les routes exactes
         if (isset($this->routes[$method][$path])) {
             $route = $this->routes[$method][$path];
             foreach ($route['middlewares'] as $mw) {
                 $mw();
             }
-            ($route['action'])();
+            ($route['action'])($request);
             return true;
         }
 
@@ -70,7 +73,7 @@ class Router
                     foreach ($route['middlewares'] as $mw) {
                         $mw();
                     }
-                    ($route['action'])();
+                    ($route['action'])($request);
                     return true;
                 }
             }

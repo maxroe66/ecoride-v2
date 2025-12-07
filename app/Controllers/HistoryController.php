@@ -5,12 +5,14 @@ namespace App\Controllers;
 use App\Factories\ServiceLocator as SL;
 use App\Validators\CancellationValidator;
 use App\Helpers\ControllerHelper;
+use App\Core\Request;
 use App\Core\Response;
 use Exception;
 
 /**
  * Contrôleur pour l'historique des covoiturages.
  * Routes: GET /api/historique/trajets
+ * Architecture: Request → Service → Response (pas de DTO pour GET simple)
  */
 class HistoryController
 {
@@ -19,19 +21,17 @@ class HistoryController
      * GET /api/historique/trajets
      * Retourne tous les trajets (en tant que chauffeur) et participations (en tant que passager)
      */
-    public static function getUserHistory(): void
+    public static function getUserHistory(Request $req): void
     {
         try {
             // Récupérer l'utilisateur authentifié (via middleware)
             $userId = ControllerHelper::getAuthUserId();
 
-            // Initialiser le service via ServiceLocator
+            // Service : Récupérer l'historique
             $historyService = SL::getHistoryService();
-
-            // Récupérer l'historique
             $history = $historyService->getUserTripHistory($userId);
 
-            // Retourner la réponse
+            // Response : Retourner les données
             Response::json(200, [
                 'success' => true,
                 'data' => $history,
@@ -39,58 +39,78 @@ class HistoryController
             ]);
 
         } catch (Exception $e) {
-            error_log('[HistoryController] Exception : ' . $e->getMessage());
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            error_log('[HistoryController::getUserHistory] Exception : ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => [
+                    'code' => 'SERVER_ERROR',
+                    'message' => 'Erreur lors de la récupération de l\'historique'
+                ]
+            ]);
         }
     }
 
     /**
      * Récupère l'historique filtré par statut
-     * GET /api/historique/trajets?status=termine
+     * GET /api/historique/trajets/filtre?status=termine
      * Statuts supportés: planifie, en_cours, termine, annule
      */
-    public static function getHistoryByStatus(): void
+    public static function getHistoryByStatus(Request $req): void
     {
-        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
-        $status = $query['status'] ?? null;
-
         try {
-            // Valider le statut
+            // 1. Récupérer les paramètres
+            $query = $req->getQueryParams();
+            $status = $query['status'] ?? null;
+
+            // 2. Validation : Statut requis
             if (!$status) {
-                Response::json(400, ['success' => false, 'error' => ['code' => 'MISSING_STATUS', 'message' => 'Paramètre status requis']]);
+                Response::json(400, [
+                    'success' => false,
+                    'error' => [
+                        'code' => 'MISSING_STATUS',
+                        'message' => 'Paramètre status requis'
+                    ]
+                ]);
                 return;
             }
 
+            // 3. Validation : Statut valide (utilise CancellationValidator pour cohérence)
             try {
-                $status = CancellationValidator::validateStatusFilter($status);
+                $validatedStatus = CancellationValidator::validateStatusFilter($status);
             } catch (Exception $e) {
-                Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                Response::json(400, [
+                    'success' => false,
+                    'error' => [
+                        'code' => 'VALIDATION_ERROR',
+                        'message' => $e->getMessage()
+                    ]
+                ]);
                 return;
             }
             
-            // Récupérer l'utilisateur authentifié (via middleware)
+            // 4. Récupérer l'utilisateur authentifié
             $userId = ControllerHelper::getAuthUserId();
 
-            // Initialiser le service via ServiceLocator
+            // 5. Service : Récupérer et filtrer l'historique
             $historyService = SL::getHistoryService();
+            $filteredHistory = $historyService->getUserTripHistoryByStatus($userId, $validatedStatus);
 
-            // Récupérer l'historique complet
-            $fullHistory = $historyService->getUserTripHistory($userId);
-
-            // Filtrer par statut
-            $filtered = array_filter($fullHistory, fn($trip) => ($trip['statut'] ?? $trip['statut_participation'] ?? null) === $status);
-            $filtered = array_values($filtered); // Réindexer le tableau
-
-            // Retourner la réponse
+            // 6. Response : Retourner les données filtrées
             Response::json(200, [
                 'success' => true,
-                'data' => $filtered,
-                'count' => count($filtered)
+                'data' => $filteredHistory,
+                'count' => count($filteredHistory)
             ]);
 
         } catch (Exception $e) {
-            error_log('[HistoryController] Exception : ' . $e->getMessage());
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            error_log('[HistoryController::getHistoryByStatus] Exception : ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => [
+                    'code' => 'SERVER_ERROR',
+                    'message' => 'Erreur lors de la récupération de l\'historique'
+                ]
+            ]);
         }
     }
 }

@@ -53,7 +53,7 @@ class Bootstrap
     {
         $router = new Router();
         // Health
-        $router->add('GET', '/api/health', function () {
+        $router->add('GET', '/api/health', function (Request $req) {
             echo json_encode(['success' => true,'data' => 'ok']);
         });
         // Auth

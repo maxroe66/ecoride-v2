@@ -3,70 +3,80 @@
 namespace App\Controllers;
 
 use App\Factories\ServiceLocator as SL;
-use App\Factories\DatabaseFactory;
 use App\Validators\CancellationValidator;
-use App\Validators\QueryValidator;
 use App\Validators\ParticipationValidator;
+use App\DTO\RequestParticipationRequest;
+use App\DTO\ParticipationActionRequest;
 use App\Helpers\ControllerHelper;
+use App\Core\Request;
 use App\Core\Response;
 use Exception;
 
 /**
  * Contrôleur pour les participations aux covoiturages.
  * Routes: POST /api/participations/request, /validate, /confirm, /{id}/annuler
+ * Architecture: Request → DTO → Validator → Service → Response
  */
 class ParticipationController
 {
     /**
      * Annule une participation en tant que passager
      * POST /api/participations/{id}/annuler
-     * Paramètres: id (query) - ID de la participation
+     * Paramètres: id (path param) - ID de la participation
      */
-    public static function cancelParticipation(): void
+    public static function cancelParticipation(Request $req): void
     {
-        // Récupérer l'ID de la participation depuis les paramètres dynamiques du routeur
-        $participationId = ControllerHelper::getPathParam(0);
-        $userId = ControllerHelper::getAuthUserId();
-
         try {
-            // 1. Valider les paramètres
+            // 1. Récupérer l'ID de la participation depuis les paramètres dynamiques
+            $participationId = ControllerHelper::getPathParam(0);
+            $userId = ControllerHelper::getAuthUserId();
+
+            // 2. Validation
             try {
                 $validated = CancellationValidator::validateParticipationCancellation((int)$participationId, $userId);
                 $participationId = $validated['participation_id'];
             } catch (Exception $e) {
-                Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                Response::json(400, [
+                    'success' => false,
+                    'error' => [
+                        'code' => 'VALIDATION_ERROR',
+                        'message' => $e->getMessage()
+                    ]
+                ]);
                 return;
             }
 
-            // Initialiser les services via ServiceLocator
-            $cancellationService = SL::getCancellationService();
-            $emailService = SL::getEmailService();
-            $trajetRepo = SL::getTrajetRepository();
-            $userRepo = SL::getUserRepository();
-
-            // Récupérer la participation pour obtenir le covoiturage_id (requête PDO directe)
-            $db = DatabaseFactory::getConnection();
-            $stmt = $db->prepare('SELECT * FROM participation WHERE participation_id = ?');
-            $stmt->execute([$participationId]);
-            $participation = $stmt->fetch(\PDO::FETCH_ASSOC);
+            // 3. Récupérer la participation via Repository (✅ FIXÉ : plus de SQL direct)
+            $participationRepo = SL::getParticipationRepository();
+            $participation = $participationRepo->findById($participationId);
 
             if (!$participation) {
-                Response::json(404, ['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Participation introuvable']]);
+                Response::json(404, [
+                    'success' => false,
+                    'error' => [
+                        'code' => 'NOT_FOUND',
+                        'message' => 'Participation introuvable'
+                    ]
+                ]);
                 return;
             }
 
             $tripId = (int)$participation['covoiturage_id'];
 
-            // Annuler la participation (transaction gérée par le service)
+            // 4. Service : Annuler la participation (transaction gérée)
+            $cancellationService = SL::getCancellationService();
             $result = $cancellationService->cancelParticipationAsPassenger($tripId, $userId);
 
-            // Récupérer les détails pour envoyer l'email au chauffeur
+            // 5. Récupérer les détails pour notification email
+            $trajetRepo = SL::getTrajetRepository();
+            $userRepo = SL::getUserRepository();
+            $emailService = SL::getEmailService();
+
             $trajet = $trajetRepo->getTrajetDetail($tripId);
             $driver = $userRepo->getUserById((int)($trajet['utilisateur_id'] ?? 0));
             $passenger = $userRepo->getUserById($userId);
 
             if ($driver && $trajet && $passenger) {
-                // Envoyer email au chauffeur
                 $emailService->sendParticipantCancellationToDriver(
                     $driver,
                     $trajet,
@@ -74,7 +84,7 @@ class ParticipationController
                 );
             }
 
-            // Retourner la réponse
+            // 6. Response : Retourner succès
             Response::json(200, [
                 'success' => true,
                 'message' => 'Participation annulée avec succès',
@@ -83,7 +93,13 @@ class ParticipationController
 
         } catch (Exception $e) {
             error_log('[ParticipationController::cancelParticipation] Exception : ' . $e->getMessage());
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, [
+                'success' => false,
+                'error' => [
+                    'code' => 'SERVER_ERROR',
+                    'message' => 'Erreur lors de l\'annulation de la participation'
+                ]
+            ]);
         }
     }
 
@@ -92,25 +108,47 @@ class ParticipationController
      * POST /api/participations/request
      * Body: { covoiturage_id, nb_places }
      */
-    public static function requestParticipation(): void
+    public static function requestParticipation(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-        $json = json_decode(file_get_contents('php://input'), true);
-        
         try {
-            QueryValidator::validateJsonInput($json);
-            $validated = ParticipationValidator::validateParticipationRequest($json);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
-            return;
-        }
-        
-        try {
+            // 1. Récupérer utilisateur authentifié
+            $userId = ControllerHelper::getAuthUserId();
+
+            // 2. DTO : Transformer tableau → objet typé
+            $participationDto = RequestParticipationRequest::fromArray($req->getJsonBody());
+            
+            // 3. Validator : Validation métier (si nécessaire - peut être ajouté plus tard)
+            // ParticipationValidator::validateRequest($participationDto);
+            
+            // 4. Service : Logique métier
             $service = SL::getParticipationService();
-            $result = $service->requestParticipation($userId, $validated['covoiturage_id'], $validated['nb_places']);
+            $result = $service->requestParticipation(
+                $userId,
+                $participationDto->covoiturageId,
+                $participationDto->nbPlaces
+            );
+            
+            // 5. Response : Succès
             Response::json(201, ['success' => true, 'data' => $result]);
+            
+        } catch (\InvalidArgumentException $e) {
+            // Erreur DTO (champs manquants)
+            Response::json(400, [
+                'success' => false,
+                'error' => [
+                    'code' => 'INVALID_INPUT',
+                    'message' => $e->getMessage()
+                ]
+            ]);
         } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+            // Erreur service (places insuffisantes, déjà participant, etc.)
+            Response::json(400, [
+                'success' => false,
+                'error' => [
+                    'code' => 'OPERATION_FAILED',
+                    'message' => $e->getMessage()
+                ]
+            ]);
         }
     }
 
@@ -119,25 +157,37 @@ class ParticipationController
      * POST /api/participations/validate
      * Body: { participation_id }
      */
-    public static function validateParticipation(): void
+    public static function validateParticipation(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-        $json = json_decode(file_get_contents('php://input'), true);
-        
         try {
-            QueryValidator::validateJsonInput($json);
-            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
-            return;
-        }
-
-        try {
+            // 1. DTO : Transformer tableau → objet typé
+            $actionDto = ParticipationActionRequest::fromArray($req->getJsonBody());
+            
+            // 2. Service : Logique métier
             $service = SL::getParticipationService();
-            $result = $service->validateParticipation($participationId);
+            $result = $service->validateParticipation($actionDto->participationId);
+            
+            // 3. Response : Succès
             Response::json(200, ['success' => true, 'data' => $result]);
+            
+        } catch (\InvalidArgumentException $e) {
+            // Erreur DTO (champ manquant)
+            Response::json(400, [
+                'success' => false,
+                'error' => [
+                    'code' => 'INVALID_INPUT',
+                    'message' => $e->getMessage()
+                ]
+            ]);
         } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+            // Erreur service
+            Response::json(400, [
+                'success' => false,
+                'error' => [
+                    'code' => 'OPERATION_FAILED',
+                    'message' => $e->getMessage()
+                ]
+            ]);
         }
     }
 
@@ -146,25 +196,37 @@ class ParticipationController
      * POST /api/participations/confirm
      * Body: { participation_id }
      */
-    public static function confirmParticipation(): void
+    public static function confirmParticipation(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-        $json = json_decode(file_get_contents('php://input'), true);
-        
         try {
-            QueryValidator::validateJsonInput($json);
-            $participationId = ParticipationValidator::validateParticipationId($json['participation_id'] ?? null);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
-            return;
-        }
-
-        try {
+            // 1. DTO : Transformer tableau → objet typé
+            $actionDto = ParticipationActionRequest::fromArray($req->getJsonBody());
+            
+            // 2. Service : Logique métier
             $service = SL::getParticipationService();
-            $result = $service->confirmParticipation($participationId);
+            $result = $service->confirmParticipation($actionDto->participationId);
+            
+            // 3. Response : Succès
             Response::json(200, ['success' => true, 'data' => $result]);
+            
+        } catch (\InvalidArgumentException $e) {
+            // Erreur DTO (champ manquant)
+            Response::json(400, [
+                'success' => false,
+                'error' => [
+                    'code' => 'INVALID_INPUT',
+                    'message' => $e->getMessage()
+                ]
+            ]);
         } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'OPERATION_FAILED', 'message' => $e->getMessage()]]);
+            // Erreur service
+            Response::json(400, [
+                'success' => false,
+                'error' => [
+                    'code' => 'OPERATION_FAILED',
+                    'message' => $e->getMessage()
+                ]
+            ]);
         }
     }
 }
