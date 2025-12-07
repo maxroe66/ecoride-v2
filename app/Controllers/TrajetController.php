@@ -7,6 +7,7 @@ use App\Services\TripService;
 use App\Validators\QueryValidator;
 use App\Validators\CancellationValidator;
 use App\Validators\TripValidator;
+use App\Validators\TripCreationValidator;
 use App\DTO\CreateTripRequest;
 use App\Helpers\ControllerHelper;
 use App\Core\Request;
@@ -164,11 +165,14 @@ class TrajetController
             // 2. DTO : Transformer tableau → objet typé
             $tripDto = CreateTripRequest::fromArray($req->getJsonBody());
             
-            // 3. Validation métier : Rôle chauffeur et propriété du véhicule
+            // 3. Validation métier : Règles business (date, prix, places, etc.)
+            TripCreationValidator::validate($tripDto);
+            
+            // 4. Validation métier : Rôle chauffeur et propriété du véhicule
             TripValidator::validateDriverRole($userId);
             TripValidator::validateVehicleOwnership($userId, $tripDto->voitureId);
 
-            // 4. Service : Créer le trajet
+            // 5. Service : Créer le trajet
             $service = SL::getTripService();
             $data = [
                 'lieu_depart' => $tripDto->lieuDepart,
@@ -183,7 +187,7 @@ class TrajetController
             ];
             $trajet = $service->createTrip($data, $userId);
 
-            // 5. Response : Succès
+            // 6. Response : Succès
             Response::json(201, [
                 'success' => true,
                 'data' => $trajet,

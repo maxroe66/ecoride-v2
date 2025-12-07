@@ -17,7 +17,8 @@ class SignupRequest
 
     /**
      * Crée un SignupRequest depuis un tableau JSON décodé.
-     * Valide uniquement la présence des champs requis.
+     * Valide uniquement la présence des champs requis (validation structurelle).
+     * Les règles métier (longueur, format email, force password) sont dans SignupValidator.
      * 
      * @param array $data Données JSON décodées
      * @return self
@@ -29,7 +30,7 @@ class SignupRequest
         $email = trim((string)($data['email'] ?? ''));
         $password = (string)($data['password'] ?? '');
 
-        // Validation BASIQUE : champs présents
+        // Validation structurelle : champs présents
         if ($pseudo === '') {
             throw new \InvalidArgumentException('Le pseudo est requis');
         }
@@ -43,17 +44,5 @@ class SignupRequest
         }
 
         return new self($pseudo, $email, $password);
-    }
-
-    /**
-     * Validation basique : tous les champs sont présents
-     * 
-     * @return bool
-     */
-    public function isValid(): bool
-    {
-        return $this->pseudo !== '' 
-            && $this->email !== '' 
-            && $this->password !== '';
     }
 }

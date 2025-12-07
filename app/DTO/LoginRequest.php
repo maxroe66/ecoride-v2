@@ -16,17 +16,12 @@ class LoginRequest
 
     /**
      * Crée un LoginRequest depuis un tableau JSON décodé.
-     * Laisse la validation métier plus poussée à QueryValidator si nécessaire.
+     * Validation structurelle uniquement : champs présents.
      */
     public static function fromArray(array $data): self
     {
         $emailOrPseudo = trim((string)($data['email'] ?? $data['pseudo'] ?? ''));
         $password = (string)($data['password'] ?? '');
         return new self($emailOrPseudo, $password);
-    }
-
-    public function isValid(): bool
-    {
-        return $this->emailOrPseudo !== '' && $this->password !== '';
     }
 }

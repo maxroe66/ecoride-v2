@@ -23,24 +23,22 @@ class CreateTripRequest
 
     /**
      * Crée un CreateTripRequest depuis un tableau JSON décodé.
-     * Valide uniquement la présence des champs requis et types de base.
+     * Valide uniquement la présence des champs requis (validation structurelle).
+     * Les règles métier (nb_places > 0, prix >= 2, etc.) sont dans TripValidator.
      * 
      * @param array $data Données JSON décodées
      * @return self
-     * @throws \InvalidArgumentException si champs manquants ou invalides
+     * @throws \InvalidArgumentException si champs manquants
      */
     public static function fromArray(array $data): self
     {
-        // Champs obligatoires
+        // Champs obligatoires - validation structurelle uniquement
         $lieuDepart = trim((string)($data['lieu_depart'] ?? ''));
         $lieuArrivee = trim((string)($data['lieu_arrivee'] ?? ''));
         $dateDepart = trim((string)($data['date_depart'] ?? ''));
         $heureDepart = trim((string)($data['heure_depart'] ?? ''));
-        $nbPlaces = isset($data['nb_places']) ? (int)$data['nb_places'] : 0;
-        $prixPersonne = isset($data['prix_personne']) ? (float)$data['prix_personne'] : 0.0;
-        $voitureId = isset($data['voiture_id']) ? (int)$data['voiture_id'] : 0;
-
-        // Validation basique
+        
+        // Validation : champs présents
         if ($lieuDepart === '') {
             throw new \InvalidArgumentException('Le lieu de départ est requis');
         }
@@ -53,15 +51,21 @@ class CreateTripRequest
         if ($heureDepart === '') {
             throw new \InvalidArgumentException('L\'heure de départ est requise');
         }
-        if ($nbPlaces <= 0) {
-            throw new \InvalidArgumentException('Le nombre de places doit être supérieur à 0');
+        
+        // Champs numériques - vérifier présence uniquement
+        if (!isset($data['nb_places'])) {
+            throw new \InvalidArgumentException('Le nombre de places est requis');
         }
-        if ($prixPersonne < 0) {
-            throw new \InvalidArgumentException('Le prix par personne ne peut pas être négatif');
+        if (!isset($data['prix_personne'])) {
+            throw new \InvalidArgumentException('Le prix par personne est requis');
         }
-        if ($voitureId <= 0) {
-            throw new \InvalidArgumentException('Le voiture_id est requis et doit être valide');
+        if (!isset($data['voiture_id'])) {
+            throw new \InvalidArgumentException('Le voiture_id est requis');
         }
+
+        $nbPlaces = (int)$data['nb_places'];
+        $prixPersonne = (float)$data['prix_personne'];
+        $voitureId = (int)$data['voiture_id'];
 
         // Champs optionnels
         $dureeEstimee = isset($data['duree_estimee']) ? (int)$data['duree_estimee'] : null;
