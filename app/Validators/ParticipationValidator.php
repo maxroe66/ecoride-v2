@@ -65,44 +65,5 @@ class ParticipationValidator
             'tripAvailableSeats' => $tripAvailableSeats
         ];
     }
-
-    /**
-     * Valide les paramètres d'une demande de participation depuis le JSON
-     * @param array $json - données JSON décodées
-     * @return array ['covoiturage_id' => int, 'nb_places' => int]
-     * @throws Exception si validation échoue
-     */
-    public static function validateParticipationRequest(array $json): array
-    {
-        $covoiturageId = $json['covoiturage_id'] ?? null;
-        $nbPlaces = $json['nb_places'] ?? null;
-
-        if (!is_int($covoiturageId) || $covoiturageId <= 0) {
-            throw new Exception('covoiturage_id doit être un entier positif', 400);
-        }
-
-        if (!is_int($nbPlaces) || $nbPlaces <= 0) {
-            throw new Exception('nb_places doit être un entier positif', 400);
-        }
-
-        return [
-            'covoiturage_id' => $covoiturageId,
-            'nb_places' => $nbPlaces
-        ];
-    }
-
-    /**
-     * Valide un ID de participation
-     * @param mixed $participationId - ID à valider
-     * @return int - ID validé
-     * @throws Exception si l'ID est invalide
-     */
-    public static function validateParticipationId($participationId): int
-    {
-        if (!is_int($participationId) || $participationId <= 0) {
-            throw new Exception('participation_id doit être un entier positif', 400);
-        }
-        return $participationId;
-    }
 }
 
