@@ -56,7 +56,7 @@ class Router
         if (isset($this->routes[$method][$path])) {
             $route = $this->routes[$method][$path];
             foreach ($route['middlewares'] as $mw) {
-                $mw();
+                $mw($request);
             }
             ($route['action'])($request);
             return true;
@@ -66,12 +66,14 @@ class Router
         if (isset($this->dynamicRoutes[$method])) {
             foreach ($this->dynamicRoutes[$method] as $route) {
                 if (preg_match($route['pattern'], $path, $matches)) {
-                    // Stocker les paramètres dans $_REQUEST pour accès facile
-                    // Les paramètres capturés sont dans $matches[1], $matches[2], etc.
-                    $_REQUEST['_path_params'] = array_slice($matches, 1);
+                    // Stocker les paramètres dans l'objet Request
+                    $request->setPathParams(array_slice($matches, 1));
+                    
+                    // Note: Conserver aussi dans $_REQUEST pour compatibilité avec middlewares
+                    $_REQUEST['_path_params'] = $request->pathParams;
                     
                     foreach ($route['middlewares'] as $mw) {
-                        $mw();
+                        $mw($request);
                     }
                     ($route['action'])($request);
                     return true;

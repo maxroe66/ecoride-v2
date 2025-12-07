@@ -54,7 +54,7 @@ class Bootstrap
         $router = new Router();
         // Health
         $router->add('GET', '/api/health', function (Request $req) {
-            echo json_encode(['success' => true,'data' => 'ok']);
+            Response::json(200, ['success' => true, 'data' => 'ok']);
         });
         // Auth
         $router->add('POST', '/api/auth/signup', [AuthController::class, 'signup']);
@@ -70,10 +70,7 @@ class Bootstrap
         $router->add('GET', '/api/trajets', [TrajetController::class, 'search']);
         $router->add('POST', '/api/trajets', [TrajetController::class, 'create'], MW::authAndCsrf());
         $router->add('GET', '/api/trajets/detail', [TrajetController::class, 'show']);
-        // Alias corrigé: chemin attendu par le frontend `/api/trajets/suggestions`
         $router->add('GET', '/api/trajets/suggestions', [TrajetController::class, 'suggestions']);
-        // Conserver l'ancien alias si déjà utilisé quelque part
-        $router->add('GET', '/api/trajets-suggestions', [TrajetController::class, 'suggestions']);
         // Mes trajets (chauffeur connecté)
         $router->add('GET', '/api/user/trajets', [TrajetController::class, 'myTrips'], [MW::auth()]);
 

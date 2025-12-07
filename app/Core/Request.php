@@ -4,7 +4,7 @@ namespace App\Core;
 
 /**
  * Représente une requête HTTP simplifiée.
- * Fournit accès méthode, chemin, query params et corps JSON décodé.
+ * Fournit accès méthode, chemin, query params, corps JSON, auth user et path params.
  */
 class Request
 {
@@ -13,6 +13,8 @@ class Request
     public array $query = [];
     public array $headers = [];
     public array $json = [];
+    public array $pathParams = [];
+    public ?array $authUser = null;
 
     public function __construct()
     {
@@ -20,7 +22,11 @@ class Request
         $this->path = parse_url($_SERVER['REQUEST_URI'] ?? '/', PHP_URL_PATH) ?: '/';
         parse_str($_SERVER['QUERY_STRING'] ?? '', $this->query);
         $this->headers = $this->parseHeaders();
-        $this->json = $this->parseJsonBody();
+        
+        // Lazy loading: parser JSON uniquement pour POST/PUT/PATCH/DELETE
+        if (in_array($this->method, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+            $this->json = $this->parseJsonBody();
+        }
     }
 
     private function parseHeaders(): array
@@ -61,5 +67,64 @@ class Request
     public function getQueryParams(): array
     {
         return $this->query;
+    }
+
+    /**
+     * Définit les paramètres de chemin dynamiques (ex: /api/trajets/{id}/annuler)
+     * @param array $params Paramètres extraits du chemin
+     */
+    public function setPathParams(array $params): void
+    {
+        $this->pathParams = $params;
+    }
+
+    /**
+     * Retourne les paramètres de chemin dynamiques
+     * @return array Paramètres du chemin
+     */
+    public function getPathParams(): array
+    {
+        return $this->pathParams;
+    }
+
+    /**
+     * Retourne un paramètre de chemin par index
+     * @param int $index Index du paramètre (0, 1, 2...)
+     * @return string|null Valeur du paramètre ou null
+     */
+    public function getPathParam(int $index): ?string
+    {
+        return $this->pathParams[$index] ?? null;
+    }
+
+    /**
+     * Définit l'utilisateur authentifié (par le middleware)
+     * @param array $user Données utilisateur du JWT
+     */
+    public function setAuthUser(array $user): void
+    {
+        $this->authUser = $user;
+    }
+
+    /**
+     * Retourne l'utilisateur authentifié
+     * @return array|null Données utilisateur ou null
+     */
+    public function getAuthUser(): ?array
+    {
+        return $this->authUser;
+    }
+
+    /**
+     * Retourne l'ID de l'utilisateur authentifié
+     * @return int ID utilisateur
+     * @throws \Exception si non authentifié
+     */
+    public function getAuthUserId(): int
+    {
+        if (!$this->authUser || !isset($this->authUser['user_id'])) {
+            throw new \Exception('Utilisateur non authentifié');
+        }
+        return (int)$this->authUser['user_id'];
     }
 }
