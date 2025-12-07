@@ -152,4 +152,38 @@ class TripService
         return $trajet->toArray();
     }
 
+    /**
+     * Filtre les trajets pour ne garder que ceux à venir
+     * Exclut les trajets annulés et passés
+     * 
+     * @param array $trajets Liste des trajets
+     * @return array Trajets à venir réindexés
+     */
+    public function filterUpcoming(array $trajets): array
+    {
+        $now = new \DateTime('now');
+        
+        $filtered = array_filter($trajets, function (array $t) use ($now) {
+            // Exclure les trajets annulés
+            if (($t['statut'] ?? null) === 'annule') {
+                return false;
+            }
+
+            $date = $t['date_depart'] ?? null;
+            if (!$date) {
+                return true; // Garder si pas de date (sécurité)
+            }
+
+            try {
+                $time = $t['heure_depart'] ?? '00:00:00';
+                $dt = new \DateTime($date . ' ' . $time);
+                return $dt >= $now;
+            } catch (\Throwable $e) {
+                return true; // En cas d'erreur, garder le trajet par sécurité
+            }
+        });
+        
+        return array_values($filtered);
+    }
+
 }

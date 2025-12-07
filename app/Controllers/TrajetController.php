@@ -7,28 +7,37 @@ use App\Services\TripService;
 use App\Validators\QueryValidator;
 use App\Validators\CancellationValidator;
 use App\Validators\TripValidator;
+use App\DTO\CreateTripRequest;
 use App\Helpers\ControllerHelper;
+use App\Core\Request;
 use App\Core\Response;
 use Exception;
 
 /**
  * Contrôleur des trajets.
  * Routes: GET /api/trajets, POST /api/trajets, GET /api/user/trajets, etc.
- * Gestion des trajets (recherche, création, annulation) - les participations sont dans ParticipationController
+ * Architecture: Request → DTO → Validator → Service → Response
  */
 class TrajetController
 {
-    public static function search(): void
+    /**
+     * Recherche de trajets
+     * GET /api/trajets?departure=Paris&arrival=Lyon&date=2025-12-25
+     */
+    public static function search(Request $req): void
     {
-        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
+        $query = $req->getQueryParams();
 
         // Validation paramètres principaux
         try {
-            $validated = QueryValidator::validateTrajetSearch($query); // exception 400 pour erreurs
+            $validated = QueryValidator::validateTrajetSearch($query);
         } catch (\Exception $e) {
             $msg = $e->getMessage();
             $code = str_contains($msg, 'Format de date') ? 'INVALID_DATE' : 'MISSING_FIELDS';
-            Response::json(400, ['success' => false,'error' => ['code' => $code,'message' => $msg]]);
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => $code, 'message' => $msg]
+            ]);
             return;
         }
 
@@ -45,23 +54,41 @@ class TrajetController
                 $filters['maxDuration'],
                 $filters['minRating']
             );
+            
             $payload = array_map(fn($t) => TripService::normalize($t), $trajets);
-            Response::json(200, ['success' => true,'data' => ['items' => $payload,'count' => count($payload)]]);
+            
+            Response::json(200, [
+                'success' => true,
+                'data' => ['items' => $payload, 'count' => count($payload)]
+            ]);
         } catch (\Exception $e) {
-            Response::json(500, ['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SEARCH_FAILED', 'message' => 'Erreur lors de la recherche. Veuillez réessayer.']
+            ]);
         }
     }
 
-    public static function suggestions(): void
+    /**
+     * Suggestions de dates pour un trajet
+     * GET /api/trajets/suggestions?departure=Paris&arrival=Lyon
+     */
+    public static function suggestions(Request $req): void
     {
-        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
+        $query = $req->getQueryParams();
+        
         try {
             $validated = QueryValidator::validateDateSuggestions($query);
         } catch (\Exception $e) {
-            Response::json(400, ['success' => false,'error' => ['code' => 'MISSING_FIELDS','message' => $e->getMessage()]]);
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'MISSING_FIELDS', 'message' => $e->getMessage()]
+            ]);
             return;
         }
+        
         $filters = QueryValidator::extractFilters($query);
+        
         try {
             $service = SL::getTripService();
             $suggestions = $service->suggestions(
@@ -73,9 +100,12 @@ class TrajetController
                 $filters['maxDuration'],
                 $filters['minRating']
             );
-            Response::json(200, ['success' => true,'data' => ['suggestions' => $suggestions]]);
+            Response::json(200, ['success' => true, 'data' => ['suggestions' => $suggestions]]);
         } catch (\Exception $e) {
-            Response::json(500, ['success' => false,'error' => ['code' => 'SEARCH_FAILED','message' => 'Erreur lors de la recherche. Veuillez réessayer.']]);
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SEARCH_FAILED', 'message' => 'Erreur lors de la recherche. Veuillez réessayer.']
+            ]);
         }
     }
 
@@ -83,15 +113,18 @@ class TrajetController
      * Récupère le détail complet d'un covoiturage
      * GET /api/trajets/detail?id={id}
      */
-    public static function show(): void
+    public static function show(Request $req): void
     {
-        parse_str($_SERVER['QUERY_STRING'] ?? '', $query);
+        $query = $req->getQueryParams();
         $id = $query['id'] ?? null;
 
         try {
             $id = TripValidator::validateTripId($id);
         } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_ID', 'message' => $e->getMessage()]]);
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'INVALID_ID', 'message' => $e->getMessage()]
+            ]);
             return;
         }
 
@@ -99,62 +132,82 @@ class TrajetController
             $service = SL::getTripService();
             $detail = $service->detail($id);
 
-            // Log temporaire pour debug : affiche le détail et les avis récupérés
-            error_log('[TrajetController] Détail trajet : ' . json_encode($detail));
-
             // Si vide, le trajet n'existe pas
             if (empty($detail)) {
-                Response::json(404, ['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Trajet introuvable']]);
+                Response::json(404, [
+                    'success' => false,
+                    'error' => ['code' => 'NOT_FOUND', 'message' => 'Trajet introuvable']
+                ]);
                 return;
             }
 
-            // Retourner le détail
             Response::json(200, ['success' => true, 'data' => $detail]);
         } catch (\Exception $e) {
-            error_log('[TrajetController] Exception : ' . $e->getMessage());
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            error_log('[TrajetController::show] Exception : ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => 'Erreur lors de la récupération du trajet']
+            ]);
         }
     }
     /**
-     * Endpoint : POST /api/trajets
-     * Crée un nouveau trajet
+     * Créer un nouveau trajet
+     * POST /api/trajets
+     * Body: { lieu_depart, lieu_arrivee, date_depart, heure_depart, nb_places, prix_personne, voiture_id, ... }
      */
-    public static function create(): void
+    public static function create(Request $req): void
     {
-        // 1. RÉCUPÉRER L'UTILISATEUR AUTHENTIFIÉ
-        $userId = ControllerHelper::getAuthUserId();
-
-        // 2. Récupérer les données JSON
-        $raw = file_get_contents('php://input');
-        $data = json_decode($raw, true);
-        
         try {
-            QueryValidator::validateJsonInput($data);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]]);
-            return;
-        }
+            // 1. Récupérer l'utilisateur authentifié
+            $userId = ControllerHelper::getAuthUserId();
 
-        try {
-            // 3. Valider le rôle chauffeur et la propriété du véhicule
+            // 2. DTO : Transformer tableau → objet typé
+            $tripDto = CreateTripRequest::fromArray($req->getJsonBody());
+            
+            // 3. Validation métier : Rôle chauffeur et propriété du véhicule
             TripValidator::validateDriverRole($userId);
-            TripValidator::validateVehicleOwnership($userId, (int)($data['voiture_id'] ?? 0));
+            TripValidator::validateVehicleOwnership($userId, $tripDto->voitureId);
 
-            // 4. Créer le trajet via le service
+            // 4. Service : Créer le trajet
             $service = SL::getTripService();
+            $data = [
+                'lieu_depart' => $tripDto->lieuDepart,
+                'lieu_arrivee' => $tripDto->lieuArrivee,
+                'date_depart' => $tripDto->dateDepart,
+                'heure_depart' => $tripDto->heureDepart,
+                'nb_places' => $tripDto->nbPlaces,
+                'prix_personne' => $tripDto->prixPersonne,
+                'voiture_id' => $tripDto->voitureId,
+                'duree_estimee' => $tripDto->dureeEstimee,
+                'preferences' => $tripDto->preferences
+            ];
             $trajet = $service->createTrip($data, $userId);
 
-            // 5. Retourner le trajet créé avec message d'avertissement
+            // 5. Response : Succès
             Response::json(201, [
                 'success' => true,
                 'data' => $trajet,
                 'message' => 'Trajet créé avec succès. Rappel : 2 crédits seront prélevés par la plateforme pour chaque participation.'
             ]);
 
+        } catch (\InvalidArgumentException $e) {
+            // Erreur DTO (champs manquants)
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]
+            ]);
         } catch (\App\Validators\Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+            // Erreur validation métier
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]
+            ]);
         } catch (Exception $e) {
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            // Erreur service
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]
+            ]);
         }
     }
 
@@ -162,18 +215,25 @@ class TrajetController
      * Liste les prochains trajets du chauffeur connecté
      * GET /api/user/trajets
      */
-    public static function myTrips(): void
+    public static function myTrips(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-
         try {
+            $userId = ControllerHelper::getAuthUserId();
+
+            // Repository : Récupérer tous les trajets
             $repo = SL::getTrajetRepository();
             $trajets = $repo->getTrajetsByUserId($userId);
-            $upcoming = self::filterUpcomingTrips($trajets);
+            
+            // Service : Filtrer pour ne garder que ceux à venir (✅ déplacé du controller)
+            $service = SL::getTripService();
+            $upcoming = $service->filterUpcoming($trajets);
 
             Response::json(200, ['success' => true, 'data' => $upcoming]);
         } catch (Exception $e) {
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => 'Erreur lors de la récupération des trajets']
+            ]);
         }
     }
 
@@ -182,40 +242,43 @@ class TrajetController
      * POST /api/trajets/{id}/annuler
      * Body: { raison?: string }
      */
-    public static function cancelTrip(): void
+    public static function cancelTrip(Request $req): void
     {
-        // Récupérer l'ID du trajet depuis les paramètres dynamiques du routeur
-        $tripId = ControllerHelper::getPathParam(0);
-        $userId = ControllerHelper::getAuthUserId();
-
         try {
-            // 1. Récupérer la raison optionnelle
-            $body = json_decode(file_get_contents('php://input'), true) ?? [];
+            // 1. Récupérer l'ID du trajet depuis les paramètres dynamiques
+            $tripId = ControllerHelper::getPathParam(0);
+            $userId = ControllerHelper::getAuthUserId();
+
+            // 2. Récupérer la raison optionnelle
+            $body = $req->getJsonBody();
             $reason = $body['raison'] ?? null;
 
-            // Valider les paramètres
+            // 3. Validation
             try {
                 $validated = CancellationValidator::validateTripCancellation((int)$tripId, $userId, $reason);
                 $tripId = $validated['trip_id'];
                 $reason = $validated['reason'];
             } catch (Exception $e) {
-                Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
+                Response::json(400, [
+                    'success' => false,
+                    'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]
+                ]);
                 return;
             }
 
-            // Initialiser les services via ServiceLocator
+            // 4. Service : Annuler le trajet (transaction gérée)
             $cancellationService = SL::getCancellationService();
+            $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
+
+            // 5. Envoyer les emails de notification aux passagers
             $emailService = SL::getEmailService();
             $trajetRepo = SL::getTrajetRepository();
             $participationRepo = SL::getParticipationRepository();
+            $userRepo = SL::getUserRepository();
 
-            // Annuler le trajet (transaction gérée dans le service)
-            $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
-
-            // Envoyer les emails de notification aux passagers
             $trajet = $trajetRepo->getTrajetDetail($tripId);
             $participants = $participationRepo->findByTrip($tripId);
-            $driver = SL::getUserRepository()->getUserById($userId);
+            $driver = $userRepo->getUserById($userId);
             $driverName = $driver ? ($driver['nom'] . ' ' . $driver['prenom']) : 'Le chauffeur';
 
             foreach ($participants as $participant) {
@@ -228,7 +291,7 @@ class TrajetController
                 );
             }
 
-            // Retourner la réponse
+            // 6. Response : Succès
             Response::json(200, [
                 'success' => true,
                 'message' => 'Trajet annulé avec succès',
@@ -237,36 +300,10 @@ class TrajetController
 
         } catch (Exception $e) {
             error_log('[TrajetController::cancelTrip] Exception : ' . $e->getMessage());
-            Response::json(500, ['success' => false, 'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]]);
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => 'Erreur lors de l\'annulation du trajet']
+            ]);
         }
-    }
-
-    /**
-     * Filtre les trajets pour ne garder que ceux à venir (non annulés, date future)
-     * @param array $trajets Liste des trajets
-     * @return array Trajets à venir réindexés
-     */
-    private static function filterUpcomingTrips(array $trajets): array
-    {
-        $now = new \DateTime('now');
-        return array_values(array_filter($trajets, function (array $t) use ($now) {
-            // Exclure les trajets annulés
-            if (($t['statut'] ?? null) === 'annule') {
-                return false;
-            }
-
-            $date = $t['date_depart'] ?? null;
-            if (!$date) {
-                return true; // Garder si pas de date (sécurité)
-            }
-
-            try {
-                $time = $t['heure_depart'] ?? '00:00:00';
-                $dt = new \DateTime($date . ' ' . $time);
-                return $dt >= $now;
-            } catch (\Throwable $e) {
-                return true; // En cas d'erreur, garder le trajet par sécurité
-            }
-        }));
     }
 }

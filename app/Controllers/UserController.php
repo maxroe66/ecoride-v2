@@ -4,14 +4,17 @@ namespace App\Controllers;
 
 use App\Factories\ServiceLocator as SL;
 use App\Validators\UserProfileValidator;
-use App\Validators\QueryValidator;
 use App\Validators\VehicleValidator;
+use App\DTO\AddVehicleRequest;
+use App\DTO\UpdateProfileRequest;
 use App\Helpers\ControllerHelper;
+use App\Core\Request;
 use App\Core\Response;
 use Exception;
 
 /**
  * Contrôleur utilisateur : gère les endpoints de profil
+ * Architecture: Request → DTO → Validator → Service → Response
  */
 class UserController
 {
@@ -19,11 +22,11 @@ class UserController
      * Endpoint : GET /api/user/credit
      * Retourne le solde de crédits de l'utilisateur authentifié
      */
-    public static function getCredit(): void
+    public static function getCredit(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-
         try {
+            $userId = ControllerHelper::getAuthUserId();
+
             $userRepo = SL::getUserRepository();
             $credit = $userRepo->getCredit($userId);
 
@@ -37,34 +40,28 @@ class UserController
      * Endpoint : GET /api/user/credit/operations
      * Retourne l'historique des opérations de crédit/débit et des totaux
      */
-    public static function getCreditOperations(): void
+    public static function getCreditOperations(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-
         try {
+            $userId = ControllerHelper::getAuthUserId();
+
+            // Repository : Récupérer les données
             $userRepo = SL::getUserRepository();
             $creditRepo = SL::getCreditOperationRepository();
 
             $operations = $creditRepo->findByUser($userId, null);
             $balance = $userRepo->getCredit($userId);
 
-            // Calculer les totaux
-            $totalCredit = 0.0;
-            $totalDebit = 0.0;
-            foreach ($operations as $op) {
-                if (($op['type_operation'] ?? '') === 'credit') {
-                    $totalCredit += (float)$op['montant'];
-                } elseif (($op['type_operation'] ?? '') === 'debit') {
-                    $totalDebit += (float)$op['montant'];
-                }
-            }
+            // Service : Calculer les totaux (✅ déplacé du controller)
+            $creditService = SL::getCreditOperationService();
+            $totals = $creditService->calculateTotals($operations);
 
             Response::json(200, [
                 'success' => true,
                 'data' => [
                     'balance' => $balance,
-                    'total_credit' => $totalCredit,
-                    'total_debit' => $totalDebit,
+                    'total_credit' => $totals['total_credit'],
+                    'total_debit' => $totals['total_debit'],
                     'operations' => $operations
                 ]
             ]);
@@ -76,11 +73,11 @@ class UserController
      * Endpoint : GET /api/user/preferences
      * Récupère les préférences de l'utilisateur authentifié
      */
-    public static function getPreferences(): void
+    public static function getPreferences(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-
         try {
+            $userId = ControllerHelper::getAuthUserId();
+
             $userRepo = SL::getUserRepository();
             $prefs = $userRepo->getPreferences($userId);
 
@@ -93,23 +90,26 @@ class UserController
      * Endpoint : POST /api/user/vehicles
      * Ajoute un véhicule pour l'utilisateur authentifié
      */
-    public static function addVehicle(): void
+    public static function addVehicle(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-
-        // Récupérer le JSON du corps
-        $raw = file_get_contents('php://input');
-        $json = json_decode($raw, true);
-        
         try {
-            QueryValidator::validateJsonInput($json);
-            $validatedData = VehicleValidator::validateVehicleCreation($json);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
-            return;
-        }
+            $userId = ControllerHelper::getAuthUserId();
 
-        try {
+            // 1. DTO : Transformer tableau → objet typé
+            $vehicleDto = AddVehicleRequest::fromArray($req->getJsonBody());
+            
+            // 2. Validation métier
+            $validatedData = VehicleValidator::validateVehicleCreation([
+                'marque' => $vehicleDto->marque,
+                'modele' => $vehicleDto->modele,
+                'immatriculation' => $vehicleDto->immatriculation,
+                'energie' => $vehicleDto->energie,
+                'nb_places' => $vehicleDto->nbPlaces,
+                'couleur' => $vehicleDto->couleur,
+                'date_premiere_immatriculation' => $vehicleDto->datePremiereImmatriculation
+            ]);
+
+            // 3. Service : Créer le véhicule
             $vehicleService = SL::getVehicleService();
             $vehicleData = $vehicleService->createVehicle($userId, $validatedData);
 
@@ -117,8 +117,19 @@ class UserController
                 'success' => true,
                 'data' => array_merge($vehicleData, ['message' => 'Véhicule ajouté avec succès'])
             ]);
+            
+        } catch (\InvalidArgumentException $e) {
+            // Erreur DTO
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]
+            ]);
         } catch (Exception $e) {
-            self::handleError($e);
+            // Erreur validation métier ou service
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]
+            ]);
         }
     }
 
@@ -126,11 +137,11 @@ class UserController
      * Endpoint : GET /api/user/vehicles
      * Récupère les véhicules de l'utilisateur authentifié
      */
-    public static function getVehicles(): void
+    public static function getVehicles(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-
         try {
+            $userId = ControllerHelper::getAuthUserId();
+
             $vehicleRepo = SL::getVehicleRepository();
             $vehicles = $vehicleRepo->findByUserId($userId);
 
@@ -146,33 +157,34 @@ class UserController
      * Endpoint : DELETE /api/user/vehicles?id=123
      * Supprime un véhicule appartenant à l'utilisateur authentifié
      */
-    public static function deleteVehicle(): void
+    public static function deleteVehicle(Request $req): void
     {
-        $userId = ControllerHelper::getAuthUserId();
-
-        // Extraire le paramètre id de la query string
-        $queryParams = [];
-        parse_str($_SERVER['QUERY_STRING'] ?? '', $queryParams);
+        $query = $req->getQueryParams();
 
         try {
-            $vehicleId = VehicleValidator::validateVehicleId($queryParams['id'] ?? 0);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]]);
-            return;
-        }
-
-        try {
+            $userId = ControllerHelper::getAuthUserId();
+            
+            // Validation
+            $vehicleId = VehicleValidator::validateVehicleId($query['id'] ?? 0);
+            
+            // Service/Repository : Supprimer
             $vehicleRepo = SL::getVehicleRepository();
             $deleted = $vehicleRepo->deleteByIdForUser($vehicleId, $userId);
 
             if (!$deleted) {
-                Response::json(404, ['success' => false, 'error' => ['code' => 'NOT_FOUND', 'message' => 'Véhicule introuvable ou ne vous appartient pas']]);
+                Response::json(404, [
+                    'success' => false,
+                    'error' => ['code' => 'NOT_FOUND', 'message' => 'Véhicule introuvable ou ne vous appartient pas']
+                ]);
                 return;
             }
 
             Response::json(200, ['success' => true, 'data' => ['id' => $vehicleId, 'message' => 'Véhicule supprimé']]);
         } catch (Exception $e) {
-            self::handleError($e);
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'INVALID_INPUT', 'message' => $e->getMessage()]
+            ]);
         }
     }
 
@@ -180,35 +192,24 @@ class UserController
      * Endpoint : PUT /api/user/profile
      * Met à jour le profil utilisateur (rôle, véhicules, préférences)
      */
-    public static function updateProfile(): void
+    public static function updateProfile(Request $req): void
     {
-        // RÉCUPERER L'UTILISATEUR AUTHENTIFIÉ
-        $userId = ControllerHelper::getAuthUserId();
+        try {
+            // 1. Récupérer l'utilisateur authentifié
+            $userId = ControllerHelper::getAuthUserId();
 
-        // ÉTAPE 1 : Récupérer le JSON du corps de la requête
-        $raw = file_get_contents('php://input');
-        $json = json_decode($raw, true);
-        
-        // ÉTAPE 2 : Vérifier que c'est du JSON valide
-        try {
-            QueryValidator::validateJsonInput($json);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]]);
-            return;
-        }
-        
-        // ÉTAPE 4 : Valider les données avec UserProfileValidator
-        try {
-            $validatedData = UserProfileValidator::validateUpdateProfile($json);
-        } catch (Exception $e) {
-            Response::json(400, ['success' => false, 'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage()]]);
-            return;
-        }
-        
-        // ÉTAPE 5 : Appeler UserService pour mettre à jour le profil
-        try {
-            $userService = SL::getUserService();
+            // 2. DTO : Transformer tableau → objet typé
+            $profileDto = UpdateProfileRequest::fromArray($req->getJsonBody());
             
+            // 3. Validation métier
+            $validatedData = UserProfileValidator::validateUpdateProfile([
+                'role' => $profileDto->role,
+                'vehicules' => $profileDto->vehicules,
+                'preferences' => $profileDto->preferences
+            ]);
+            
+            // 4. Service : Mettre à jour le profil
+            $userService = SL::getUserService();
             $userUpdated = $userService->updateProfile(
                 $userId,
                 $validatedData['role'],
@@ -216,11 +217,22 @@ class UserController
                 $validatedData['preferences']
             );
             
-            // ÉTAPE 6 : Retourner une réponse JSON de succès
+            // 5. Response : Succès
             Response::json(200, ['success' => true, 'data' => $userUpdated->toArray()]);
+            
+        } catch (\InvalidArgumentException $e) {
+            // Erreur DTO
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'INVALID_JSON', 'message' => $e->getMessage()]
+            ]);
         } catch (Exception $e) {
+            // Erreur validation métier ou service
             $errorMsg = (strpos(get_class($e), 'PDO') !== false) ? 'Mise à jour impossible' : $e->getMessage();
-            Response::json(422, ['success' => false, 'error' => ['code' => 'UPDATE_FAILED', 'message' => $errorMsg]]);
+            Response::json(422, [
+                'success' => false,
+                'error' => ['code' => 'UPDATE_FAILED', 'message' => $errorMsg]
+            ]);
         }
     }
 

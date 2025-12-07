@@ -19,7 +19,8 @@ use App\Services\{
     CancellationService,
     EmailService,
     ReviewService,
-    VehicleService
+    VehicleService,
+    CreditOperationService
 };
 use PDO;
 
@@ -49,6 +50,7 @@ class ServiceLocator
     private static ?EmailService $emailService = null;
     private static ?ReviewService $reviewService = null;
     private static ?VehicleService $vehicleService = null;
+    private static ?CreditOperationService $creditOperationService = null;
 
     /**
      * Obtient la connexion PDO (singleton)
@@ -198,6 +200,14 @@ class ServiceLocator
             self::$vehicleService = new VehicleService();
         }
         return self::$vehicleService;
+    }
+
+    public static function getCreditOperationService(): CreditOperationService
+    {
+        if (self::$creditOperationService === null) {
+            self::$creditOperationService = new CreditOperationService();
+        }
+        return self::$creditOperationService;
     }
 
     /**
