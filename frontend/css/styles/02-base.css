@@ -11,7 +11,7 @@ html {
 body {
   font-family: var(--font-sans);
   font-size: var(--text-base);
-  color: var(--color-green-verydark);
+  color: var(--color-text);
   background-color: var(--color-beige-light);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
