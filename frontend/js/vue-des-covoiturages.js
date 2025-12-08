@@ -46,7 +46,7 @@ document.addEventListener('DOMContentLoaded', function() {
     async function displaySuggestions(departure, arrival, economique = '', maxPrice = '', maxDuration = '', minRating = '') {
         try {
             // Construire l'URL avec les filtres
-            let url = `/api/trajets-suggestions?departure=${encodeURIComponent(departure)}&arrival=${encodeURIComponent(arrival)}`;
+            let url = `/api/trajets/suggestions?departure=${encodeURIComponent(departure)}&arrival=${encodeURIComponent(arrival)}`;
             if (economique) url += `&economique=${economique}`;
             if (maxPrice) url += `&maxPrice=${maxPrice}`;
             if (maxDuration) url += `&maxDuration=${maxDuration}`;

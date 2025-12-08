@@ -169,6 +169,18 @@ class UserController
             
             // Service/Repository : Supprimer
             $vehicleRepo = SL::getVehicleRepository();
+
+            if ($vehicleRepo->isVehicleUsed($vehicleId)) {
+                Response::json(409, [
+                    'success' => false,
+                    'error' => [
+                        'code' => 'VEHICLE_IN_USE',
+                        'message' => 'Ce véhicule est utilisé par au moins un covoiturage. Supprimez ou mettez à jour les trajets associés avant de le retirer.'
+                    ]
+                ]);
+                return;
+            }
+
             $deleted = $vehicleRepo->deleteByIdForUser($vehicleId, $userId);
 
             if (!$deleted) {

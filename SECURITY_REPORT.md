@@ -34,7 +34,7 @@ Exclus: Tests de pénétration actifs, performance runtime, dépendances vendore
 ## 5. Inventaire des Endpoints Principaux
 - Auth: `POST /api/auth/signup`, `POST /api/auth/login`, `POST /api/auth/logout`.
 - Avis: `GET /api/avis?covoiturage_id=`, `GET /api/avis/stats?covoiturage_id=`, `POST /api/avis`.
-- Trajets: `GET /api/trajets`, `GET /api/trajets-suggestions`.
+- Trajets: `GET /api/trajets`, `GET /api/trajets/suggestions`.
 
 ## 6. Constatations Détaillées
 ### 6.1 Authentification & Sessions

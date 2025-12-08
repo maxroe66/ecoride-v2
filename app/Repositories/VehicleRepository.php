@@ -91,4 +91,14 @@ class VehicleRepository
         $stmt->execute([':id' => $vehicleId, ':userId' => $userId]);
         return $stmt->rowCount() > 0;
     }
+
+    /**
+     * Vérifie si un véhicule est encore référencé par des covoiturages
+     */
+    public function isVehicleUsed(int $vehicleId): bool
+    {
+        $stmt = $this->db->prepare('SELECT COUNT(*) FROM covoiturage WHERE voiture_id = :id');
+        $stmt->execute([':id' => $vehicleId]);
+        return (int)$stmt->fetchColumn() > 0;
+    }
 }

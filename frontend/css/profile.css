@@ -9,6 +9,10 @@
 
 .profile-box {
   margin-bottom: var(--space-lg);
+  background-color: var(--color-white);
+  border-radius: var(--radius-md);
+  padding: var(--space-xl);
+  box-shadow: var(--shadow-card);
 }
 
 /* Header */

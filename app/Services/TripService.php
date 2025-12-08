@@ -128,18 +128,28 @@ class TripService
      */
     public function createTrip(array $data, int $conducteurId): array
     {
+        $vehicleRepo = \App\Factories\ServiceLocator::getVehicleRepository();
+        $isEco = false;
+        foreach ($vehicleRepo->findByUserId($conducteurId) as $vehicle) {
+            if (($vehicle->id ?? null) === (int)$data['voiture_id']) {
+                $isEco = (bool)$vehicle->est_ecologique;
+                break;
+            }
+        }
+
         // Créer l'objet Trajet avec les données validées
         $trajet = new \App\Models\Trajet(
             $data['date_depart'],
             $data['heure_depart'],
-            $data['date_depart'],
-            $data['heure_depart'],
             $data['lieu_depart'],
             $data['lieu_arrivee'],
-            $data['nb_places'],
-            $data['prix_personne'],
+            (int)$data['nb_places'],
+            (float)$data['prix_personne'],
             $conducteurId,
-            $data['voiture_id']
+            (int)$data['voiture_id'],
+            'planifie',
+            $isEco,
+            $data['heure_arrivee'] ?? null
         );
         
         // Persister en BD
