@@ -1,1 +1,4 @@
 /* Page-specific overrides will be migrated here incrementally */
+@layer pages {
+	/* Variations will be defined per view during subsequent steps */
+}
