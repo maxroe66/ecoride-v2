@@ -1,0 +1,42 @@
+/* Light reset to establish predictable base */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+html {
+  line-height: 1.15;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+}
+
+img,
+picture,
+video,
+canvas,
+svg {
+  display: block;
+  max-width: 100%;
+}
+
+input,
+button,
+textarea,
+select {
+  font: inherit;
+}
+
+button,
+input {
+  border: none;
+  background: none;
+  color: inherit;
+}
+
+ol,
+ul {
+  margin: 0;
+  padding: 0;
+}

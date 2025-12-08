@@ -1,0 +1,24 @@
+/* Global layout skeleton */
+body {
+  display: grid;
+  grid-template-rows: minmax(64rem, auto) 1fr minmax(64rem, auto);
+  min-height: 100vh;
+}
+
+header {
+  grid-row: 1 / 2;
+  background-color: var(--color-green-light);
+  color: var(--color-green-verydark);
+  padding: 12rem 16rem;
+}
+
+main {
+  grid-row: 2 / 3;
+}
+
+footer {
+  grid-row: 3 / 4;
+  background-color: var(--color-green-light);
+  color: var(--color-green-verydark);
+  padding: 12rem 16rem;
+}
