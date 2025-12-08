@@ -8,11 +8,7 @@
 }
 
 .profile-box {
-  background: var(--color-white);
-  border-radius: 10rem;
-  padding: 20rem;
-  margin-bottom: 20rem;
-  box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.1);
+  margin-bottom: var(--space-lg);
 }
 
 /* Header */
@@ -42,20 +38,12 @@
 }
 
 .message {
-  padding: 12rem;
-  border-radius: 10rem;
-  margin-bottom: 15rem;
+  display: none;
   opacity: 0;
   transition: opacity 0.3s ease;
-  display: none;
-  border-left: 4rem solid transparent;
-  font-size: 16rem;
 }
 
 .message.show { opacity: 1; display: block; }
-.message.success { background: #d4edda; color: var(--color-green-dark); border-left-color: var(--color-green-dark); }
-.message.error { background: #f8d7da; color: #d32f2f; border-left-color: #d32f2f; }
-.message.info { background: var(--color-green-light); color: var(--color-green-dark); border-left-color: var(--color-green-dark); }
 
 /* Sections */
 .profile-section {
@@ -176,12 +164,6 @@
 
 .vehicle-form .form-group { margin-bottom: 12rem; }
 
-.remove-vehicle-btn,
-.btn-danger {
-  background: #d32f2f;
-  color: var(--color-white);
-}
-
 .remove-vehicle-btn {
   padding: 10rem 16rem;
   border: none;
@@ -192,33 +174,12 @@
   transition: background-color 0.3s ease;
   margin-top: 8rem;
   width: 100%;
+  background: #d32f2f;
+  color: var(--color-white);
 }
 
-.remove-vehicle-btn:hover,
-.btn-danger:hover { background: #b71c1c; }
-.remove-vehicle-btn:active,
-.btn-primary:active,
-.btn-secondary:active,
-.btn-danger:active { transform: scale(0.98); }
-
-/* Buttons */
-.btn {
-  padding: 12rem 20rem;
-  border: none;
-  border-radius: 10rem;
-  font-size: 16rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-weight: 600;
-  display: inline-block;
-  text-align: center;
-  width: 100%;
-}
-
-.btn-primary { background: var(--color-green-dark); color: var(--color-white); }
-.btn-primary:hover { background-color: #256a29; }
-.btn-secondary { background: var(--color-brown-light); color: var(--color-white); }
-.btn-secondary:hover { background-color: #8b7969; }
+.remove-vehicle-btn:hover { background: #b71c1c; }
+.remove-vehicle-btn:active { transform: scale(0.98); }
 
 .btn-group {
   display: flex;
@@ -226,7 +187,6 @@
   gap: 12rem;
   margin-top: 20rem;
 }
-
 .btn-group .btn { width: 100%; }
 
 /* Dropdown & Accordion */

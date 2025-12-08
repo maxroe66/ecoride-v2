@@ -27,45 +27,16 @@ h1 {
 }
 
 /* ========== BARRE DE RECHERCHE ========== */
-form {
-    width: 100%;
-}
+form { width: 100%; }
+
 .input-group {
-    /* Carte centrale conforme au mockup */
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-    justify-content: center;
-    background-color: var(--color-green-light);
-    padding: 15rem;
-    margin: 0 24rem;
-    margin-bottom: 60rem;
-    border-radius: 10rem;
+    margin: 0 24rem var(--space-xxl);
     max-width: 600rem;
 }
 
-input {
-    margin-bottom: 20rem;
-    height: 40rem;
-    width: 100%;
-    border-radius: 10rem;
-}
-input::placeholder {
-    font-size: 16rem;
-}
-button {
+.input-group button {
     align-self: center;
-    width: 100rem;
-    height: 40rem;
-    border-radius: 10rem;
-    background-color: var(--color-green-dark);
-    color: var(--color-white);
-    font-size: 16rem;
-    border: none;
-    cursor: pointer;
-}
-button:hover {
-    background-color: #256a29;
+    min-width: 120rem;
 }
 
 /* ========== RÉSULTATS & SUGGESTIONS ========== */
@@ -481,27 +452,23 @@ button:hover {
         flex-direction: row;
     }
     .input-group {
-        flex-direction: row;
         max-width: 90%;
         gap: 12rem;
         align-items: center;
         padding: clamp(12rem, 3vw, 40rem) 24rem;
-        margin: 0 auto;
-        margin-bottom: 60rem;
+        margin: 0 auto 60rem;
     }
 
-    input {
+    .input-group input {
         margin-bottom: 0;
         flex: 1;
-        height: clamp(40rem, 5vw, 60rem);
         font-size: clamp(14rem, 2vw, 18rem);
     }
 
-    button {
+    .input-group button {
         width: auto;
         min-width: 120rem;
         align-self: center;
-        height: clamp(40rem, 5vw, 60rem);
         font-size: clamp(14rem, 2vw, 18rem);
         padding: 0 32rem;
     }
@@ -608,13 +575,11 @@ button:hover {
         padding-bottom: clamp(12rem, 3vw, 40rem);
     }
 
-    input {
-        height: clamp(40rem, 5vw, 60rem);
+    .input-group input {
         font-size: clamp(14rem, 2vw, 18rem);
     }
 
-    button {
-        height: clamp(40rem, 5vw, 60rem);
+    .input-group button {
         font-size: clamp(14rem, 2vw, 18rem);
         padding: 0 32rem;
     }
