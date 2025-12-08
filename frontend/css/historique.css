@@ -42,7 +42,7 @@
   border-radius: 10rem;
   margin-bottom: 15rem;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-base);
   display: none;
 }
 
@@ -129,13 +129,13 @@
   background: var(--color-white);
   border-radius: 10rem;
   padding: 16rem;
-  box-shadow: 0 2rem 8rem rgba(0, 0, 0, 0.1);
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow var(--transition-base), transform var(--transition-base);
   border-left: 5rem solid var(--color-green-light);
 }
 
 .trip-card:hover {
-  box-shadow: 0 4rem 12rem rgba(0, 0, 0, 0.15);
+  box-shadow: var(--shadow-panel);
   transform: translateY(-2rem);
 }
 
@@ -247,7 +247,7 @@
   margin: 0;
 }
 
-/* Trip Actions */
+/* Trip Actions - Boutons du global.css */
 .trip-actions {
   display: flex;
   gap: 8rem;
@@ -257,49 +257,14 @@
   border-top: 1rem solid var(--color-green-light);
 }
 
-.btn {
-  padding: 8rem 16rem;
-  border: none;
-  border-radius: 6rem;
-  font-size: 14rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6rem;
-}
-
-.btn-primary {
-  background-color: var(--color-green-light);
-  color: var(--color-white);
-}
-
-.btn-primary:hover {
-  background-color: var(--color-green-dark);
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: var(--color-white);
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-}
-
-.btn-cancel {
+/* Surcharge locale pour les boutons d'action (utilise les styles du global.css) */
+.trip-actions .btn-cancel {
   background-color: #e0e0e0;
   color: #333;
 }
 
-.btn-cancel:hover {
+.trip-actions .btn-cancel:hover {
   background-color: #d0d0d0;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 
 /* Modal */
@@ -376,7 +341,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: color 0.3s ease;
+  transition: color var(--transition-base);
 }
 
 .close-btn:hover {
@@ -387,19 +352,7 @@
   padding: 20rem;
 }
 
-/* Form */
-.form-group {
-  margin-bottom: 16rem;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 6rem;
-  font-weight: 500;
-  color: var(--color-green-verydark);
-  font-size: 14rem;
-}
-
+/* Form - Utilise global.css .form-group */
 .form-group textarea {
   width: 100%;
   padding: 10rem;

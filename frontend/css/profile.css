@@ -44,7 +44,7 @@
 .message {
   display: none;
   opacity: 0;
-  transition: opacity 0.3s ease;
+  transition: opacity var(--transition-base);
 }
 
 .message.show { opacity: 1; display: block; }
@@ -128,16 +128,7 @@
   color: var(--color-green-verydark);
 }
 
-/* Forms */
-.form-group { margin-bottom: 15rem; }
-.form-group label {
-  display: block;
-  margin-bottom: 6rem;
-  font-weight: 600;
-  color: var(--color-green-dark);
-  font-size: 16rem;
-}
-
+/* Forms - Utilise global.css .form-group */
 .form-group input,
 .form-group select,
 .form-group textarea { font-size: 16rem; }
@@ -175,7 +166,7 @@
   cursor: pointer;
   font-size: 16rem;
   font-weight: 600;
-  transition: background-color 0.3s ease;
+  transition: background-color var(--transition-base);
   margin-top: 8rem;
   width: 100%;
   background: #d32f2f;
@@ -210,7 +201,7 @@
   align-items: center;
   margin-top: 15rem;
   margin-bottom: 10rem;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base), transform var(--transition-base);
 }
 
 .dropdown-toggle:hover,
@@ -223,7 +214,7 @@
 .dropdown-toggle span:first-child,
 .accordion-toggle span:first-child { flex: 1; text-align: left; }
 .dropdown-icon,
-.accordion-icon { font-size: 16rem; transition: transform 0.3s ease; }
+.accordion-icon { font-size: 16rem; transition: transform var(--transition-base); }
 
 .dropdown-content,
 .accordion-content {
@@ -231,7 +222,7 @@
   border: 1rem solid var(--color-green-light);
   border-radius: 8rem;
   margin-bottom: 15rem;
-  animation: slideDown 0.3s ease;
+  animation: slideDown var(--transition-base) ease;
 }
 
 .dropdown-content { padding: 15rem; }
@@ -323,7 +314,7 @@
 /* Desktop */
 @media (min-width: 1000px) {
   .profile-container { max-width: 1100rem; margin: 28rem auto; padding: 0 32rem; }
-  .profile-box { padding: 28rem; border-radius: 14rem; box-shadow: 0 4rem 16rem rgba(0, 0, 0, 0.08); }
+  .profile-box { padding: 28rem; border-radius: 14rem; box-shadow: var(--shadow-panel); }
   
   .profile-header h1 { font-size: 32rem; }
   .profile-section h2 { font-size: 24rem; }

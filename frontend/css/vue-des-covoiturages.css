@@ -15,20 +15,16 @@ form { grid-row: 2; }
 
 
 /* ========== HEADER & TITRE ========== */
+/* h1 utilise global.css h1 - surcharge locale pour spacing */
 .header-text {
     text-align: center;
     margin-bottom: 22rem;
     font-size: 30rem;
     font-weight: 600;
 }
-h1 {
-    margin: 0;
-    font-size: 32rem;
-}
 
 /* ========== BARRE DE RECHERCHE ========== */
-form { width: 100%; }
-
+/* .input-group utilise global.css - surcharge locale pour spacing */
 .input-group {
     margin: 0 24rem var(--space-xxl);
     max-width: 600rem;
@@ -73,7 +69,7 @@ form { width: 100%; }
     border-radius: 8rem;
     text-align: left;
     border-left: 4rem solid var(--color-green-dark);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    transition: transform var(--transition-base), box-shadow var(--transition-base), background-color var(--transition-base);
     cursor: pointer;
 }
 
@@ -122,7 +118,7 @@ form { width: 100%; }
     padding: clamp(16rem, 5vw, 32rem);
     margin-bottom: clamp(16rem, 3vw, 24rem);
     box-shadow: 0 clamp(2rem, 1vw, 8rem) clamp(8rem, 3vw, 24rem) rgba(0, 0, 0, 0.08);
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all var(--transition-base) cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .trajet-card:hover {
@@ -204,7 +200,7 @@ form { width: 100%; }
     border: none;
     border-radius: 10rem;
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: all var(--transition-base) ease;
     text-decoration: none;
     display: flex;
     align-items: center;
@@ -284,7 +280,7 @@ form { width: 100%; }
 }
 
 .conducteur-rating.loaded {
-    animation: fadeIn 0.3s ease-in;
+    animation: fadeIn var(--transition-base) ease-in;
 }
 
 @keyframes fadeIn {
@@ -298,7 +294,9 @@ form { width: 100%; }
     }
 }
 
-/* ========== STYLES FILTRES ========== */
+/* ========== ANIMATION FILTRES DUPLIQUÉE ========== */
+/* Keyframe définie 2 fois - supprimer la deuxième */
+
 .filters-wrapper {
     width: 100%;
     margin: clamp(20rem, 4vw, 40rem) auto;
@@ -375,7 +373,7 @@ form { width: 100%; }
     font-size: clamp(13rem, 2vw, 15rem);
     color: #333;
     background-color: var(--color-white);
-    transition: all 0.2s ease;
+    transition: all var(--transition-base);
 }
 
 .filter-input-number:focus {
@@ -404,7 +402,7 @@ form { width: 100%; }
     color: #333;
     background-color: var(--color-white);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all var(--transition-base);
     appearance: none;
     background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231f6f21' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
     background-repeat: no-repeat;
