@@ -60,7 +60,7 @@
 .message.error {
   background-color: #f8d7da;
   color: #721c24;
-  border-left: 4rem solid #dc3545;
+  border-left: 4rem solid var(--color-danger-2);
 }
 
 .message.info {
@@ -155,52 +155,6 @@
   font-weight: 500;
 }
 
-.trip-role {
-  display: inline-block;
-  padding: 4rem 8rem;
-  border-radius: 20rem;
-  font-size: 12rem;
-  font-weight: 500;
-}
-
-.trip-role.chauffeur {
-  background-color: #e3f2fd;
-  color: #1565c0;
-}
-
-.trip-role.passager {
-  background-color: #f3e5f5;
-  color: #6a1b9a;
-}
-
-.trip-status {
-  display: inline-block;
-  padding: 4rem 8rem;
-  border-radius: 20rem;
-  font-size: 12rem;
-  font-weight: 500;
-}
-
-.trip-status.planifie {
-  background-color: #fff3e0;
-  color: #e65100;
-}
-
-.trip-status.en_cours {
-  background-color: #e0f2f1;
-  color: #004d40;
-}
-
-.trip-status.termine {
-  background-color: #e8f5e9;
-  color: #1b5e20;
-}
-
-.trip-status.annule {
-  background-color: #ffebee;
-  color: #b71c1c;
-}
-
 /* Trip Details */
 .trip-details {
   display: grid;
@@ -257,37 +211,6 @@
   border-top: 1rem solid var(--color-green-light);
 }
 
-.btn {
-  padding: 8rem 16rem;
-  border: none;
-  border-radius: 6rem;
-  font-size: 14rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6rem;
-}
-
-.btn-primary {
-  background-color: var(--color-green-light);
-  color: var(--color-white);
-}
-
-.btn-primary:hover {
-  background-color: var(--color-green-dark);
-}
-
-.btn-danger {
-  background-color: #dc3545;
-  color: var(--color-white);
-}
-
-.btn-danger:hover {
-  background-color: #c82333;
-}
-
 .btn-cancel {
   background-color: #e0e0e0;
   color: #333;
@@ -295,30 +218,6 @@
 
 .btn-cancel:hover {
   background-color: #d0d0d0;
-}
-
-.btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-/* Modal */
-.modal {
-  display: none;
-  position: fixed;
-  z-index: 1000;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.4);
-  animation: fadeIn 0.3s ease;
-}
-
-.modal.show {
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 
 @keyframes fadeIn {
