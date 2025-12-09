@@ -42,9 +42,9 @@ class TripStartValidator
             $tripTime = strtotime($tripDateTime);
             $now = time();
             
-            // Autoriser démarrage 15 minutes avant
-            if ($tripTime > $now + (15 * 60)) {
-                $errors['datetime'] = 'Le trajet ne peut être démarré que 15 minutes avant l\'heure prévue';
+            // Autoriser démarrage jusqu'à 2 heures après l'heure prévue (retards acceptés)
+            if ($tripTime < $now - (2 * 3600)) {
+                $errors['datetime'] = 'Le trajet est trop ancien pour être démarré (plus de 2 heures après l\'heure prévue)';
             }
         }
 
