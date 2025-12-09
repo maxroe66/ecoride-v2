@@ -256,7 +256,7 @@ function createTripCard(trip) {
             ❌ Annuler
           </button>
         ` : ''}
-        <button class="btn btn-primary" onclick="viewDetails(this)">
+        <button class="btn btn-primary" data-trip-id="${trip.role === 'chauffeur' ? (trip.trajet_id || trip.covoiturage_id || trip.id) : trip.covoiturage_id}" onclick="viewDetails(this)">
           👁️ Détails
         </button>
       </div>
@@ -496,6 +496,12 @@ function showMessage(message, type) {
  * Affiche les détails complets d'un trajet
  */
 function viewDetails(btn) {
-  // TODO: Implémenter la navigation vers la page de détail
-  alert('Affichage des détails à implémenter');
+  const tripId = btn.dataset.tripId;
+  if (!tripId) {
+    showMessage('Erreur: ID du trajet manquant', 'error');
+    return;
+  }
+  
+  // Naviguer vers la page de détails
+  window.location.href = `/vue-covoiturage-detail?id=${tripId}`;
 }
