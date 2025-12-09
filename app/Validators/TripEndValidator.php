@@ -4,6 +4,7 @@ namespace App\Validators;
 
 use App\Exceptions\ValidationException;
 use App\Repositories\TrajetRepository;
+use App\Factories\DatabaseFactory;
 
 /**
  * Validator pour les règles métier d'arrêt d'un trajet
@@ -19,7 +20,8 @@ class TripEndValidator
         $errors = [];
 
         // 1. Vérifier que le trajet existe
-        $repo = new TrajetRepository();
+        $db = DatabaseFactory::getConnection();
+        $repo = new TrajetRepository($db);
         $trajet = $repo->getTrajetDetail($trajetId);
         
         if (empty($trajet)) {

@@ -5,6 +5,7 @@ namespace App\Validators;
 use App\Exceptions\ValidationException;
 use App\Repositories\ParticipationRepository;
 use App\Repositories\TrajetRepository;
+use App\Factories\DatabaseFactory;
 
 /**
  * Validator pour les règles métier de validation de participation par un passager
@@ -19,8 +20,10 @@ class ParticipantValidationValidator
     {
         $errors = [];
 
+        $db = DatabaseFactory::getConnection();
+
         // 1. Vérifier que la participation existe
-        $participationRepo = new ParticipationRepository();
+        $participationRepo = new ParticipationRepository($db);
         $participation = $participationRepo->findById($participationId);
         
         if (empty($participation)) {
@@ -37,7 +40,7 @@ class ParticipantValidationValidator
             }
 
             // 4. Vérifier que le trajet est terminé
-            $trajetRepo = new TrajetRepository();
+            $trajetRepo = new TrajetRepository($db);
             $trajet = $trajetRepo->getTrajetDetail($participation['covoiturage_id']);
             
             if (empty($trajet)) {
