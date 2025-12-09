@@ -139,14 +139,14 @@ function formatPreference(key) {
     document.getElementById('loadingSpinner').style.display = 'none';
     document.getElementById('detailContent').style.display = 'block';
 
-    // Vérifier si le trajet est annulé et désactiver la participation
+    // Vérifier si le trajet est annulé et masquer/désactiver la participation
     const btnParticipate = document.getElementById('btn-participate');
     if (data.trajet.statut === 'annule') {
-      btnParticipate.disabled = true;
-      btnParticipate.textContent = '❌ Covoiturage annulé';
-      btnParticipate.style.opacity = '0.6';
-      btnParticipate.style.cursor = 'not-allowed';
-      btnParticipate.title = 'Ce covoiturage a été annulé et vous ne pouvez plus participer.';
+      // Masquer le bouton complètement
+      btnParticipate.style.display = 'none';
+    } else if (!['planifie', 'en_cours'].includes(data.trajet.statut)) {
+      // Pour les autres statuts (terminé, etc), aussi masquer le bouton
+      btnParticipate.style.display = 'none';
     }
 
     // Initialiser les événements des modales de participation
