@@ -123,23 +123,21 @@ function initializeUS11EventListeners() {
 }
 
 /**
- * ============================================================================
  * MODAL: DÉMARRER TRAJET (CHAUFFEUR)
- * ============================================================================
  */
 
 function openStartTripModal(tripId) {
   currentStartTripId = tripId;
   const modal = document.getElementById('startTripModal');
   if (modal) {
-    modal.style.display = 'flex';
+    modal.classList.add('show');
   }
 }
 
 function closeStartModal() {
   const modal = document.getElementById('startTripModal');
   if (modal) {
-    modal.style.display = 'none';
+    modal.classList.remove('show');
   }
   currentStartTripId = null;
 }
@@ -201,23 +199,21 @@ async function confirmStartTrip() {
 }
 
 /**
- * ============================================================================
  * MODAL: ARRÊTER TRAJET (CHAUFFEUR)
- * ============================================================================
  */
 
 function openEndTripModal(tripId) {
   currentEndTripId = tripId;
   const modal = document.getElementById('endTripModal');
   if (modal) {
-    modal.style.display = 'flex';
+    modal.classList.add('show');
   }
 }
 
 function closeEndModal() {
   const modal = document.getElementById('endTripModal');
   if (modal) {
-    modal.style.display = 'none';
+    modal.classList.remove('show');
   }
   currentEndTripId = null;
 }
@@ -280,23 +276,21 @@ async function confirmEndTrip() {
 }
 
 /**
- * ============================================================================
  * MODAL: VALIDER PARTICIPATION (PASSAGER)
- * ============================================================================
  */
 
 function openValidateParticipationModal(participationId) {
   currentValidateParticipationId = participationId;
   const modal = document.getElementById('validateParticipationModal');
   if (modal) {
-    modal.style.display = 'flex';
+    modal.classList.add('show');
   }
 }
 
 function closeValidateModal() {
   const modal = document.getElementById('validateParticipationModal');
   if (modal) {
-    modal.style.display = 'none';
+    modal.classList.remove('show');
   }
   currentValidateParticipationId = null;
 }
@@ -359,9 +353,7 @@ async function confirmValidateParticipation() {
 }
 
 /**
- * ============================================================================
  * MODAL: SIGNALER UN PROBLÈME (PASSAGER)
- * ============================================================================
  */
 
 function openReportProblemModal(participationId) {
@@ -376,14 +368,14 @@ function openReportProblemModal(participationId) {
   }
   
   if (modal) {
-    modal.style.display = 'flex';
+    modal.classList.add('show');
   }
 }
 
 function closeReportModal() {
   const modal = document.getElementById('reportProblemModal');
   if (modal) {
-    modal.style.display = 'none';
+    modal.classList.remove('show');
   }
   currentReportProblemParticipationId = null;
 }

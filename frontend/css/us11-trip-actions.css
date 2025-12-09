@@ -1,6 +1,10 @@
-/* US11 Trip Actions CSS - Démarrage et arrêt de covoiturage */
+/* US11 Trip Actions CSS - Démarrage et arrêt de covoiturage
+   Utilise les variables et styles de global.css pour cohérence */
 
-/* Statuts supplémentaires pour US11 */
+/* ============================================================================
+   STATUTS SUPPLÉMENTAIRES POUR US11
+   ============================================================================ */
+
 .trip-status.validee {
   background-color: #c8e6c9;
   color: #2e7d32;
@@ -16,181 +20,220 @@
   color: #f57f17;
 }
 
-/* Boutons pour les actions chauffeur (démarrer/arrêter) */
+/* ============================================================================
+   BOUTONS CHAUFFEUR - DÉMARRER TRAJET
+   ============================================================================ */
+
 .btn-start-trip {
   background-color: #28a745;
   border-color: #28a745;
-  color: white;
-  padding: 10rem 16rem;
-  border-radius: 6rem;
+  color: var(--color-white);
+  padding: var(--space-xs) var(--space-lg);
+  border-radius: var(--radius-md);
   font-size: 14rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition-base), box-shadow var(--transition-base);
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+  min-height: 40rem;
 }
 
 .btn-start-trip:hover {
   background-color: #218838;
-  border-color: #218838;
-  box-shadow: 0 2rem 8rem rgba(40, 167, 69, 0.3);
+  box-shadow: 0 6rem 18rem rgba(40, 167, 69, 0.2);
 }
 
 .btn-start-trip:active {
-  background-color: #1e7e34;
+  transform: translateY(-1rem);
 }
 
 .btn-start-trip:disabled {
-  background-color: #c3e6cb;
-  cursor: not-allowed;
   opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
+
+/* ============================================================================
+   BOUTONS CHAUFFEUR - ARRÊTER TRAJET
+   ============================================================================ */
 
 .btn-end-trip {
   background-color: #ffc107;
   border-color: #ffc107;
   color: #212529;
-  padding: 10rem 16rem;
-  border-radius: 6rem;
+  padding: var(--space-xs) var(--space-lg);
+  border-radius: var(--radius-md);
   font-size: 14rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition-base), box-shadow var(--transition-base);
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+  min-height: 40rem;
 }
 
 .btn-end-trip:hover {
   background-color: #e0a800;
-  border-color: #d39e00;
-  box-shadow: 0 2rem 8rem rgba(255, 193, 7, 0.3);
+  box-shadow: 0 6rem 18rem rgba(255, 193, 7, 0.2);
 }
 
 .btn-end-trip:active {
-  background-color: #d19e00;
+  transform: translateY(-1rem);
 }
 
 .btn-end-trip:disabled {
-  background-color: #ffe082;
-  cursor: not-allowed;
   opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-/* Boutons pour les actions passager (valider/signaler problème) */
+/* ============================================================================
+   BOUTONS PASSAGER - VALIDER PARTICIPATION
+   ============================================================================ */
+
 .btn-validate-participation {
   background-color: #17a2b8;
   border-color: #17a2b8;
-  color: white;
-  padding: 10rem 16rem;
-  border-radius: 6rem;
+  color: var(--color-white);
+  padding: var(--space-xs) var(--space-lg);
+  border-radius: var(--radius-md);
   font-size: 14rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition-base), box-shadow var(--transition-base);
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+  min-height: 40rem;
 }
 
 .btn-validate-participation:hover {
   background-color: #138496;
-  border-color: #117a8b;
-  box-shadow: 0 2rem 8rem rgba(23, 162, 184, 0.3);
+  box-shadow: 0 6rem 18rem rgba(23, 162, 184, 0.2);
 }
 
 .btn-validate-participation:active {
-  background-color: #0f6674;
+  transform: translateY(-1rem);
 }
 
 .btn-validate-participation:disabled {
-  background-color: #80deea;
-  cursor: not-allowed;
   opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
+
+/* ============================================================================
+   BOUTONS PASSAGER - SIGNALER PROBLÈME
+   ============================================================================ */
 
 .btn-report-problem {
   background-color: #dc3545;
   border-color: #dc3545;
-  color: white;
-  padding: 10rem 16rem;
-  border-radius: 6rem;
+  color: var(--color-white);
+  padding: var(--space-xs) var(--space-lg);
+  border-radius: var(--radius-md);
   font-size: 14rem;
-  font-weight: 500;
+  font-weight: 600;
   cursor: pointer;
   transition: background-color var(--transition-base), box-shadow var(--transition-base);
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-xxs);
+  min-height: 40rem;
 }
 
 .btn-report-problem:hover {
   background-color: #c82333;
-  border-color: #bd2130;
-  box-shadow: 0 2rem 8rem rgba(220, 53, 69, 0.3);
+  box-shadow: 0 6rem 18rem rgba(220, 53, 69, 0.2);
 }
 
 .btn-report-problem:active {
-  background-color: #bd2130;
+  transform: translateY(-1rem);
 }
 
 .btn-report-problem:disabled {
-  background-color: #f5c6cb;
-  cursor: not-allowed;
   opacity: 0.6;
+  cursor: not-allowed;
+  box-shadow: none;
 }
 
-/* Amélioration des modals pour US11 */
+/* ============================================================================
+   AMÉLIORATION DES MODALS POUR US11
+   ============================================================================ */
+
+/* Infos bleues */
 .modal-info {
   background-color: #e7f3ff;
   border-left: 4rem solid #2196F3;
-  padding: 12rem;
-  margin: 16rem 0;
-  border-radius: 6rem;
+  padding: var(--space-sm);
+  margin: var(--space-md) 0;
+  border-radius: var(--radius-sm);
   font-size: 13rem;
   color: #1565c0;
   line-height: 1.5;
 }
 
+/* Avertissements jaunes */
 .modal-warning {
   background-color: #fff8e1;
   border-left: 4rem solid #ffc107;
-  padding: 12rem;
-  margin: 16rem 0;
-  border-radius: 6rem;
+  padding: var(--space-sm);
+  margin: var(--space-md) 0;
+  border-radius: var(--radius-sm);
   font-size: 13rem;
   color: #f57f17;
   line-height: 1.5;
 }
 
+/* Erreurs rouges */
 .modal-danger {
   background-color: #ffebee;
   border-left: 4rem solid #dc3545;
-  padding: 12rem;
-  margin: 16rem 0;
-  border-radius: 6rem;
+  padding: var(--space-sm);
+  margin: var(--space-md) 0;
+  border-radius: var(--radius-sm);
   font-size: 13rem;
   color: #c62828;
   line-height: 1.5;
 }
 
-/* Form groupes pour US11 */
+/* ============================================================================
+   FORMULAIRES DANS LES MODALS
+   ============================================================================ */
+
 .form-group {
-  margin-bottom: 16rem;
+  margin-bottom: var(--space-md);
 }
 
 .form-group label {
   display: block;
-  margin-bottom: 8rem;
-  font-weight: 500;
-  color: var(--color-green-verydark);
+  margin-bottom: var(--space-xs);
+  font-weight: 600;
+  color: var(--color-green-dark);
   font-size: 14rem;
 }
 
 .form-group textarea {
   width: 100%;
-  padding: 12rem;
+  padding: var(--space-sm);
   border: 1rem solid var(--color-green-light);
-  border-radius: 6rem;
+  border-radius: var(--radius-sm);
   font-family: inherit;
   font-size: 14rem;
   color: var(--color-green-verydark);
   resize: vertical;
-  min-height: 120rem;
+  min-height: 100rem;
   box-sizing: border-box;
   transition: border-color var(--transition-base), box-shadow var(--transition-base);
 }
@@ -202,13 +245,13 @@
 }
 
 .form-group textarea::placeholder {
-  color: var(--color-green-verydark);
-  opacity: 0.5;
+  color: var(--color-bluegrey);
 }
 
+/* Compteur de caractères */
 .char-count {
   display: block;
-  margin-top: 6rem;
+  margin-top: var(--space-xs);
   font-size: 12rem;
   color: var(--color-green-verydark);
   opacity: 0.7;
@@ -217,43 +260,54 @@
 
 .char-count.warning {
   color: #ffc107;
-  font-weight: 500;
+  font-weight: 600;
 }
 
 .char-count.limit {
   color: #dc3545;
-  font-weight: 500;
+  font-weight: 600;
 }
 
-/* Modal text improvements */
+/* ============================================================================
+   TEXTE MODAL
+   ============================================================================ */
+
 .modal-text {
-  margin: 0 0 12rem 0;
+  margin: 0 0 var(--space-sm) 0;
   color: var(--color-green-verydark);
   font-size: 15rem;
   line-height: 1.6;
 }
 
 .modal-body {
-  padding: 20rem;
+  padding: var(--space-lg);
 }
+
+/* ============================================================================
+   ACTIONS DES MODALS (BOUTONS)
+   ============================================================================ */
 
 .form-actions {
   display: flex;
-  gap: 12rem;
+  gap: var(--space-sm);
   justify-content: flex-end;
-  margin-top: 24rem;
-  padding-top: 16rem;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-md);
   border-top: 1rem solid var(--color-green-light);
 }
 
 .form-actions button {
-  padding: 10rem 20rem;
+  padding: var(--space-xs) var(--space-lg);
   font-size: 14rem;
-  font-weight: 500;
-  border-radius: 6rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
   cursor: pointer;
   transition: all var(--transition-base);
   border: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40rem;
 }
 
 .btn-cancel {
@@ -267,52 +321,42 @@
 
 .btn-primary {
   background-color: var(--color-green-dark);
-  color: white;
+  color: var(--color-white);
 }
 
 .btn-primary:hover {
-  background-color: #2d6e2e;
-  box-shadow: 0 2rem 8rem rgba(52, 143, 71, 0.3);
+  background-color: #256a29;
+  box-shadow: 0 6rem 18rem rgba(46, 125, 50, 0.2);
 }
 
 .btn-primary:disabled {
-  background-color: #a5d6a7;
-  cursor: not-allowed;
   opacity: 0.6;
+  cursor: not-allowed;
 }
 
 .btn-danger {
   background-color: #dc3545;
-  color: white;
+  color: var(--color-white);
 }
 
 .btn-danger:hover {
   background-color: #c82333;
-  box-shadow: 0 2rem 8rem rgba(220, 53, 69, 0.3);
+  box-shadow: 0 6rem 18rem rgba(220, 53, 69, 0.2);
 }
 
 .btn-danger:disabled {
-  background-color: #f5c6cb;
-  cursor: not-allowed;
   opacity: 0.6;
-}
-
-/* Loading state pour les boutons */
-.btn:disabled,
-.btn.loading {
-  opacity: 0.7;
   cursor: not-allowed;
 }
 
-.btn.loading::after {
-  content: " ⏳";
-}
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
 
-/* Responsive adjustments for US11 */
 @media (max-width: 768rem) {
   .form-actions {
     flex-direction: column;
-    gap: 8rem;
+    gap: var(--space-xs);
   }
 
   .form-actions button {
@@ -324,19 +368,18 @@
   .btn-validate-participation,
   .btn-report-problem {
     width: 100%;
-    padding: 12rem 16rem;
   }
 
   .modal-info,
   .modal-warning,
   .modal-danger {
-    padding: 10rem;
+    padding: var(--space-xs);
     font-size: 12rem;
-    margin: 12rem 0;
+    margin: var(--space-sm) 0;
   }
 
   .form-group textarea {
-    min-height: 100rem;
-    padding: 10rem;
+    min-height: 80rem;
+    padding: var(--space-xs);
   }
 }
