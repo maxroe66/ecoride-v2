@@ -75,12 +75,28 @@ class TripService
         $conducteur = $userRepo->findById((int)$raw['utilisateur_id']);
         $preferences = method_exists($conducteur, 'getPreferences') ? $conducteur->getPreferences() : [];
 
-        // Récupérer les avis du conducteur
+        // Récupérer les avis du conducteur (tous ses trajets, pas juste celui-ci)
         $avisRepo = new \App\Repositories\ResilientAvisRepository(
             new \App\Repositories\MongoAvisRepository('mongodb://mongo:27017'),
             new \App\Repositories\MysqlAvisRepository(\App\Factories\DatabaseFactory::getConnection())
         );
-        $avisConducteur = $avisRepo->listForRide($id);
+        
+        // Récupérer TOUS les trajets du conducteur pour obtenir leurs avis
+        $trajetRepo = new \App\Repositories\TrajetRepository(\App\Factories\DatabaseFactory::getConnection());
+        $allTrajetsConductor = $trajetRepo->getTrajetsByUserId((int)$raw['utilisateur_id']);
+        
+        // Collecter tous les avis de tous ses trajets
+        $avisConducteur = [];
+        foreach ($allTrajetsConductor as $t) {
+            $avis = $avisRepo->listForRide((int)$t['covoiturage_id']);
+            $avisConducteur = array_merge($avisConducteur, $avis);
+        }
+        
+        // Limiter à 10 avis les plus récents
+        usort($avisConducteur, function($a, $b) {
+            return $b->createdAt->getTimestamp() - $a->createdAt->getTimestamp();
+        });
+        $avisConducteur = array_slice($avisConducteur, 0, 10);
 
         return [
             'covoiturage_id' => (int)$raw['covoiturage_id'],
