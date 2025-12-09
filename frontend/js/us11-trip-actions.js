@@ -154,19 +154,14 @@ async function confirmStartTrip() {
       btn.textContent = '⏳ Démarrage...';
     }
 
-    // Récupérer les headers CSRF avec fallback
-    let csrfHeaders = {};
-    try {
-      csrfHeaders = await (window.SessionManager?.csrfHeaders?.() || Promise.resolve({}));
-    } catch (e) {
-      console.warn('CSRF headers fallback');
-    }
+    // Rafraîchir le token CSRF avant l'appel
+    const csrf = await SessionManager.csrfHeaders();
 
     const response = await fetch(`/api/trajets/${currentStartTripId}/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...csrfHeaders
+        ...csrf
       },
       credentials: 'include',
       body: JSON.stringify({})
@@ -230,19 +225,14 @@ async function confirmEndTrip() {
       btn.textContent = '⏳ Traitement...';
     }
 
-    // Récupérer les headers CSRF avec fallback
-    let csrfHeaders = {};
-    try {
-      csrfHeaders = await (window.SessionManager?.csrfHeaders?.() || Promise.resolve({}));
-    } catch (e) {
-      console.warn('CSRF headers fallback');
-    }
+    // Rafraîchir le token CSRF avant l'appel
+    const csrf = await SessionManager.csrfHeaders();
 
     const response = await fetch(`/api/trajets/${currentEndTripId}/end`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
-        ...csrfHeaders
+        ...csrf
       },
       credentials: 'include',
       body: JSON.stringify({})
@@ -307,19 +297,14 @@ async function confirmValidateParticipation() {
       btn.textContent = '⏳ Validation...';
     }
 
-    // Récupérer les headers CSRF avec fallback
-    let csrfHeaders = {};
-    try {
-      csrfHeaders = await (window.SessionManager?.csrfHeaders?.() || Promise.resolve({}));
-    } catch (e) {
-      console.warn('CSRF headers fallback');
-    }
+    // Rafraîchir le token CSRF avant l'appel
+    const csrf = await SessionManager.csrfHeaders();
 
     const response = await fetch(`/api/participations/${currentValidateParticipationId}/validate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...csrfHeaders
+        ...csrf
       },
       credentials: 'include',
       body: JSON.stringify({})
@@ -401,19 +386,14 @@ async function submitReportProblem(event) {
       btn.textContent = '⏳ Envoi...';
     }
 
-    // Récupérer les headers CSRF avec fallback
-    let csrfHeaders = {};
-    try {
-      csrfHeaders = await (window.SessionManager?.csrfHeaders?.() || Promise.resolve({}));
-    } catch (e) {
-      console.warn('CSRF headers fallback');
-    }
+    // Rafraîchir le token CSRF avant l'appel
+    const csrf = await SessionManager.csrfHeaders();
 
     const response = await fetch(`/api/participations/${currentReportProblemParticipationId}/problem`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        ...csrfHeaders
+        ...csrf
       },
       credentials: 'include',
       body: JSON.stringify({ reason })
