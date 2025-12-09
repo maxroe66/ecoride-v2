@@ -273,22 +273,26 @@ class TrajetController
 
             // 4. Service : Annuler le trajet (transaction gérée)
             $cancellationService = SL::getCancellationService();
+            
+            // ⚠️ IMPORTANT: Récupérer les participants AVANT annulation (sinon ils seront en statut 'annulee')
+            $trajetRepo = SL::getTrajetRepository();
+            $participationRepo = SL::getParticipationRepository();
+            $userRepo = SL::getUserRepository();
+            
+            $trajet = $trajetRepo->getTrajetDetail($tripId);
+            $allParticipants = $participationRepo->findByTrip($tripId);
+            $participantsToNotify = array_filter($allParticipants, fn($p) => $p['statut'] === 'confirmee');
+            $participantCount = count($participantsToNotify);
+            
+            // Maintenant annuler le trajet
             $result = $cancellationService->cancelTripAsDriver($tripId, $userId, $reason);
 
             // 5. Envoyer les emails de notification aux passagers
             $emailService = SL::getEmailService();
-            $trajetRepo = SL::getTrajetRepository();
-            $participationRepo = SL::getParticipationRepository();
-            $userRepo = SL::getUserRepository();
-
-            $trajet = $trajetRepo->getTrajetDetail($tripId);
-            // ✅ IMPORTANT: Filtrer UNIQUEMENT les participations confirmées
-            $allParticipants = $participationRepo->findByTrip($tripId);
-            $participants = array_filter($allParticipants, fn($p) => $p['statut'] === 'confirmee');
             $driver = $userRepo->getUserById($userId);
             $driverName = $driver ? ($driver['nom'] . ' ' . $driver['prenom']) : 'Le chauffeur';
 
-            foreach ($participants as $participant) {
+            foreach ($participantsToNotify as $participant) {
                 $emailService->sendCancellationNotification(
                     $participant,
                     $trajet,
@@ -302,7 +306,7 @@ class TrajetController
             Response::json(200, [
                 'success' => true,
                 'message' => 'Trajet annulé avec succès',
-                'participants_notified' => count($participants)
+                'participants_notified' => $participantCount
             ]);
 
         } catch (Exception $e) {
