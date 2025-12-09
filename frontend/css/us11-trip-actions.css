@@ -24,148 +24,108 @@
    BOUTONS CHAUFFEUR - DÉMARRER TRAJET
    ============================================================================ */
 
-.btn-start-trip {
+.btn.btn-start-trip {
   background-color: #28a745;
-  border-color: #28a745;
   color: var(--color-white);
   padding: var(--space-xs) var(--space-lg);
-  border-radius: var(--radius-md);
   font-size: 14rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--transition-base), box-shadow var(--transition-base);
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xxs);
   min-height: 40rem;
 }
 
-.btn-start-trip:hover {
+.btn.btn-start-trip:hover {
   background-color: #218838;
   box-shadow: 0 6rem 18rem rgba(40, 167, 69, 0.2);
 }
 
-.btn-start-trip:active {
+.btn.btn-start-trip:active {
   transform: translateY(-1rem);
 }
 
-.btn-start-trip:disabled {
+.btn.btn-start-trip:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 /* ============================================================================
    BOUTONS CHAUFFEUR - ARRÊTER TRAJET
    ============================================================================ */
 
-.btn-end-trip {
+.btn.btn-end-trip {
   background-color: #ffc107;
-  border-color: #ffc107;
   color: #212529;
   padding: var(--space-xs) var(--space-lg);
-  border-radius: var(--radius-md);
   font-size: 14rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--transition-base), box-shadow var(--transition-base);
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xxs);
   min-height: 40rem;
 }
 
-.btn-end-trip:hover {
+.btn.btn-end-trip:hover {
   background-color: #e0a800;
   box-shadow: 0 6rem 18rem rgba(255, 193, 7, 0.2);
 }
 
-.btn-end-trip:active {
+.btn.btn-end-trip:active {
   transform: translateY(-1rem);
 }
 
-.btn-end-trip:disabled {
+.btn.btn-end-trip:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 /* ============================================================================
    BOUTONS PASSAGER - VALIDER PARTICIPATION
    ============================================================================ */
 
-.btn-validate-participation {
+.btn.btn-validate-participation {
   background-color: #17a2b8;
-  border-color: #17a2b8;
   color: var(--color-white);
   padding: var(--space-xs) var(--space-lg);
-  border-radius: var(--radius-md);
   font-size: 14rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--transition-base), box-shadow var(--transition-base);
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xxs);
   min-height: 40rem;
 }
 
-.btn-validate-participation:hover {
+.btn.btn-validate-participation:hover {
   background-color: #138496;
   box-shadow: 0 6rem 18rem rgba(23, 162, 184, 0.2);
 }
 
-.btn-validate-participation:active {
+.btn.btn-validate-participation:active {
   transform: translateY(-1rem);
 }
 
-.btn-validate-participation:disabled {
+.btn.btn-validate-participation:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 /* ============================================================================
    BOUTONS PASSAGER - SIGNALER PROBLÈME
    ============================================================================ */
 
-.btn-report-problem {
+.btn.btn-report-problem {
   background-color: #dc3545;
-  border-color: #dc3545;
   color: var(--color-white);
   padding: var(--space-xs) var(--space-lg);
-  border-radius: var(--radius-md);
   font-size: 14rem;
   font-weight: 600;
-  cursor: pointer;
-  transition: background-color var(--transition-base), box-shadow var(--transition-base);
-  border: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-xxs);
   min-height: 40rem;
 }
 
-.btn-report-problem:hover {
+.btn.btn-report-problem:hover {
   background-color: #c82333;
   box-shadow: 0 6rem 18rem rgba(220, 53, 69, 0.2);
 }
 
-.btn-report-problem:active {
+.btn.btn-report-problem:active {
   transform: translateY(-1rem);
 }
 
-.btn-report-problem:disabled {
+.btn.btn-report-problem:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-  box-shadow: none;
 }
 
 /* ============================================================================
@@ -380,10 +340,10 @@
     padding: var(--space-xs) var(--space-sm);
   }
 
-  .btn-start-trip,
-  .btn-end-trip,
-  .btn-validate-participation,
-  .btn-report-problem {
+  .btn.btn-start-trip,
+  .btn.btn-end-trip,
+  .btn.btn-validate-participation,
+  .btn.btn-report-problem {
     width: 100%;
     padding: var(--space-xs) var(--space-md);
   }
@@ -417,10 +377,10 @@
     width: 100%;
   }
 
-  .btn-start-trip,
-  .btn-end-trip,
-  .btn-validate-participation,
-  .btn-report-problem {
+  .btn.btn-start-trip,
+  .btn.btn-end-trip,
+  .btn.btn-validate-participation,
+  .btn.btn-report-problem {
     width: 100%;
   }
 }
