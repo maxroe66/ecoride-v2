@@ -368,3 +368,49 @@
     width: 100%;
   }
 }
+
+/* ============================================================================
+   RATING STARS - Notation par étoiles
+============================================================================ */
+
+.rating-stars {
+  display: flex;
+  gap: 0.5rem;
+  margin: var(--space-sm) 0;
+  font-size: 2rem;
+}
+
+.rating-stars .star {
+  cursor: pointer;
+  color: #ccc;
+  transition: all var(--transition-base);
+  user-select: none;
+}
+
+.rating-stars .star:hover,
+.rating-stars .star.active {
+  color: var(--color-gold, #FFD700);
+  transform: scale(1.1);
+}
+
+.rating-stars .star:hover {
+  filter: drop-shadow(0 0 4px var(--color-gold, #FFD700));
+}
+
+/* ============================================================================
+   BUTTON STYLES - Bouton pour laisser un avis
+============================================================================ */
+
+.btn-leave-review {
+  background-color: var(--color-gold, #FFD700);
+  color: var(--color-dark);
+}
+
+.btn-leave-review:hover {
+  background-color: #FFC700;
+  transform: translateY(-2px);
+}
+
+.btn-leave-review:active {
+  transform: translateY(0);
+}

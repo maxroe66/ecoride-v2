@@ -274,12 +274,17 @@ function createTripCard(trip) {
         ` : ''}
         
         <!-- US11: Boutons Passager -->
-        ${trip.role === 'passager' && statut === 'confirmee' && trip.trajet_statut === 'termine' ? `
-          <button class="btn btn-validate-participation" data-participation-id="${trip.participation_id}">
-            ✅ Valider
-          </button>
+        ${trip.role === 'passager' && trip.trajet_statut === 'termine' ? `
+          ${statut === 'confirmee' ? `
+            <button class="btn btn-validate-participation" data-participation-id="${trip.participation_id}">
+              ✅ Valider
+            </button>
+          ` : ''}
           <button class="btn btn-report-problem" data-participation-id="${trip.participation_id}">
             ⚠️ Problème
+          </button>
+          <button class="btn btn-leave-review" data-trajet-id="${trip.trajet_id}">
+            ⭐ Laisser un avis
           </button>
         ` : ''}
         

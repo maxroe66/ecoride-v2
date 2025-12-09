@@ -137,7 +137,17 @@ class TrajetController
 
         try {
             $service = SL::getTripService();
-            $detail = $service->detail($id);
+            
+            // Récupérer l'ID de l'utilisateur actuellement connecté (peut être null)
+            $currentUserId = null;
+            
+            // Essayer de récupérer l'utilisateur authentifié si le middleware auth a passé
+            $authUser = $req->getAuthUser();
+            if ($authUser && isset($authUser['user_id'])) {
+                $currentUserId = (int)$authUser['user_id'];
+            }
+            
+            $detail = $service->detail($id, $currentUserId);
 
             // Si vide, le trajet n'existe pas
             if (empty($detail)) {

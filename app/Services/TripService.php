@@ -63,7 +63,7 @@ class TripService
         ];
     }
 
-    public function detail(int $id): array
+    public function detail(int $id, ?int $currentUserId = null): array
     {
         $raw = $this->repo->getTrajetDetail($id);
         if (empty($raw)) {
@@ -98,6 +98,23 @@ class TripService
         });
         $avisConducteur = array_slice($avisConducteur, 0, 10);
 
+        // Vérifier si l'utilisateur actuel a déjà participé à ce trajet
+        $userAlreadyParticipated = false;
+        
+        error_log("[TripService::detail] Debug: currentUserId=$currentUserId, conducteur_id=".$raw['utilisateur_id'].", tripId=".$raw['covoiturage_id']);
+        
+        if ($currentUserId && $currentUserId !== (int)$raw['utilisateur_id']) {
+            // Vérifier dans la table participation
+            $participationRepo = new \App\Repositories\ParticipationRepository(\App\Factories\DatabaseFactory::getConnection());
+            $userParticipation = $participationRepo->findByUserAndTrip($currentUserId, (int)$raw['covoiturage_id']);
+            $userAlreadyParticipated = !empty($userParticipation);
+            
+            // Debug log
+            error_log("[TripService::detail] Participation check: participated=$userAlreadyParticipated, result=".json_encode($userParticipation));
+        } else {
+            error_log("[TripService::detail] Skipped participation check: currentUserId is null or same as conductor");
+        }
+
         return [
             'covoiturage_id' => (int)$raw['covoiturage_id'],
             'trajet' => [
@@ -108,7 +125,8 @@ class TripService
                 'lieu_arrivee' => $raw['lieu_arrivee'],
                 'nb_places' => (int)$raw['nb_places'],
                 'prix_personne' => (float)$raw['prix_personne'],
-                'est_ecologique' => (bool)(int)$raw['est_ecologique']
+                'est_ecologique' => (bool)(int)$raw['est_ecologique'],
+                'statut' => $raw['statut']
             ],
             'conducteur' => [
                 'utilisateur_id' => (int)$raw['utilisateur_id'],
@@ -131,7 +149,8 @@ class TripService
                 'note' => $avis->rating,
                 'commentaire' => $avis->comment,
                 'date' => $avis->createdAt->format('Y-m-d')
-            ], $avisConducteur)
+            ], $avisConducteur),
+            'user_already_participated' => $userAlreadyParticipated
         ];
     }
 

@@ -171,7 +171,45 @@
     </div>
   </div>
 
+  <!-- US11 Modal: Laisser un Avis (Passager) -->
+  <div id="leaveReviewModal" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h2>⭐ Laisser un avis</h2>
+        <button class="close-btn">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p class="modal-text">Partagez votre expérience de ce trajet :</p>
+        <form id="leaveReviewForm">
+          <div class="form-group">
+            <label for="reviewRating">Note (1-5 étoiles) :</label>
+            <div class="rating-stars" id="reviewRating">
+              <span class="star" data-value="1">★</span>
+              <span class="star" data-value="2">★</span>
+              <span class="star" data-value="3">★</span>
+              <span class="star" data-value="4">★</span>
+              <span class="star" data-value="5">★</span>
+            </div>
+            <input type="hidden" id="selectedRating" value="0" required>
+          </div>
+          <div class="form-group">
+            <label for="reviewComment">Commentaire (optionnel) :</label>
+            <textarea id="reviewComment" 
+                      placeholder="Partagez vos impressions sur ce trajet..."
+                      maxlength="500"></textarea>
+            <span class="char-count" id="reviewCharCount">0/500</span>
+          </div>
+          <div class="form-actions">
+            <button type="button" class="btn-cancel" id="closeReviewModal">Annuler</button>
+            <button type="submit" class="btn-primary">Soumettre l'avis</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
   <script src="/frontend/js/historique.js"></script>
   <script src="/frontend/js/us11-trip-actions.js"></script>
+  <script src="/frontend/js/leave-review.js"></script>
 </body>
 </html>

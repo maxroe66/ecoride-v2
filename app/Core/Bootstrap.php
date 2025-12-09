@@ -69,7 +69,7 @@ class Bootstrap
         // Trajets
         $router->add('GET', '/api/trajets', [TrajetController::class, 'search']);
         $router->add('POST', '/api/trajets', [TrajetController::class, 'create'], MW::authAndCsrf());
-        $router->add('GET', '/api/trajets/detail', [TrajetController::class, 'show']);
+        $router->add('GET', '/api/trajets/detail', [TrajetController::class, 'show'], [MW::authOptional()]);
         $router->add('GET', '/api/trajets/suggestions', [TrajetController::class, 'suggestions']);
         // Mes trajets (chauffeur connecté)
         $router->add('GET', '/api/user/trajets', [TrajetController::class, 'myTrips'], [MW::auth()]);

@@ -13,6 +13,32 @@ use App\Core\Response;
 class MiddlewareFactory
 {
     /**
+     * Middleware d'authentification optionnel
+     * Essaie de vérifier le JWT et stocke les données utilisateur si présent
+     * Ne bloque pas si l'authentification échoue (pour routes publiques)
+     * 
+     * @return callable
+     */
+    public static function authOptional(): callable
+    {
+        return function(Request $req) {
+            try {
+                $middleware = new AuthMiddleware();
+                $userData = $middleware->authenticate();
+                
+                // Stocker dans l'objet Request (moderne)
+                $req->setAuthUser($userData);
+                
+                // Conserver aussi dans $_REQUEST pour compatibilité avec code existant
+                $_REQUEST['_auth_user'] = $userData;
+            } catch (\Exception $e) {
+                // Silencieusement ignorer l'échec d'authentification
+                // L'utilisateur n'est simplement pas authentifié
+            }
+        };
+    }
+
+    /**
      * Middleware d'authentification
      * Vérifie le JWT et stocke les données utilisateur dans Request->authUser
      * 

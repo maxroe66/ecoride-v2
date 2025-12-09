@@ -38,9 +38,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const data = result.data;
 
     // DEBUG: Afficher les données reçues
-    console.log('Données reçues du backend:', data.trajet);
+    console.log('Données reçues du backend - STRUCTURE COMPLÈTE:', data);
+    console.log('Données trajet:', data.trajet);
     console.log('heure_depart:', data.trajet.heure_depart);
     console.log('heure_arrivee:', data.trajet.heure_arrivee);
+    console.log('STATUT du trajet:', data.trajet.statut);
+    console.log('User already participated:', data.user_already_participated);
 
     // Remplir les informations du trajet
     document.getElementById('detail-departure').textContent = data.trajet.lieu_depart;
@@ -141,12 +144,29 @@ function formatPreference(key) {
 
     // Vérifier si le trajet est annulé et masquer/désactiver la participation
     const btnParticipate = document.getElementById('btn-participate');
-    if (data.trajet.statut === 'annule') {
+    console.log('[DEBUG] btnParticipate:', btnParticipate);
+    console.log('[DEBUG] Statut du trajet:', data.trajet.statut);
+    console.log('[DEBUG] Condition planifie/en_cours:', ['planifie', 'en_cours'].includes(data.trajet.statut));
+    console.log('[DEBUG] Utilisateur a déjà participé:', data.user_already_participated);
+    
+    // S'assurer que le bouton est visible par défaut (display: block)
+    btnParticipate.style.display = 'block';
+    
+    // Masquer si l'utilisateur a déjà participé
+    if (data.user_already_participated) {
+      console.log('[DEBUG] Utilisateur a déjà participé, masquage du bouton');
+      btnParticipate.style.display = 'none';
+    } else if (data.trajet.statut === 'annule') {
       // Masquer le bouton complètement
+      console.log('[DEBUG] Trajet annulé, masquage du bouton');
       btnParticipate.style.display = 'none';
     } else if (!['planifie', 'en_cours'].includes(data.trajet.statut)) {
       // Pour les autres statuts (terminé, etc), aussi masquer le bouton
+      console.log('[DEBUG] Statut non permis, masquage du bouton');
       btnParticipate.style.display = 'none';
+    } else {
+      // Statut acceptable (planifie ou en_cours), bouton reste visible
+      console.log('[DEBUG] Bouton visible');
     }
 
     // Initialiser les événements des modales de participation
