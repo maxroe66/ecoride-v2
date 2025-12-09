@@ -120,7 +120,9 @@ class TripService
                 'energie' => $raw['energie']
             ],
             'rating' => [
-                'average' => (float)$avisRepo->averageForRide($id),
+                'average' => count($avisConducteur) > 0 
+                    ? round(array_sum(array_map(fn($avis) => $avis->rating, $avisConducteur)) / count($avisConducteur), 1)
+                    : 0,
                 'count' => count($avisConducteur)
             ],
             'preferences_conducteur' => $preferences,
