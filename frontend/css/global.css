@@ -221,12 +221,12 @@ button:not(.btn--secondary):not(.btn-secondary):not(.btn--ghost):not(.btn-ghost)
 	justify-content: center;
 	gap: var(--space-sm);
 	background-color: var(--color-green-light);
-	padding: var(--space-lg);
+	padding: 16rem;
 	margin: 0 auto var(--space-xxl);
 	border-radius: var(--radius-md);
 	box-shadow: var(--shadow-card);
-	width: 100%;
-	max-width: 640rem;
+	width: auto;
+	max-width: calc(100% - 32rem);
 }
 
 .input-group input,
@@ -236,12 +236,20 @@ button:not(.btn--secondary):not(.btn-secondary):not(.btn--ghost):not(.btn-ghost)
 	width: 100%;
 }
 
+@media (min-width: 640px) {
+	.input-group {
+		padding: 20rem 24rem;
+		max-width: 600rem;
+	}
+}
+
 @media (min-width: 700px) {
 	.input-group {
 		flex-direction: row;
 		align-items: center;
 		gap: var(--space-md);
 		padding: var(--space-lg) var(--space-xl);
+		max-width: 90%;
 	}
 
 	.input-group > * {

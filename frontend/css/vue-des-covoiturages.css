@@ -26,7 +26,7 @@ form { grid-row: 2; }
 /* ========== BARRE DE RECHERCHE ========== */
 /* .input-group utilise global.css - surcharge locale pour spacing */
 .input-group {
-    margin: 0 24rem var(--space-xxl);
+    margin: 0 auto var(--space-xxl);
     max-width: 600rem;
 }
 

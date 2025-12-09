@@ -16,8 +16,7 @@ h2 {
 form { width: 100%; }
 
 .input-group {
-    margin: 0 24rem var(--space-xxl);
-    max-width: 600rem;
+    margin: 0 auto var(--space-xxl);
 }
 
 .input-group button {
@@ -34,8 +33,7 @@ form { width: 100%; }
 @media (min-width: 640px) {
     .input-group {
         margin: 0 auto var(--space-xxl);
-        padding: 20rem 24rem;
-        border-radius: var(--radius-md);
+        max-width: 600rem;
     }
 }
 
