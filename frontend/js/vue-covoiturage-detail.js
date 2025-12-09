@@ -139,6 +139,16 @@ function formatPreference(key) {
     document.getElementById('loadingSpinner').style.display = 'none';
     document.getElementById('detailContent').style.display = 'block';
 
+    // Vérifier si le trajet est annulé et désactiver la participation
+    const btnParticipate = document.getElementById('btn-participate');
+    if (data.trajet.statut === 'annule') {
+      btnParticipate.disabled = true;
+      btnParticipate.textContent = '❌ Covoiturage annulé';
+      btnParticipate.style.opacity = '0.6';
+      btnParticipate.style.cursor = 'not-allowed';
+      btnParticipate.title = 'Ce covoiturage a été annulé et vous ne pouvez plus participer.';
+    }
+
     // Initialiser les événements des modales de participation
     initializeParticipationEvents();
 
