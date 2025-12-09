@@ -217,7 +217,7 @@ function createTripCard(trip) {
           <div class="trip-detail-icon">💰</div>
           <div class="trip-detail-content">
             <p class="trip-detail-label">Prix par personne</p>
-            <p class="trip-detail-value">${trip.prix || trip.price || '---'} crédits</p>
+            <p class="trip-detail-value">${trip.prix_personne || trip.prix || trip.price || '---'} crédits</p>
           </div>
         </div>
         
@@ -226,7 +226,7 @@ function createTripCard(trip) {
             <div class="trip-detail-icon">👥</div>
             <div class="trip-detail-content">
               <p class="trip-detail-label">Places disponibles</p>
-              <p class="trip-detail-value">${trip.nb_places_disponibles || '0'} place(s)</p>
+              <p class="trip-detail-value">${trip.nb_places || trip.nb_places_disponibles || '0'} place(s)</p>
             </div>
           </div>
           
@@ -251,7 +251,7 @@ function createTripCard(trip) {
       <div class="trip-actions">
         ${canCancel ? `
           <button class="btn btn-danger btn-cancel-trip" 
-                  data-trip-id="${trip.role === 'chauffeur' ? (trip.id || trip.covoiturage_id) : trip.participation_id}"
+                  data-trip-id="${trip.role === 'chauffeur' ? (trip.trajet_id || trip.covoiturage_id || trip.id) : trip.participation_id}"
                   data-type="${cancelType}">
             ❌ Annuler
           </button>
@@ -437,7 +437,11 @@ async function submitCancellation(e) {
     showMessage('Covoiturage annulé avec succès! Les participants ont été notifiés.', 'success');
     closeModal();
     
-    // Recharger l'historique immédiatement
+    // Recharger l'historique immédiatement avec le filtre réinitialisé
+    const statusFilterEl = document.getElementById('statusFilter');
+    if (statusFilterEl) {
+      statusFilterEl.value = ''; // Réinitialiser le filtre
+    }
     await loadHistory();
     
   } catch (error) {

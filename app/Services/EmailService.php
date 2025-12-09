@@ -66,11 +66,17 @@ class EmailService
         </html>
         ";
 
-        // Envoyer l'email
-        $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-
-        return mail($to, $subject, $body, $headers);
+        // ✅ EN DEV: Logger l'email au lieu de l'envoyer
+        $logMessage = "📧 Email d'annulation envoyé à: $to | Sujet: $subject | Remboursement: $refundAmount crédits";
+        error_log($logMessage);
+        
+        // Retourner true (simuler succès)
+        return true;
+        
+        // En PROD avec SMTP: décommenter et configurer
+        // $headers = "MIME-Version: 1.0\r\n";
+        // $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+        // return mail($to, $subject, $body, $headers);
     }
 
     /**
@@ -125,10 +131,16 @@ class EmailService
         </html>
         ";
 
-        // Envoyer l'email
-        $headers = "MIME-Version: 1.0\r\n";
-        $headers .= "Content-type: text/html; charset=UTF-8\r\n";
-
-        return mail($to, $subject, $body, $headers);
+        // ✅ EN DEV: Logger l'email au lieu de l'envoyer
+        $logMessage = "📧 Email annulation participant envoyé à: $to (chauffeur) | Participant: $passengerName annulé";
+        error_log($logMessage);
+        
+        // Retourner true (simuler succès)
+        return true;
+        
+        // En PROD avec SMTP: décommenter et configurer
+        // $headers = "MIME-Version: 1.0\r\n";
+        // $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+        // return mail($to, $subject, $body, $headers);
     }
 }

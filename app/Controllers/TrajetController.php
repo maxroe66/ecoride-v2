@@ -282,7 +282,9 @@ class TrajetController
             $userRepo = SL::getUserRepository();
 
             $trajet = $trajetRepo->getTrajetDetail($tripId);
-            $participants = $participationRepo->findByTrip($tripId);
+            // ✅ IMPORTANT: Filtrer UNIQUEMENT les participations confirmées
+            $allParticipants = $participationRepo->findByTrip($tripId);
+            $participants = array_filter($allParticipants, fn($p) => $p['statut'] === 'confirmee');
             $driver = $userRepo->getUserById($userId);
             $driverName = $driver ? ($driver['nom'] . ' ' . $driver['prenom']) : 'Le chauffeur';
 

@@ -96,6 +96,22 @@ class ParticipationRepository implements ParticipationRepositoryInterface
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Récupère TOUTES les participations d'un utilisateur (tous statuts)
+     * Utilisé pour l'historique filtré par statut
+     */
+    public function findByUserId(int $userId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT * FROM participation
+            WHERE utilisateur_id = :user_id
+            ORDER BY date_reservation DESC
+        ');
+
+        $stmt->execute([':user_id' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     // Update the status of a participation
 
