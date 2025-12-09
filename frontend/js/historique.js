@@ -434,13 +434,18 @@ async function submitCancellation(e) {
 
     const data = parsed || {};
     
+    console.log('📡 Réponse API:', data);
+    console.log('🔍 Type annulation:', currentCancelType);
+    console.log('📧 Participants notifiés:', data.participants_notified);
+    console.log('📧 Driver notifié:', data.driver_notified);
+    
     // 📧 Construire le message avec le nombre de participants notifiés
     let successMessage = 'Covoiturage annulé avec succès!';
     
-    if (currentCancelType === 'trip' && data.participants_notified) {
+    if (currentCancelType === 'trip' && data.participants_notified !== undefined && data.participants_notified !== null) {
       const count = data.participants_notified;
       successMessage += ` 📧 Email envoyé à ${count} participant${count > 1 ? 's' : ''}`;
-    } else if (currentCancelType === 'participation' && data.driver_notified) {
+    } else if (currentCancelType === 'participation' && data.driver_notified === true) {
       successMessage += ` 📧 Email envoyé au chauffeur`;
       if (data.driver_name) {
         successMessage += ` (${data.driver_name})`;
@@ -477,11 +482,14 @@ function showMessage(message, type) {
   container.appendChild(messageEl);
   messageEl.classList.add('show');
   
-  // Auto-remove après 5 secondes
+  // Scroll vers le message pour qu'il soit visible
+  messageEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  
+  // Auto-remove après 8 secondes (augmenté de 5s)
   setTimeout(() => {
     messageEl.classList.remove('show');
     setTimeout(() => messageEl.remove(), 300);
-  }, 5000);
+  }, 8000);
 }
 
 /**

@@ -33,8 +33,12 @@
 
 /* Messages */
 #messageContainer {
+  position: sticky;
+  top: 80px;
+  z-index: 100;
   margin-bottom: 20rem;
   min-height: 0;
+  background: transparent;
 }
 
 .message {
