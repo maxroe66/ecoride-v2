@@ -101,6 +101,14 @@ class Bootstrap
         $router->add('POST', '/api/trajets/{id}/annuler', [TrajetController::class, 'cancelTrip'], MW::authAndCsrf());
         $router->add('POST', '/api/participations/{id}/annuler', [ParticipationController::class, 'cancelParticipation'], MW::authAndCsrf());
 
+        // Démarrer et arrêter un covoiturage (US11)
+        $router->add('POST', '/api/trajets/{id}/start', [TrajetController::class, 'start'], MW::authAndCsrf());
+        $router->add('PUT', '/api/trajets/{id}/end', [TrajetController::class, 'end'], MW::authAndCsrf());
+        
+        // Validation de participation et signalement de problème (US11)
+        $router->add('POST', '/api/participations/{id}/validate', [ParticipationController::class, 'validateParticipationAtEnd'], MW::authAndCsrf());
+        $router->add('POST', '/api/participations/{id}/problem', [ParticipationController::class, 'reportProblem'], MW::authAndCsrf());
+
         header('Content-Type: application/json');
         if ($router->dispatch()) {
             return;

@@ -79,6 +79,24 @@ class ParticipationRepository implements ParticipationRepositoryInterface
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Récupère les participations d'un trajet avec un statut spécifique
+     */
+    public function findByTrajetAndStatus(int $tripId, string $status): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT * FROM participation
+            WHERE covoiturage_id = :trip_id AND statut = :statut
+            ORDER BY date_reservation DESC
+        ');
+
+        $stmt->execute([
+            ':trip_id' => $tripId,
+            ':statut' => $status
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
 
     public function findByUserAndStatus(int $userId, string $status): array
     {

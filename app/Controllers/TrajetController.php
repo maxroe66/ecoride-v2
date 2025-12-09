@@ -4,11 +4,17 @@ namespace App\Controllers;
 
 use App\Factories\ServiceLocator as SL;
 use App\Services\TripService;
+use App\Services\TripStartService;
+use App\Services\TripEndService;
 use App\Validators\QueryValidator;
 use App\Validators\CancellationValidator;
 use App\Validators\TripValidator;
 use App\Validators\TripCreationValidator;
+use App\Validators\TripStartValidator;
+use App\Validators\TripEndValidator;
 use App\DTO\CreateTripRequest;
+use App\DTO\StartTripRequest;
+use App\DTO\EndTripRequest;
 use App\Helpers\ControllerHelper;
 use App\Core\Request;
 use App\Core\Response;
@@ -314,6 +320,84 @@ class TrajetController
             Response::json(500, [
                 'success' => false,
                 'error' => ['code' => 'SERVER_ERROR', 'message' => 'Erreur lors de l\'annulation du trajet']
+            ]);
+        }
+    }
+
+    /**
+     * Démarre un trajet (chauffeur)
+     * POST /api/trajets/{id}/start
+     */
+    public static function start(Request $req): void
+    {
+        try {
+            // 1. Récupérer l'ID du trajet depuis les paramètres dynamiques
+            $trajetId = (int)$req->getPathParam(0);
+            $userId = $req->getAuthUserId();
+
+            // 2. DTO : Valider la structure (minimaliste ici)
+            StartTripRequest::fromArray($req->getJsonBody());
+
+            // 3. Service : Démarrer le trajet
+            $service = new TripStartService();
+            $result = $service->startTrip($trajetId, $userId);
+
+            // 4. Response : Succès
+            Response::json(200, [
+                'success' => true,
+                'data' => $result
+            ]);
+
+        } catch (\App\Exceptions\ValidationException $e) {
+            // Erreur validation métier
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage(), 'details' => $e->getDetails()]
+            ]);
+        } catch (Exception $e) {
+            error_log('[TrajetController::start] Exception : ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]
+            ]);
+        }
+    }
+
+    /**
+     * Arrête un trajet et le marque comme terminé (chauffeur)
+     * PUT /api/trajets/{id}/end
+     */
+    public static function end(Request $req): void
+    {
+        try {
+            // 1. Récupérer l'ID du trajet depuis les paramètres dynamiques
+            $trajetId = (int)$req->getPathParam(0);
+            $userId = $req->getAuthUserId();
+
+            // 2. DTO : Valider la structure (minimaliste ici)
+            EndTripRequest::fromArray($req->getJsonBody());
+
+            // 3. Service : Arrêter le trajet et envoyer emails
+            $service = new TripEndService();
+            $result = $service->endTrip($trajetId, $userId);
+
+            // 4. Response : Succès
+            Response::json(200, [
+                'success' => true,
+                'data' => $result
+            ]);
+
+        } catch (\App\Exceptions\ValidationException $e) {
+            // Erreur validation métier
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage(), 'details' => $e->getDetails()]
+            ]);
+        } catch (Exception $e) {
+            error_log('[TrajetController::end] Exception : ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]
             ]);
         }
     }

@@ -143,4 +143,74 @@ class EmailService
         // $headers .= "Content-type: text/html; charset=UTF-8\r\n";
         // return mail($to, $subject, $body, $headers);
     }
+
+    /**
+     * Envoie une notification de fin de trajet aux participants
+     * Leur demande de valider que tout s'est bien passé
+     * @param array $participant - données du participant (email, prenom, pseudo)
+     * @param array $tripDetails - détails du trajet (date_depart, heure_depart, lieu_depart, lieu_arrivee, covoiturage_id)
+     * @return bool - true si email envoyé avec succès
+     */
+    public function sendEndTripNotification(
+        array $participant,
+        array $tripDetails
+    ): bool {
+        // Récupérer l'email du participant
+        $to = $participant['email'] ?? null;
+        if (!$to) {
+            return false;
+        }
+
+        $prenom = $participant['prenom'] ?? 'Passager';
+        $pseudo = $participant['pseudo'] ?? 'Participant';
+        $date = $tripDetails['date_depart'] ?? '';
+        $heure = $tripDetails['heure_depart'] ?? '';
+        $lieuDepart = $tripDetails['lieu_depart'] ?? '';
+        $lieuArrivee = $tripDetails['lieu_arrivee'] ?? '';
+        $covoiturageId = $tripDetails['covoiturage_id'] ?? '';
+
+        // Construire le sujet
+        $subject = "✅ Votre trajet est terminé - Validez votre participation";
+
+        // Construire le corps HTML de l'email
+        $body = "
+        <html>
+            <body style='font-family: Arial, sans-serif; color: #333;'>
+                <h2>Trajet Terminé</h2>
+                <p>Bonjour $prenom,</p>
+                <p>Votre covoiturage est arrivé à destination ! Merci d'avoir participé à EcoRide.</p>
+                
+                <h3>📍 Détails du trajet:</h3>
+                <ul>
+                    <li><strong>Départ:</strong> $lieuDepart</li>
+                    <li><strong>Arrivée:</strong> $lieuArrivee</li>
+                    <li><strong>Date:</strong> $date à $heure</li>
+                </ul>
+                
+                <h3>⏭️ Prochaine étape:</h3>
+                <p>Veuillez vous rendre sur votre espace EcoRide pour <strong>valider que le trajet s'est bien passé</strong>.</p>
+                <p>Vous pourrez également soumettre un avis et une note pour le chauffeur.</p>
+                
+                <p style='margin-top: 30px; color: #666;'>
+                    Si le trajet ne s'est pas déroulé comme prévu, vous pourrez signaler un problème lors de la validation.
+                </p>
+                
+                <p>Merci de votre confiance !</p>
+                <p><em>Équipe EcoRide</em></p>
+            </body>
+        </html>
+        ";
+
+        // ✅ EN DEV: Logger l'email au lieu de l'envoyer
+        $logMessage = "📧 Email fin de trajet envoyé à: $to | Trajet: $covoiturageId | Passager: $pseudo";
+        error_log($logMessage);
+        
+        // Retourner true (simuler succès)
+        return true;
+        
+        // En PROD avec SMTP: décommenter et configurer
+        // $headers = "MIME-Version: 1.0\r\n";
+        // $headers .= "Content-type: text/html; charset=UTF-8\r\n";
+        // return mail($to, $subject, $body, $headers);
+    }
 }

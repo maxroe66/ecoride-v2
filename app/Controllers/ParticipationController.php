@@ -3,10 +3,16 @@
 namespace App\Controllers;
 
 use App\Factories\ServiceLocator as SL;
+use App\Services\ParticipantValidationService;
+use App\Services\IncidentService;
 use App\Validators\CancellationValidator;
 use App\Validators\ParticipationValidator;
+use App\Validators\ParticipantValidationValidator;
+use App\Validators\ProblemReportValidator;
 use App\DTO\RequestParticipationRequest;
 use App\DTO\ParticipationActionRequest;
+use App\DTO\ValidateParticipationRequest;
+use App\DTO\ReportProblemRequest;
 use App\Helpers\ControllerHelper;
 use App\Core\Request;
 use App\Core\Response;
@@ -228,6 +234,90 @@ class ParticipationController
                     'code' => 'OPERATION_FAILED',
                     'message' => $e->getMessage()
                 ]
+            ]);
+        }
+    }
+
+    /**
+     * Valide la participation d'un passager à la fin du trajet
+     * POST /api/participations/{id}/validate
+     * Passager indique que tout s'est bien passé
+     */
+    public static function validateParticipationAtEnd(Request $req): void
+    {
+        try {
+            // 1. Récupérer l'ID de la participation depuis les paramètres dynamiques
+            $participationId = (int)$req->getPathParam(0);
+            $userId = $req->getAuthUserId();
+
+            // 2. DTO : Valider la structure
+            ValidateParticipationRequest::fromArray($req->getJsonBody());
+
+            // 3. Service : Valider la participation et créditer le chauffeur
+            $service = new ParticipantValidationService();
+            $result = $service->validateParticipation($participationId, $userId);
+
+            // 4. Response : Succès
+            Response::json(200, [
+                'success' => true,
+                'data' => $result
+            ]);
+
+        } catch (\App\Exceptions\ValidationException $e) {
+            // Erreur validation métier
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage(), 'details' => $e->getDetails()]
+            ]);
+        } catch (Exception $e) {
+            error_log('[ParticipationController::validateParticipationAtEnd] Exception : ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]
+            ]);
+        }
+    }
+
+    /**
+     * Signale un problème avec le trajet
+     * POST /api/participations/{id}/problem
+     * Body: { reason: string }
+     * Passager indique que le trajet s'est mal passé
+     */
+    public static function reportProblem(Request $req): void
+    {
+        try {
+            // 1. Récupérer l'ID de la participation depuis les paramètres dynamiques
+            $participationId = (int)$req->getPathParam(0);
+            $userId = $req->getAuthUserId();
+
+            // 2. Récupérer le body JSON
+            $data = $req->getJsonBody();
+
+            // 3. DTO : Valider la structure
+            ReportProblemRequest::fromArray($data);
+
+            // 4. Service : Créer l'incident et notifier
+            $service = new IncidentService();
+            $result = $service->reportProblem($participationId, $userId, $data);
+
+            // 5. Response : Succès
+            Response::json(200, [
+                'success' => true,
+                'data' => $result
+            ]);
+
+        } catch (\App\Exceptions\ValidationException $e) {
+            // Erreur validation métier
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage(), 'details' => $e->getDetails()]
+            ]);
+        } catch (Exception $e) {
+            error_log('[ParticipationController::reportProblem] Exception : ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => ['code' => 'SERVER_ERROR', 'message' => $e->getMessage()]
             ]);
         }
     }
