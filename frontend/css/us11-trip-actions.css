@@ -179,9 +179,13 @@
   padding: var(--space-sm);
   margin: var(--space-md) 0;
   border-radius: var(--radius-sm);
-  font-size: 13rem;
+  font-size: 14rem;
   color: #1565c0;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+.modal-info p {
+  margin: 0;
 }
 
 /* Avertissements jaunes */
@@ -191,9 +195,13 @@
   padding: var(--space-sm);
   margin: var(--space-md) 0;
   border-radius: var(--radius-sm);
-  font-size: 13rem;
+  font-size: 14rem;
   color: #f57f17;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+.modal-warning p {
+  margin: 0;
 }
 
 /* Erreurs rouges */
@@ -203,9 +211,13 @@
   padding: var(--space-sm);
   margin: var(--space-md) 0;
   border-radius: var(--radius-sm);
-  font-size: 13rem;
+  font-size: 14rem;
   color: #c62828;
-  line-height: 1.5;
+  line-height: 1.6;
+}
+
+.modal-danger p {
+  margin: 0;
 }
 
 /* ============================================================================
@@ -273,10 +285,11 @@
    ============================================================================ */
 
 .modal-text {
-  margin: 0 0 var(--space-sm) 0;
+  margin: 0 0 var(--space-md) 0;
   color: var(--color-green-verydark);
   font-size: 15rem;
   line-height: 1.6;
+  font-weight: 500;
 }
 
 .modal-body {
@@ -294,10 +307,11 @@
   margin-top: var(--space-lg);
   padding-top: var(--space-md);
   border-top: 1rem solid var(--color-green-light);
+  flex-wrap: wrap;
 }
 
 .form-actions button {
-  padding: var(--space-xs) var(--space-lg);
+  padding: var(--space-xs) var(--space-md);
   font-size: 14rem;
   font-weight: 600;
   border-radius: var(--radius-md);
@@ -308,6 +322,7 @@
   align-items: center;
   justify-content: center;
   min-height: 40rem;
+  white-space: nowrap;
 }
 
 .btn-cancel {
@@ -353,7 +368,46 @@
    RESPONSIVE
    ============================================================================ */
 
+@media (max-width: 480rem) {
+  /* Sur très petit écran */
+  .form-actions {
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .form-actions button {
+    width: 100%;
+    padding: var(--space-xs) var(--space-sm);
+  }
+
+  .btn-start-trip,
+  .btn-end-trip,
+  .btn-validate-participation,
+  .btn-report-problem {
+    width: 100%;
+    padding: var(--space-xs) var(--space-md);
+  }
+
+  .modal-info,
+  .modal-warning,
+  .modal-danger {
+    padding: var(--space-xs);
+    font-size: 13rem;
+    margin: var(--space-sm) 0;
+  }
+
+  .form-group textarea {
+    min-height: 80rem;
+    padding: var(--space-xs);
+  }
+
+  .modal-text {
+    font-size: 14rem;
+  }
+}
+
 @media (max-width: 768rem) {
+  /* Tablette et petit desktop */
   .form-actions {
     flex-direction: column;
     gap: var(--space-xs);
@@ -368,18 +422,5 @@
   .btn-validate-participation,
   .btn-report-problem {
     width: 100%;
-  }
-
-  .modal-info,
-  .modal-warning,
-  .modal-danger {
-    padding: var(--space-xs);
-    font-size: 12rem;
-    margin: var(--space-sm) 0;
-  }
-
-  .form-group textarea {
-    min-height: 80rem;
-    padding: var(--space-xs);
   }
 }
