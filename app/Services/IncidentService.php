@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Repositories\IncidentRepository;
 use App\Repositories\ParticipationRepository;
 use App\Validators\ProblemReportValidator;
+use App\Factories\DatabaseFactory;
 
 /**
  * Service pour gérer les incidents (problèmes de trajets)
@@ -21,8 +22,9 @@ class IncidentService
         ParticipationRepository $participationRepo = null,
         EmailService $emailService = null
     ) {
-        $this->incidentRepo = $incidentRepo ?? new IncidentRepository();
-        $this->participationRepo = $participationRepo ?? new ParticipationRepository();
+        $db = DatabaseFactory::getConnection();
+        $this->incidentRepo = $incidentRepo ?? new IncidentRepository($db);
+        $this->participationRepo = $participationRepo ?? new ParticipationRepository($db);
         $this->emailService = $emailService ?? new EmailService();
     }
 

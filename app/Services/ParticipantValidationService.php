@@ -6,6 +6,7 @@ use App\Repositories\ParticipationRepository;
 use App\Repositories\UserRepository;
 use App\Repositories\CreditOperationRepository;
 use App\Validators\ParticipantValidationValidator;
+use App\Factories\DatabaseFactory;
 
 /**
  * Service pour valider une participation par un passager
@@ -23,9 +24,10 @@ class ParticipantValidationService
         UserRepository $userRepo = null,
         CreditOperationRepository $creditOpRepo = null
     ) {
-        $this->participationRepo = $participationRepo ?? new ParticipationRepository();
-        $this->userRepo = $userRepo ?? new UserRepository();
-        $this->creditOpRepo = $creditOpRepo ?? new CreditOperationRepository();
+        $db = DatabaseFactory::getConnection();
+        $this->participationRepo = $participationRepo ?? new ParticipationRepository($db);
+        $this->userRepo = $userRepo ?? new UserRepository($db);
+        $this->creditOpRepo = $creditOpRepo ?? new CreditOperationRepository($db);
     }
 
     /**
@@ -44,7 +46,7 @@ class ParticipantValidationService
             $trajetId = $participation['covoiturage_id'];
 
             // 3. Récupérer le trajet pour avoir le conducteur et le prix
-            $db = $GLOBALS['db'];
+            $db = DatabaseFactory::getConnection();
             $sql = "SELECT conducteur_id, prix_personne FROM covoiturage WHERE covoiturage_id = :id";
             $stmt = $db->prepare($sql);
             $stmt->execute([':id' => $trajetId]);

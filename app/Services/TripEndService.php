@@ -6,6 +6,7 @@ use App\Repositories\TrajetRepository;
 use App\Repositories\ParticipationRepository;
 use App\Repositories\UserRepository;
 use App\Validators\TripEndValidator;
+use App\Factories\DatabaseFactory;
 
 /**
  * Service pour arrêter un trajet (chauffeur)
@@ -25,9 +26,10 @@ class TripEndService
         UserRepository $userRepo = null,
         EmailService $emailService = null
     ) {
-        $this->trajetRepo = $trajetRepo ?? new TrajetRepository();
-        $this->participationRepo = $participationRepo ?? new ParticipationRepository();
-        $this->userRepo = $userRepo ?? new UserRepository();
+        $db = DatabaseFactory::getConnection();
+        $this->trajetRepo = $trajetRepo ?? new TrajetRepository($db);
+        $this->participationRepo = $participationRepo ?? new ParticipationRepository($db);
+        $this->userRepo = $userRepo ?? new UserRepository($db);
         $this->emailService = $emailService ?? new EmailService();
     }
 
@@ -46,8 +48,8 @@ class TripEndService
             $trajet = $this->trajetRepo->getTrajetDetail($trajetId);
 
             // 3. Mettre à jour le statut du trajet
+            $db = DatabaseFactory::getConnection();
             $sql = "UPDATE covoiturage SET statut = 'termine' WHERE covoiturage_id = :id";
-            $db = $GLOBALS['db'];
             $stmt = $db->prepare($sql);
             $stmt->execute([':id' => $trajetId]);
 

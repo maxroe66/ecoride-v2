@@ -12,14 +12,8 @@ class IncidentRepository
 {
     private PDO $db;
 
-    public function __construct(PDO $db = null)
+    public function __construct(PDO $db)
     {
-        if ($db === null) {
-            $db = $GLOBALS['db'] ?? null;
-            if ($db === null) {
-                throw new \Exception('Database connection not available');
-            }
-        }
         $this->db = $db;
     }
 

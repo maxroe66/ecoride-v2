@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Repositories\TrajetRepository;
 use App\Validators\TripStartValidator;
+use App\Factories\DatabaseFactory;
 
 /**
  * Service pour démarrer un trajet (chauffeur)
@@ -15,7 +16,11 @@ class TripStartService
 
     public function __construct(TrajetRepository $trajetRepo = null)
     {
-        $this->trajetRepo = $trajetRepo ?? new TrajetRepository();
+        if ($trajetRepo === null) {
+            $db = DatabaseFactory::getConnection();
+            $trajetRepo = new TrajetRepository($db);
+        }
+        $this->trajetRepo = $trajetRepo;
     }
 
     /**
@@ -32,8 +37,8 @@ class TripStartService
             $trajet = $this->trajetRepo->getTrajetDetail($trajetId);
 
             // 3. Mettre à jour le statut
+            $db = DatabaseFactory::getConnection();
             $sql = "UPDATE covoiturage SET statut = 'en_cours' WHERE covoiturage_id = :id";
-            $db = $GLOBALS['db'];
             $stmt = $db->prepare($sql);
             $stmt->execute([':id' => $trajetId]);
 
