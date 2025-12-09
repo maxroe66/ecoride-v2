@@ -434,7 +434,20 @@ async function submitCancellation(e) {
 
     const data = parsed || {};
     
-    showMessage('Covoiturage annulé avec succès! Les participants ont été notifiés.', 'success');
+    // 📧 Construire le message avec le nombre de participants notifiés
+    let successMessage = 'Covoiturage annulé avec succès!';
+    
+    if (currentCancelType === 'trip' && data.participants_notified) {
+      const count = data.participants_notified;
+      successMessage += ` 📧 Email envoyé à ${count} participant${count > 1 ? 's' : ''}`;
+    } else if (currentCancelType === 'participation' && data.driver_notified) {
+      successMessage += ` 📧 Email envoyé au chauffeur`;
+      if (data.driver_name) {
+        successMessage += ` (${data.driver_name})`;
+      }
+    }
+    
+    showMessage(successMessage, 'success');
     closeModal();
     
     // Recharger l'historique immédiatement avec le filtre réinitialisé

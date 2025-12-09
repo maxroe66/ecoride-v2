@@ -88,7 +88,9 @@ class ParticipationController
             Response::json(200, [
                 'success' => true,
                 'message' => 'Participation annulée avec succès',
-                'refund_amount' => $result['refunded_amount'] ?? 0
+                'refund_amount' => $result['refunded_amount'] ?? 0,
+                'driver_notified' => true,
+                'driver_name' => $driver ? ($driver['nom'] . ' ' . $driver['prenom']) : null
             ]);
 
         } catch (Exception $e) {
