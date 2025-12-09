@@ -21,4 +21,12 @@ class ValidationException extends \Exception
         parent::__construct('Validation failed', $code);
         $this->errors = $errors;
     }
+
+    /**
+     * Retourne la liste détaillée des erreurs
+     */
+    public function getDetails(): array
+    {
+        return $this->errors;
+    }
 }
