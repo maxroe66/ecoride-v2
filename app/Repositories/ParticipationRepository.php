@@ -161,9 +161,20 @@ class ParticipationRepository implements ParticipationRepositoryInterface
         $stmt = $this->db->prepare('
             SELECT 
                 p.*,
-                c.statut as trajet_statut
+                c.covoiturage_id,
+                c.statut as trajet_statut,
+                c.date_depart,
+                c.heure_depart,
+                c.lieu_depart,
+                c.lieu_arrivee,
+                c.prix_personne,
+                c.nb_places,
+                c.conducteur_id,
+                u.pseudo as chauffeur_nom,
+                u.utilisateur_id
             FROM participation p
             JOIN covoiturage c ON p.covoiturage_id = c.covoiturage_id
+            JOIN utilisateur u ON c.conducteur_id = u.utilisateur_id
             WHERE p.utilisateur_id = :user_id AND p.statut = :statut
             ORDER BY p.date_reservation DESC
         ');

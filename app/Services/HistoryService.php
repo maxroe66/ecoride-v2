@@ -24,9 +24,11 @@ class HistoryService
         $trips = $this->trajetRepo->getTrajetsByUserId($userId);
         $trips = array_map(fn($trip) => $this->normalizeTrip($trip, 'chauffeur'), $trips);
 
-        // Participations en tant que passager (on ne garde que les confirmées dans l'historique principal)
-        // Note: même annulées, les participations restent dans l'historique mais marquées 'annulee'
-        $participations = $this->participationRepo->findByUserAndStatusWithTripStatus($userId, 'confirmee');
+        // Participations en tant que passager
+        // Récupérer les participations confirmées ET validées (après fin du trajet)
+        $participationsConfirmee = $this->participationRepo->findByUserAndStatusWithTripStatus($userId, 'confirmee');
+        $participationsValidee = $this->participationRepo->findByUserAndStatusWithTripStatus($userId, 'validee');
+        $participations = array_merge($participationsConfirmee, $participationsValidee);
         $participations = array_map(fn($p) => $this->normalizeParticipation($p), $participations);
         
         // Fusionner les 2 listes
@@ -69,12 +71,14 @@ class HistoryService
             'date_depart' => $participation['date_depart'] ?? null,
             'heure_depart' => $participation['heure_depart'] ?? null,
             'role' => 'passager',  // Toujours passager pour les participations
-            'statut' => $participation['statut'] ?? null,  // 'demandee', 'confirmee', 'annulee', etc.
+            'statut' => $participation['statut'] ?? null,  // 'demandee', 'confirmee', 'validee', 'annulee', etc.
             'trajet_statut' => $participation['trajet_statut'] ?? null,  // ✅ Statut du trajet (planifie, en_cours, termine, annule)
             'prix_personne' => (float)($participation['prix_personne'] ?? 0),
             'nb_places' => (int)($participation['nb_places'] ?? 0),
             'utilisateur_id' => (int)($participation['utilisateur_id'] ?? 0),
             'participation_id' => (int)($participation['participation_id'] ?? 0),
+            'chauffeur_nom' => $participation['chauffeur_nom'] ?? null,  // ✅ Nom du chauffeur
+            'conducteur_id' => (int)($participation['conducteur_id'] ?? 0),  // ✅ ID du conducteur
         ];
     }
 
