@@ -28,7 +28,7 @@ class TripEndValidator
             $errors['trajet_id'] = 'Le trajet n\'existe pas';
         } else {
             // 2. Vérifier que l'utilisateur est le chauffeur
-            if ((int)$trajet['conducteur_id'] !== $userId) {
+            if ((int)$trajet['utilisateur_id'] !== $userId) {
                 $errors['conducteur'] = 'Vous n\'êtes pas le chauffeur de ce trajet';
             }
 
