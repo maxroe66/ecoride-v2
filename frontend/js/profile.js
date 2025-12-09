@@ -713,10 +713,21 @@ function showMessage(text, type) {
     messageContainer.innerHTML = '';
     messageContainer.appendChild(message);
 
-    // Masquer le message après 5 secondes
+    // Scroller vers le message pour qu'il soit visible
     setTimeout(() => {
+        message.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 100);
+
+    // Masquer le message après 6 secondes
+    const timeoutId = setTimeout(() => {
         message.classList.remove('show');
-    }, 5000);
+    }, 6000);
+
+    // Permettre à l'utilisateur de fermer manuellement le message
+    message.addEventListener('click', () => {
+        clearTimeout(timeoutId);
+        message.classList.remove('show');
+    });
 }
 
 /**
