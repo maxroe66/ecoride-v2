@@ -177,12 +177,17 @@ function showMessage(message, type) {
   if (!container) return;
 
   const msgEl = document.createElement('div');
-  msgEl.className = `message message-${type}`;
+  msgEl.className = `message ${type}`;
   msgEl.textContent = message;
   container.appendChild(msgEl);
+  msgEl.classList.add('show');
+
+  // Scroll vers le message pour qu'il soit visible
+  msgEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
 
   setTimeout(() => {
-    msgEl.remove();
+    msgEl.classList.remove('show');
+    setTimeout(() => msgEl.remove(), 300);
   }, 5000);
 }
 

@@ -377,7 +377,6 @@
   display: flex;
   gap: 0.5rem;
   margin: var(--space-sm) 0;
-  font-size: 2rem;
 }
 
 .rating-stars .star {

@@ -280,9 +280,11 @@ function createTripCard(trip) {
               ✅ Valider
             </button>
           ` : ''}
-          <button class="btn btn-report-problem" data-participation-id="${trip.participation_id}">
-            ⚠️ Problème
-          </button>
+          ${statut === 'confirmee' ? `
+            <button class="btn btn-report-problem" data-participation-id="${trip.participation_id}">
+              ⚠️ Problème
+            </button>
+          ` : ''}
           <button class="btn btn-leave-review" data-trajet-id="${trip.trajet_id}">
             ⭐ Laisser un avis
           </button>

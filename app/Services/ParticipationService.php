@@ -150,14 +150,15 @@ class ParticipationService
                 amount: -$participation['nb_places']
             );
 
-            // 7. Changer le statut à 'validee'
-            $this->participationRepo->updateStatus($participationId, 'validee');
+            // 7. Changer le statut à 'confirmee' (pas 'validee')
+            // 'validee' est utilisé APRÈS la fin du trajet quand le passager confirme
+            $this->participationRepo->updateStatus($participationId, 'confirmee');
 
             // 8. Retourner la confirmation
             return [
                 'success' => true,
                 'participation_id' => $participationId,
-                'statut' => 'validee',
+                'statut' => 'confirmee',
                 'montant_debite' => $montantADebiter,
                 'message' => 'Participation confirmée ! Votre crédit a été débité et votre place est réservée.'
             ];
