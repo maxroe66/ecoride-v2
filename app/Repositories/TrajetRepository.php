@@ -386,11 +386,11 @@ class TrajetRepository implements TrajetRepositoryInterface
         $stmt = $this->db->prepare('
             INSERT INTO covoiturage (
                 date_depart, heure_depart, lieu_depart, lieu_arrivee,
-                nb_places, prix_personne, statut, est_ecologique,
+                heure_arrivee, nb_places, prix_personne, statut, est_ecologique,
                 conducteur_id, voiture_id
             ) VALUES (
                 :date_depart, :heure_depart, :lieu_depart, :lieu_arrivee,
-                :nb_places, :prix_personne, :statut, :est_ecologique,
+                :heure_arrivee, :nb_places, :prix_personne, :statut, :est_ecologique,
                 :conducteur_id, :voiture_id
             )
         ');
@@ -400,6 +400,7 @@ class TrajetRepository implements TrajetRepositoryInterface
             ':heure_depart' => $trajet->heureDepart,
             ':lieu_depart' => $trajet->lieuDepart,
             ':lieu_arrivee' => $trajet->lieuArrivee,
+            ':heure_arrivee' => $trajet->heureArrivee,
             ':nb_places' => $trajet->nbPlaces,
             ':prix_personne' => $trajet->prixPersonne,
             ':statut' => $trajet->statut,
