@@ -131,6 +131,51 @@ class ParticipationRepository implements ParticipationRepositoryInterface
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 
+    /**
+     * Récupère les participations d'un utilisateur avec le statut du trajet
+     * Pour afficher les actions disponibles (validation/problème) qui dépendent du statut du trajet
+     */
+    public function findByUserWithTripStatus(int $userId): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT 
+                p.*,
+                c.statut as trajet_statut
+            FROM participation p
+            JOIN covoiturage c ON p.covoiturage_id = c.covoiturage_id
+            WHERE p.utilisateur_id = :user_id
+            ORDER BY p.date_reservation DESC
+        ');
+
+        $stmt->execute([':user_id' => $userId]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * Récupère les participations confirmées d'un utilisateur avec le statut du trajet
+     * Pour la page d'historique principale
+     */
+    public function findByUserAndStatusWithTripStatus(int $userId, string $status): array
+    {
+        $stmt = $this->db->prepare('
+            SELECT 
+                p.*,
+                c.statut as trajet_statut
+            FROM participation p
+            JOIN covoiturage c ON p.covoiturage_id = c.covoiturage_id
+            WHERE p.utilisateur_id = :user_id AND p.statut = :statut
+            ORDER BY p.date_reservation DESC
+        ');
+
+        $stmt->execute([
+            ':user_id' => $userId,
+            ':statut' => $status
+        ]);
+
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
     // Update the status of a participation
 
     public function updateStatus(int $participationId, string $newStatus): bool

@@ -26,7 +26,7 @@ class HistoryService
 
         // Participations en tant que passager (on ne garde que les confirmées dans l'historique principal)
         // Note: même annulées, les participations restent dans l'historique mais marquées 'annulee'
-        $participations = $this->participationRepo->findByUserAndStatus($userId, 'confirmee');
+        $participations = $this->participationRepo->findByUserAndStatusWithTripStatus($userId, 'confirmee');
         $participations = array_map(fn($p) => $this->normalizeParticipation($p), $participations);
         
         // Fusionner les 2 listes
@@ -70,6 +70,7 @@ class HistoryService
             'heure_depart' => $participation['heure_depart'] ?? null,
             'role' => 'passager',  // Toujours passager pour les participations
             'statut' => $participation['statut'] ?? null,  // 'demandee', 'confirmee', 'annulee', etc.
+            'trajet_statut' => $participation['trajet_statut'] ?? null,  // ✅ Statut du trajet (planifie, en_cours, termine, annule)
             'prix_personne' => (float)($participation['prix_personne'] ?? 0),
             'nb_places' => (int)($participation['nb_places'] ?? 0),
             'utilisateur_id' => (int)($participation['utilisateur_id'] ?? 0),
@@ -93,7 +94,7 @@ class HistoryService
 
         // Participations en tant que passager - pour ce filtre, on récupère TOUS les statuts
         // pour permettre au user de voir aussi ses participations annulées
-        $participations = $this->participationRepo->findByUserId($userId);
+        $participations = $this->participationRepo->findByUserWithTripStatus($userId);
         $participations = array_map(fn($p) => $this->normalizeParticipation($p), $participations);
         
         // Fusionner

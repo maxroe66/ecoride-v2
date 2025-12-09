@@ -1,0 +1,342 @@
+/* US11 Trip Actions CSS - Démarrage et arrêt de covoiturage */
+
+/* Statuts supplémentaires pour US11 */
+.trip-status.validee {
+  background-color: #c8e6c9;
+  color: #2e7d32;
+}
+
+.trip-status.probleme {
+  background-color: #ffcdd2;
+  color: #c62828;
+}
+
+.trip-status.en_attente_validation {
+  background-color: #fff9c4;
+  color: #f57f17;
+}
+
+/* Boutons pour les actions chauffeur (démarrer/arrêter) */
+.btn-start-trip {
+  background-color: #28a745;
+  border-color: #28a745;
+  color: white;
+  padding: 10rem 16rem;
+  border-radius: 6rem;
+  font-size: 14rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base);
+  border: none;
+}
+
+.btn-start-trip:hover {
+  background-color: #218838;
+  border-color: #218838;
+  box-shadow: 0 2rem 8rem rgba(40, 167, 69, 0.3);
+}
+
+.btn-start-trip:active {
+  background-color: #1e7e34;
+}
+
+.btn-start-trip:disabled {
+  background-color: #c3e6cb;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-end-trip {
+  background-color: #ffc107;
+  border-color: #ffc107;
+  color: #212529;
+  padding: 10rem 16rem;
+  border-radius: 6rem;
+  font-size: 14rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base);
+  border: none;
+}
+
+.btn-end-trip:hover {
+  background-color: #e0a800;
+  border-color: #d39e00;
+  box-shadow: 0 2rem 8rem rgba(255, 193, 7, 0.3);
+}
+
+.btn-end-trip:active {
+  background-color: #d19e00;
+}
+
+.btn-end-trip:disabled {
+  background-color: #ffe082;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Boutons pour les actions passager (valider/signaler problème) */
+.btn-validate-participation {
+  background-color: #17a2b8;
+  border-color: #17a2b8;
+  color: white;
+  padding: 10rem 16rem;
+  border-radius: 6rem;
+  font-size: 14rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base);
+  border: none;
+}
+
+.btn-validate-participation:hover {
+  background-color: #138496;
+  border-color: #117a8b;
+  box-shadow: 0 2rem 8rem rgba(23, 162, 184, 0.3);
+}
+
+.btn-validate-participation:active {
+  background-color: #0f6674;
+}
+
+.btn-validate-participation:disabled {
+  background-color: #80deea;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-report-problem {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+  padding: 10rem 16rem;
+  border-radius: 6rem;
+  font-size: 14rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color var(--transition-base), box-shadow var(--transition-base);
+  border: none;
+}
+
+.btn-report-problem:hover {
+  background-color: #c82333;
+  border-color: #bd2130;
+  box-shadow: 0 2rem 8rem rgba(220, 53, 69, 0.3);
+}
+
+.btn-report-problem:active {
+  background-color: #bd2130;
+}
+
+.btn-report-problem:disabled {
+  background-color: #f5c6cb;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Amélioration des modals pour US11 */
+.modal-info {
+  background-color: #e7f3ff;
+  border-left: 4rem solid #2196F3;
+  padding: 12rem;
+  margin: 16rem 0;
+  border-radius: 6rem;
+  font-size: 13rem;
+  color: #1565c0;
+  line-height: 1.5;
+}
+
+.modal-warning {
+  background-color: #fff8e1;
+  border-left: 4rem solid #ffc107;
+  padding: 12rem;
+  margin: 16rem 0;
+  border-radius: 6rem;
+  font-size: 13rem;
+  color: #f57f17;
+  line-height: 1.5;
+}
+
+.modal-danger {
+  background-color: #ffebee;
+  border-left: 4rem solid #dc3545;
+  padding: 12rem;
+  margin: 16rem 0;
+  border-radius: 6rem;
+  font-size: 13rem;
+  color: #c62828;
+  line-height: 1.5;
+}
+
+/* Form groupes pour US11 */
+.form-group {
+  margin-bottom: 16rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8rem;
+  font-weight: 500;
+  color: var(--color-green-verydark);
+  font-size: 14rem;
+}
+
+.form-group textarea {
+  width: 100%;
+  padding: 12rem;
+  border: 1rem solid var(--color-green-light);
+  border-radius: 6rem;
+  font-family: inherit;
+  font-size: 14rem;
+  color: var(--color-green-verydark);
+  resize: vertical;
+  min-height: 120rem;
+  box-sizing: border-box;
+  transition: border-color var(--transition-base), box-shadow var(--transition-base);
+}
+
+.form-group textarea:focus {
+  outline: none;
+  border-color: var(--color-green-dark);
+  box-shadow: 0 0 0 3rem rgba(76, 175, 80, 0.1);
+}
+
+.form-group textarea::placeholder {
+  color: var(--color-green-verydark);
+  opacity: 0.5;
+}
+
+.char-count {
+  display: block;
+  margin-top: 6rem;
+  font-size: 12rem;
+  color: var(--color-green-verydark);
+  opacity: 0.7;
+  text-align: right;
+}
+
+.char-count.warning {
+  color: #ffc107;
+  font-weight: 500;
+}
+
+.char-count.limit {
+  color: #dc3545;
+  font-weight: 500;
+}
+
+/* Modal text improvements */
+.modal-text {
+  margin: 0 0 12rem 0;
+  color: var(--color-green-verydark);
+  font-size: 15rem;
+  line-height: 1.6;
+}
+
+.modal-body {
+  padding: 20rem;
+}
+
+.form-actions {
+  display: flex;
+  gap: 12rem;
+  justify-content: flex-end;
+  margin-top: 24rem;
+  padding-top: 16rem;
+  border-top: 1rem solid var(--color-green-light);
+}
+
+.form-actions button {
+  padding: 10rem 20rem;
+  font-size: 14rem;
+  font-weight: 500;
+  border-radius: 6rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border: none;
+}
+
+.btn-cancel {
+  background-color: #e0e0e0;
+  color: #333;
+}
+
+.btn-cancel:hover {
+  background-color: #d0d0d0;
+}
+
+.btn-primary {
+  background-color: var(--color-green-dark);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: #2d6e2e;
+  box-shadow: 0 2rem 8rem rgba(52, 143, 71, 0.3);
+}
+
+.btn-primary:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.btn-danger {
+  background-color: #dc3545;
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c82333;
+  box-shadow: 0 2rem 8rem rgba(220, 53, 69, 0.3);
+}
+
+.btn-danger:disabled {
+  background-color: #f5c6cb;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Loading state pour les boutons */
+.btn:disabled,
+.btn.loading {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.btn.loading::after {
+  content: " ⏳";
+}
+
+/* Responsive adjustments for US11 */
+@media (max-width: 768rem) {
+  .form-actions {
+    flex-direction: column;
+    gap: 8rem;
+  }
+
+  .form-actions button {
+    width: 100%;
+  }
+
+  .btn-start-trip,
+  .btn-end-trip,
+  .btn-validate-participation,
+  .btn-report-problem {
+    width: 100%;
+    padding: 12rem 16rem;
+  }
+
+  .modal-info,
+  .modal-warning,
+  .modal-danger {
+    padding: 10rem;
+    font-size: 12rem;
+    margin: 12rem 0;
+  }
+
+  .form-group textarea {
+    min-height: 100rem;
+    padding: 10rem;
+  }
+}
