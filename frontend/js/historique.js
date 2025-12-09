@@ -262,28 +262,28 @@ function createTripCard(trip) {
         
         <!-- US11: Boutons Chauffeur -->
         ${trip.role === 'chauffeur' && statut === 'planifie' ? `
-          <button class="btn btn-start-trip" data-trip-id="${trip.covoiturage_id || trip.id}">
+          <button class="btn btn-start-trip" data-trip-id="${trip.trajet_id}">
             🚀 Démarrer
           </button>
         ` : ''}
         
         ${trip.role === 'chauffeur' && statut === 'en_cours' ? `
-          <button class="btn btn-end-trip" data-trip-id="${trip.covoiturage_id || trip.id}">
+          <button class="btn btn-end-trip" data-trip-id="${trip.trajet_id}">
             ⏸️ Arrivée à destination
           </button>
         ` : ''}
         
         <!-- US11: Boutons Passager -->
         ${trip.role === 'passager' && statut === 'confirmee' && trip.trajet_statut === 'termine' ? `
-          <button class="btn btn-validate-participation" data-participation-id="${trip.participation_id || trip.id}">
+          <button class="btn btn-validate-participation" data-participation-id="${trip.participation_id}">
             ✅ Valider
           </button>
-          <button class="btn btn-report-problem" data-participation-id="${trip.participation_id || trip.id}">
+          <button class="btn btn-report-problem" data-participation-id="${trip.participation_id}">
             ⚠️ Problème
           </button>
         ` : ''}
         
-        <button class="btn btn-primary" data-trip-id="${trip.role === 'chauffeur' ? (trip.trajet_id || trip.covoiturage_id || trip.id) : trip.covoiturage_id}" onclick="viewDetails(this)">
+        <button class="btn btn-primary" data-trip-id="${trip.trajet_id}" onclick="viewDetails(this)">
           👁️ Détails
         </button>
       </div>
