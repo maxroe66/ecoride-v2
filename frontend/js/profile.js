@@ -344,6 +344,7 @@ async function createTrip() {
     const arrival = (document.getElementById('createTripArrival')?.value || '').trim();
     const date = document.getElementById('createTripDate')?.value || '';
     const time = document.getElementById('createTripTime')?.value || '';
+    const arrivalTime = document.getElementById('createTripArrivalTime')?.value || '';
     const seats = parseInt(document.getElementById('createTripSeats')?.value || '0', 10);
     const price = parseFloat(document.getElementById('createTripPrice')?.value || '0');
     const vehicleId = parseInt(document.getElementById('createTripVehicle')?.value || '0', 10);
@@ -358,7 +359,11 @@ async function createTrip() {
         return;
     }
     if (!/^\d{2}:\d{2}$/.test(time)) {
-        showMessage('Heure invalide (HH:MM)', 'error');
+        showMessage('Heure de départ invalide (HH:MM)', 'error');
+        return;
+    }
+    if (!/^\d{2}:\d{2}$/.test(arrivalTime)) {
+        showMessage('Heure d\'arrivée invalide (HH:MM)', 'error');
         return;
     }
     if (!(seats >= 1 && seats <= 8)) {
@@ -379,6 +384,7 @@ async function createTrip() {
         lieu_arrivee: arrival,
         date_depart: date,
         heure_depart: time,
+        heure_arrivee: arrivalTime,
         nb_places: seats,
         prix_personne: price,
         voiture_id: vehicleId
@@ -399,6 +405,7 @@ async function createTrip() {
             document.getElementById('createTripArrival').value = '';
             document.getElementById('createTripDate').value = '';
             document.getElementById('createTripTime').value = '';
+            document.getElementById('createTripArrivalTime').value = '';
             document.getElementById('createTripSeats').value = '';
             document.getElementById('createTripPrice').value = '';
             document.getElementById('createTripVehicle').value = '';

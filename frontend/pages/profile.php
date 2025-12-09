@@ -187,6 +187,10 @@
                 <label for="createTripTime">Heure de départ</label>
                 <input type="time" id="createTripTime">
               </div>
+              <div class="form-group" style="flex:1 1 180px; min-width:180px;">
+                <label for="createTripArrivalTime">Heure d'arrivée</label>
+                <input type="time" id="createTripArrivalTime">
+              </div>
             </div>
 
             <div style="display:flex; gap:12px; flex-wrap: wrap;">
