@@ -311,7 +311,7 @@ class TrajetRepository implements TrajetRepositoryInterface
             JOIN marque m ON v.marque_id = m.marque_id
             LEFT JOIN avis_fallback a ON c.covoiturage_id = a.covoiturage_id
             WHERE c.covoiturage_id = :id
-            GROUP BY c.covoiturage_id
+            GROUP BY c.covoiturage_id, c.date_depart, c.heure_depart, c.lieu_depart, c.heure_arrivee, c.lieu_arrivee, c.nb_places, c.prix_personne, c.statut, c.est_ecologique, u.utilisateur_id, u.pseudo, v.modele, m.libelle, v.energie
             LIMIT 1
         ');
 

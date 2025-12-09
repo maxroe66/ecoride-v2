@@ -37,11 +37,17 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     const data = result.data;
 
+    // DEBUG: Afficher les données reçues
+    console.log('Données reçues du backend:', data.trajet);
+    console.log('heure_depart:', data.trajet.heure_depart);
+    console.log('heure_arrivee:', data.trajet.heure_arrivee);
+
     // Remplir les informations du trajet
     document.getElementById('detail-departure').textContent = data.trajet.lieu_depart;
     document.getElementById('detail-arrival').textContent = data.trajet.lieu_arrivee;
     document.getElementById('detail-date').textContent = formatDate(data.trajet.date_depart);
-    document.getElementById('detail-time').textContent = formatTime(data.trajet.heure_depart, data.trajet.heure_arrivee);
+    document.getElementById('detail-departure-time').textContent = data.trajet.heure_depart || '---';
+    document.getElementById('detail-arrival-time').textContent = data.trajet.heure_arrivee || '---';
     document.getElementById('detail-duration').textContent = calculateDuration(data.trajet.heure_depart, data.trajet.heure_arrivee);
     document.getElementById('detail-seats').textContent = `${data.trajet.nb_places} place${data.trajet.nb_places > 1 ? 's' : ''}`;
     document.getElementById('detail-price').textContent = `${parseFloat(data.trajet.prix_personne).toFixed(2)}€`;
@@ -172,20 +178,6 @@ function calculateDuration(depart, arrivee) {
   
   // Gérer le passage minuit (rare mais possible)
   if (minutes < 0) {
-    /**
-     * Formate une préférence conducteur pour affichage
-     */
-    function formatPreference(key, value) {
-      // Adapter ici pour affichage user-friendly
-      const labels = {
-        fumeur: 'Fumeur',
-        animaux: 'Animaux acceptés',
-        musique: 'Musique',
-        discussion: 'Discussion',
-        // Ajouter d'autres clés si besoin
-      };
-      return labels[key] ? labels[key] : key;
-    }
     minutes += 24 * 60;
   }
   

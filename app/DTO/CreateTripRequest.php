@@ -13,6 +13,7 @@ class CreateTripRequest
         public readonly string $lieuArrivee,
         public readonly string $dateDepart,
         public readonly string $heureDepart,
+        public readonly string $heureArrivee,
         public readonly int $nbPlaces,
         public readonly float $prixPersonne,
         public readonly int $voitureId,
@@ -37,6 +38,7 @@ class CreateTripRequest
         $lieuArrivee = trim((string)($data['lieu_arrivee'] ?? ''));
         $dateDepart = trim((string)($data['date_depart'] ?? ''));
         $heureDepart = trim((string)($data['heure_depart'] ?? ''));
+        $heureArrivee = trim((string)($data['heure_arrivee'] ?? ''));
         
         // Validation : champs présents
         if ($lieuDepart === '') {
@@ -50,6 +52,9 @@ class CreateTripRequest
         }
         if ($heureDepart === '') {
             throw new \InvalidArgumentException('L\'heure de départ est requise');
+        }
+        if ($heureArrivee === '') {
+            throw new \InvalidArgumentException('L\'heure d\'arrivée est requise');
         }
         
         // Champs numériques - vérifier présence uniquement
@@ -76,6 +81,7 @@ class CreateTripRequest
             $lieuArrivee,
             $dateDepart,
             $heureDepart,
+            $heureArrivee,
             $nbPlaces,
             $prixPersonne,
             $voitureId,

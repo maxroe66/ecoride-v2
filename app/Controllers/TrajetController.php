@@ -179,6 +179,7 @@ class TrajetController
                 'lieu_arrivee' => $tripDto->lieuArrivee,
                 'date_depart' => $tripDto->dateDepart,
                 'heure_depart' => $tripDto->heureDepart,
+                'heure_arrivee' => $tripDto->heureArrivee,
                 'nb_places' => $tripDto->nbPlaces,
                 'prix_personne' => $tripDto->prixPersonne,
                 'voiture_id' => $tripDto->voitureId,

@@ -85,8 +85,12 @@
                 <p id="detail-date">---</p>
               </div>
               <div class="detail-item">
-                <strong>Heure</strong>
-                <p id="detail-time">---</p>
+                <strong>Heure de départ</strong>
+                <p id="detail-departure-time">---</p>
+              </div>
+              <div class="detail-item">
+                <strong>Heure d'arrivée</strong>
+                <p id="detail-arrival-time">---</p>
               </div>
               <div class="detail-item">
                 <strong>Durée estimée</strong>
