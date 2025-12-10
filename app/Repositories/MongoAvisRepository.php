@@ -31,6 +31,9 @@ class MongoAvisRepository implements AvisRepositoryInterface
             'rating'  => $avis->rating,
             'comment' => $avis->comment,
             'created_at' => $avis->createdAt->format(DATE_ATOM),
+            'statut_moderation' => 'en_attente',  // Avis en attente de modération par défaut
+            'date_moderation' => null,
+            'employe_id' => null,
         ]);
         try {
             $res = $this->manager->executeBulkWrite($this->ns(), $bulk);
@@ -42,21 +45,15 @@ class MongoAvisRepository implements AvisRepositoryInterface
 
     public function listForRide(int $rideId): array
     {
-        error_log('[MongoAvisRepository] Appel de listForRide avec ride_id=' . $rideId);
-        // Log tous les documents de la collection pour debug
-        $allQuery = new Query([]);
-        $allCursor = $this->manager->executeQuery($this->ns(), $allQuery);
-        foreach ($allCursor as $doc) {
-            error_log('[MongoAvisRepository] Document (ALL) : ' . json_encode((array)$doc));
-        }
-
-        // Requête normale
-        $query = new Query(['ride_id' => $rideId]);
+        // Récupérer uniquement les avis APPROUVÉS (visibles publiquement)
+        $query = new Query([
+            'ride_id' => $rideId,
+            'statut_moderation' => 'approuve'
+        ]);
         $cursor = $this->manager->executeQuery($this->ns(), $query);
         $out = [];
         foreach ($cursor as $doc) {
             $doc = (array)$doc;
-            error_log('[MongoAvisRepository] Document (FILTERED) : ' . json_encode($doc));
             $out[] = new Avis(
                 (int)($doc['ride_id'] ?? 0),
                 (int)($doc['user_id'] ?? 0),
@@ -73,7 +70,7 @@ class MongoAvisRepository implements AvisRepositoryInterface
         $cmd = new Command([
             'aggregate' => $this->collection,
             'pipeline' => [
-                ['$match' => ['ride_id' => $rideId]],
+                ['$match' => ['ride_id' => $rideId, 'statut_moderation' => 'approuve']],
                 ['$group' => ['_id' => null, 'avg' => ['$avg' => '$rating']]]
             ],
             'cursor' => new \stdClass()
@@ -89,4 +86,59 @@ class MongoAvisRepository implements AvisRepositoryInterface
             throw $e; // Gestion par résilience
         }
     }
+
+    /**
+     * Récupère les avis en attente de modération
+     * @return array Liste des avis en_attente avec détails
+     */
+    public function findPendingReviews(): array
+    {
+        $query = new Query([
+            'statut_moderation' => 'en_attente'
+        ]);
+        $cursor = $this->manager->executeQuery($this->ns(), $query);
+        $out = [];
+        foreach ($cursor as $doc) {
+            $doc = (array)$doc;
+            $out[] = [
+                '_id' => (string)($doc['_id'] ?? ''),
+                'ride_id' => (int)($doc['ride_id'] ?? 0),
+                'user_id' => (int)($doc['user_id'] ?? 0),
+                'rating' => (int)($doc['rating'] ?? 0),
+                'comment' => $doc['comment'] ?? null,
+                'created_at' => $doc['created_at'] ?? null,
+                'statut_moderation' => $doc['statut_moderation'] ?? 'en_attente',
+            ];
+        }
+        return $out;
+    }
+
+    /**
+     * Modère un avis (approuve ou refuse)
+     * @param string $avisId ID MongoDB du document (_id)
+     * @param string $action 'approuve' ou 'refuse'
+     * @param int $employeId ID de l'employé qui effectue la modération
+     * @return bool true si succès
+     */
+    public function moderateReview(string $avisId, string $action, int $employeId): bool
+    {
+        $bulk = new BulkWrite();
+        $bulk->update(
+            ['_id' => new \MongoDB\BSON\ObjectId($avisId)],
+            [
+                '$set' => [
+                    'statut_moderation' => $action,
+                    'date_moderation' => new \MongoDB\BSON\UTCDateTime(time() * 1000),
+                    'employe_id' => $employeId,
+                ]
+            ]
+        );
+        try {
+            $res = $this->manager->executeBulkWrite($this->ns(), $bulk);
+            return $res->getModifiedCount() === 1;
+        } catch (MongoDriverException $e) {
+            throw $e;
+        }
+    }
 }
+

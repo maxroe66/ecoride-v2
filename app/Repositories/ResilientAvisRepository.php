@@ -65,4 +65,35 @@ class ResilientAvisRepository implements AvisRepositoryInterface
         }
         return $this->mysql->averageForRide($rideId);
     }
+
+    /**
+     * Récupère les avis en attente de modération (MongoDB prioritaire, fallback MySQL)
+     */
+    public function findPendingReviews(): array
+    {
+        if ($this->mongoAvailable()) {
+            try {
+                return $this->mongo->findPendingReviews();
+            } catch (\Throwable) {
+                $this->markMongoFailure();
+            }
+        }
+        return $this->mysql->findPendingReviews();
+    }
+
+    /**
+     * Modère un avis (MongoDB prioritaire, fallback MySQL)
+     */
+    public function moderateReview(string $avisId, string $action, int $employeId): bool
+    {
+        if ($this->mongoAvailable()) {
+            try {
+                return $this->mongo->moderateReview($avisId, $action, $employeId);
+            } catch (\Throwable) {
+                $this->markMongoFailure();
+            }
+        }
+        // Pour MySQL, utiliser l'ID comme int
+        return $this->mysql->moderateReview((int)$avisId, $action, $employeId);
+    }
 }
