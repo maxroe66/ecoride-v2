@@ -10,7 +10,9 @@ use App\Controllers\TrajetController;
 use App\Controllers\UserController;
 use App\Controllers\HistoryController;
 use App\Controllers\ParticipationController;
+use App\Controllers\EmployeeController;
 use App\Middleware\MiddlewareFactory as MW;
+use App\Middleware\EmployeeMiddleware;
 
 // Nettoyage: suppression des anciens imports legacy non utilisés
 
@@ -108,6 +110,13 @@ class Bootstrap
         // Validation de participation et signalement de problème (US11)
         $router->add('POST', '/api/participations/{id}/validate', [ParticipationController::class, 'validateParticipationAtEnd'], MW::authAndCsrf());
         $router->add('POST', '/api/participations/{id}/problem', [ParticipationController::class, 'reportProblem'], MW::authAndCsrf());
+
+        // Espace employé (US12) - Modération des avis et gestion des incidents
+        $authAndEmployeeMiddleware = [MW::auth(), EmployeeMiddleware::check(), MW::csrf()];
+        $router->add('GET', '/api/employee/reviews/pending', [EmployeeController::class, 'getPendingReviews'], [MW::auth(), EmployeeMiddleware::check()]);
+        $router->add('POST', '/api/employee/reviews/{id}/moderation', [EmployeeController::class, 'moderateReview'], $authAndEmployeeMiddleware);
+        $router->add('GET', '/api/employee/incidents', [EmployeeController::class, 'getIncidents'], [MW::auth(), EmployeeMiddleware::check()]);
+        $router->add('GET', '/api/employee/incidents/{id}', [EmployeeController::class, 'getIncidentDetail'], [MW::auth(), EmployeeMiddleware::check()]);
 
         header('Content-Type: application/json');
         if ($router->dispatch()) {
