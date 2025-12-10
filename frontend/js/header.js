@@ -77,6 +77,24 @@ function initializeAuthMenu() {
   if (isAuthenticated && user) {
     // Menu utilisateur connecté
     const displayName = escapeHtml(getDisplayName(user));
+    
+    // Construire le dropdown menu
+    let dropdownItems = `
+      <li><a href="/profile" class="dropdown-link">Mon profil</a></li>
+      <li><a href="/historique" class="dropdown-link">Mes covoiturages</a></li>
+      <li><a href="/my-rides" class="dropdown-link">Mes trajets</a></li>
+      <li><a href="/settings" class="dropdown-link">Paramètres</a></li>
+    `;
+    
+    // Ajouter lien Espace Employé si type_utilisateur = 'employe'
+    if (user.type_utilisateur === 'employe') {
+      dropdownItems += `<li class="dropdown-divider"></li>
+      <li><a href="/employee" class="dropdown-link" style="color: #27ae60; font-weight: bold;">🛠️ Espace Employé</a></li>`;
+    }
+    
+    dropdownItems += `<li class="dropdown-divider"></li>
+      <li><a href="#" class="dropdown-link logout" onclick="logout(); return false;">Déconnexion</a></li>`;
+    
     authContainer.innerHTML = `
       <div class="user-menu">
         <button class="nav-link user-button" id="userMenuBtn">
@@ -85,12 +103,7 @@ function initializeAuthMenu() {
           <span class="dropdown-icon">▼</span>
         </button>
         <ul class="dropdown-menu" id="userDropdown">
-          <li><a href="/profile" class="dropdown-link">Mon profil</a></li>
-          <li><a href="/historique" class="dropdown-link">Mes covoiturages</a></li>
-          <li><a href="/my-rides" class="dropdown-link">Mes trajets</a></li>
-          <li><a href="/settings" class="dropdown-link">Paramètres</a></li>
-          <li class="dropdown-divider"></li>
-          <li><a href="#" class="dropdown-link logout" onclick="logout(); return false;">Déconnexion</a></li>
+          ${dropdownItems}
         </ul>
       </div>
     `;
