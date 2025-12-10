@@ -116,14 +116,19 @@
       background: #c0392b;
     }
 
-    .btn-detail {
-      background: #3498db;
+    .btn-release {
+      background: #f39c12;
       color: white;
       width: 100%;
     }
 
-    .btn-detail:hover {
-      background: #2980b9;
+    .btn-release:hover {
+      background: #d68910;
+    }
+
+    .btn-release:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
     }
 
     .empty-state {

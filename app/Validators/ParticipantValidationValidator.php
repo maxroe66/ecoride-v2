@@ -16,7 +16,7 @@ class ParticipantValidationValidator
      * Valide les conditions de validation d'une participation
      * @throws ValidationException
      */
-    public static function validate(int $participationId, int $userId): void
+    public static function validate(int $participationId, int $userId, bool $allowProblemStatus = false): void
     {
         $errors = [];
 
@@ -35,7 +35,8 @@ class ParticipantValidationValidator
             }
 
             // 3. Vérifier que le statut de la participation est 'confirmee'
-            if ($participation['statut'] !== 'confirmee') {
+            $allowedStatuses = $allowProblemStatus ? ['confirmee', 'probleme'] : ['confirmee'];
+            if (!in_array($participation['statut'], $allowedStatuses, true)) {
                 $errors['statut'] = 'La participation doit être confirmée pour être validée. Statut actuel: ' . $participation['statut'];
             }
 

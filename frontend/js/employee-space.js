@@ -180,8 +180,10 @@ async function loadIncidents() {
           ${incident.statut ? `<p><strong>Statut :</strong> <span style="color: #27ae60;">${escapeHtml(incident.statut)}</span></p>` : ''}
         </div>
         <div class="card-actions">
-          <button class="btn-detail" onclick="viewIncidentDetail(${incident.participation_id || incident.incident_id})">
-            📋 Détails
+          <button class="btn-release"
+                  data-incident-id="${incident.incident_id || incident.participation_id}"
+                  onclick="releaseIncidentFunds(${incident.incident_id || incident.participation_id}, this)">
+            🔓 Libérer les crédits
           </button>
         </div>
       </div>
@@ -194,37 +196,54 @@ async function loadIncidents() {
   }
 }
 
-async function viewIncidentDetail(participationId) {
+async function releaseIncidentFunds(incidentId, buttonEl = null) {
+  if (!incidentId) {
+    alert('❌ Incident invalide');
+    return;
+  }
+
+  if (!confirm('Confirmez-vous la résolution de cet incident et la libération des crédits pour le chauffeur ?')) {
+    return;
+  }
+
+  const btn = buttonEl || document.querySelector(`[data-incident-id="${incidentId}"]`);
+  const originalText = btn?.textContent || 'Libérer les crédits';
+
   try {
-    const response = await fetch(`/api/employee/incidents/${participationId}`, {
-      method: 'GET',
+    if (btn) {
+      btn.disabled = true;
+      btn.textContent = '⏳ Libération...';
+    }
+
+    const csrfHeaders = await SessionManager.csrfHeaders();
+
+    const response = await fetch(`/api/employee/incidents/${incidentId}/release`, {
+      method: 'POST',
       credentials: 'include',
       headers: {
-        'Accept': 'application/json'
-      }
+        'Content-Type': 'application/json',
+        'Accept': 'application/json',
+        ...csrfHeaders
+      },
+      body: JSON.stringify({})
     });
 
     const result = await response.json();
 
-    if (result.success) {
-      const incident = result.data;
-      const details = `
-Participation #${incident.participation_id || incident.incident_id}
-━━━━━━━━━━━━━━━━━━━━━━━
-Passager: ${incident.passager_pseudo || 'N/A'} (${incident.passager_email || 'N/A'})
-Conducteur: ${incident.conducteur_pseudo || 'N/A'} (${incident.conducteur_email || 'N/A'})
-━━━━━━━━━━━━━━━━━━━━━━━
-Trajet: ${incident.lieu_depart || 'N/A'} → ${incident.lieu_arrivee || 'N/A'}
-Date: ${incident.date_depart || 'N/A'} à ${incident.heure_depart || 'N/A'}
-Problème: ${incident.raison_probleme || incident.description || '(non décrit)'}
-Statut: ${incident.statut || 'en_attente'}
-      `;
-      alert(details);
-    } else {
-      alert('❌ Erreur : Incident non trouvé');
+    if (!result.success) {
+      throw new Error(result.error?.message || 'Impossible de libérer les crédits');
     }
+
+    alert('✅ Incident résolu et crédits libérés vers le chauffeur.');
+    loadIncidents();
   } catch (error) {
-    alert('❌ Erreur : ' + error.message);
+    console.error('Erreur libération crédits:', error);
+    alert('❌ ' + error.message);
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.textContent = originalText;
+    }
   }
 }
 

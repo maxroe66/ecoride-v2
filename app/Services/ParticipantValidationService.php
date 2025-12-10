@@ -35,11 +35,11 @@ class ParticipantValidationService
      * Change le statut à 'validee' et crédite le chauffeur
      * @throws \Exception
      */
-    public function validateParticipation(int $participationId, int $userId): array
+    public function validateParticipation(int $participationId, int $userId, bool $allowProblemStatus = false): array
     {
         try {
             // 1. Validation métier
-            ParticipantValidationValidator::validate($participationId, $userId);
+            ParticipantValidationValidator::validate($participationId, $userId, $allowProblemStatus);
 
             // 2. Récupérer la participation
             $participation = $this->participationRepo->findById($participationId);

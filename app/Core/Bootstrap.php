@@ -117,6 +117,7 @@ class Bootstrap
         $router->add('POST', '/api/employee/reviews/{slug}/moderation', [EmployeeController::class, 'moderateReview'], $authAndEmployeeMiddleware);
         $router->add('GET', '/api/employee/incidents', [EmployeeController::class, 'getIncidents'], [MW::auth(), EmployeeMiddleware::check()]);
         $router->add('GET', '/api/employee/incidents/{id}', [EmployeeController::class, 'getIncidentDetail'], [MW::auth(), EmployeeMiddleware::check()]);
+        $router->add('POST', '/api/employee/incidents/{id}/release', [EmployeeController::class, 'releaseIncidentFunds'], $authAndEmployeeMiddleware);
 
         header('Content-Type: application/json');
         if ($router->dispatch()) {

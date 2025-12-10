@@ -6,6 +6,8 @@ use App\Core\Request;
 use App\Core\Response;
 use App\Repositories\IncidentRepository;
 use App\Factories\DatabaseFactory;
+use App\Services\IncidentService;
+use App\Exceptions\ValidationException;
 
 /**
  * Contrôleur pour l'espace employé
@@ -177,6 +179,45 @@ class EmployeeController
             Response::json(200, [
                 'success' => true,
                 'data' => $incident
+            ]);
+        } catch (\Throwable $e) {
+            Response::json(500, [
+                'success' => false,
+                'error' => [
+                    'code' => 'SERVER_ERROR',
+                    'message' => $e->getMessage()
+                ]
+            ]);
+        }
+    }
+
+    /**
+     * POST /api/employee/incidents/{id}/release
+     * Résout un incident et libère les crédits pour le chauffeur
+     */
+    public static function releaseIncidentFunds(Request $req): void
+    {
+        try {
+            $incidentId = (int)$req->getPathParam(0);
+            if ($incidentId <= 0) {
+                Response::json(400, [
+                    'success' => false,
+                    'error' => ['code' => 'INVALID_INPUT', 'message' => 'ID incident invalide']
+                ]);
+                return;
+            }
+
+            $service = new IncidentService();
+            $result = $service->releaseFundsAfterIncident($incidentId);
+
+            Response::json(200, [
+                'success' => true,
+                'data' => $result
+            ]);
+        } catch (ValidationException $e) {
+            Response::json(400, [
+                'success' => false,
+                'error' => ['code' => 'VALIDATION_ERROR', 'message' => $e->getMessage(), 'details' => $e->getDetails()]
             ]);
         } catch (\Throwable $e) {
             Response::json(500, [

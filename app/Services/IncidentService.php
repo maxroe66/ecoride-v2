@@ -6,6 +6,7 @@ use App\Repositories\IncidentRepository;
 use App\Repositories\ParticipationRepository;
 use App\Validators\ProblemReportValidator;
 use App\Factories\DatabaseFactory;
+use App\Exceptions\ValidationException;
 
 /**
  * Service pour gérer les incidents (problèmes de trajets)
@@ -16,16 +17,19 @@ class IncidentService
     private IncidentRepository $incidentRepo;
     private ParticipationRepository $participationRepo;
     private EmailService $emailService;
+    private ParticipantValidationService $participantValidationService;
 
     public function __construct(
         IncidentRepository $incidentRepo = null,
         ParticipationRepository $participationRepo = null,
-        EmailService $emailService = null
+        EmailService $emailService = null,
+        ParticipantValidationService $participantValidationService = null
     ) {
         $db = DatabaseFactory::getConnection();
         $this->incidentRepo = $incidentRepo ?? new IncidentRepository($db);
         $this->participationRepo = $participationRepo ?? new ParticipationRepository($db);
         $this->emailService = $emailService ?? new EmailService();
+        $this->participantValidationService = $participantValidationService ?? new ParticipantValidationService();
     }
 
     /**
@@ -100,6 +104,53 @@ class IncidentService
                 'message' => 'Incident résolu',
                 'incident_id' => $incidentId
             ];
+        } catch (\Exception $e) {
+            throw new \Exception($e->getMessage());
+        }
+    }
+
+    /**
+     * Résout un incident et libère les crédits vers le chauffeur
+     */
+    public function releaseFundsAfterIncident(int $incidentId): array
+    {
+        try {
+            $incident = $this->incidentRepo->findById($incidentId);
+            if (!$incident) {
+                throw new \Exception('Incident non trouvé');
+            }
+
+            if (($incident['statut'] ?? '') === 'resolu') {
+                throw new \Exception('Cet incident a déjà été résolu.');
+            }
+
+            $participationId = (int)($incident['participation_id'] ?? 0);
+            if ($participationId <= 0) {
+                throw new \Exception('Participation associée introuvable');
+            }
+
+            $participation = $this->participationRepo->findById($participationId);
+            if (!$participation) {
+                throw new \Exception('Participation associée introuvable');
+            }
+
+            $passengerId = (int)($participation['utilisateur_id'] ?? 0);
+            if ($passengerId <= 0) {
+                throw new \Exception('Passager introuvable pour cette participation');
+            }
+
+            $validationResult = $this->participantValidationService->validateParticipation($participationId, $passengerId, true);
+            $this->incidentRepo->resolve($incidentId);
+
+            return [
+                'success' => true,
+                'message' => 'Crédits libérés et incident clôturé',
+                'incident_id' => $incidentId,
+                'participation_id' => $participationId,
+                'validation' => $validationResult
+            ];
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (\Exception $e) {
             throw new \Exception($e->getMessage());
         }
