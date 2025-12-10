@@ -5,8 +5,6 @@ namespace App\Controllers;
 use App\Core\Request;
 use App\Core\Response;
 use App\Factories\DatabaseFactory;
-use App\Repositories\UserRepository;
-use App\Services\UserService;
 use App\Validators\CreateEmployeeValidator;
 use App\DTO\CreateEmployeeRequest;
 
@@ -24,35 +22,32 @@ class AdminController
     public static function createEmployee(Request $req): void
     {
         try {
-            $adminId = $req->getAuthUserId();
+            $req->getAuthUserId();
 
-            // 1. Valider la structure
             $data = $req->getJsonBody();
             CreateEmployeeRequest::fromArray($data);
-
-            // 2. Valider les règles métier
             CreateEmployeeValidator::validate($data);
 
-            // 3. Créer l'employé
             $db = DatabaseFactory::getConnection();
-            $userRepo = new UserRepository($db);
 
-            // Générer un mot de passe temporaire
             $tempPassword = bin2hex(random_bytes(8));
             $passwordHash = password_hash($tempPassword, PASSWORD_BCRYPT);
 
             $stmt = $db->prepare('
-                INSERT INTO utilisateur (email, pseudo, password_hash, type_utilisateur, statut, credit, date_creation)
-                VALUES (:email, :pseudo, :password, :type, :statut, :credit, NOW())
+                INSERT INTO utilisateur (nom, prenom, email, pseudo, password, type_utilisateur, role, credit, suspendu)
+                VALUES (:nom, :prenom, :email, :pseudo, :password, :type, :role, :credit, :suspendu)
             ');
 
             $stmt->execute([
+                ':nom' => 'Equipe',
+                ':prenom' => 'EcoRide',
                 ':email' => $data['email'],
                 ':pseudo' => $data['pseudo'],
                 ':password' => $passwordHash,
                 ':type' => 'employe',
-                ':statut' => 'actif',
-                ':credit' => 0
+                ':role' => 'passager',
+                ':credit' => 0,
+                ':suspendu' => 0
             ]);
 
             $employeeId = (int)$db->lastInsertId();
@@ -115,6 +110,12 @@ class AdminController
             $stmt->execute([':days' => $days]);
             $results = $stmt->fetchAll(\PDO::FETCH_ASSOC);
 
+            $results = array_map(function (array $row) {
+                $row['credits_earned'] = (float)($row['credits_earned'] ?? 0);
+                $row['total'] = $row['credits_earned'];
+                return $row;
+            }, $results);
+
             Response::json(200, [
                 'success' => true,
                 'data' => [
@@ -124,6 +125,87 @@ class AdminController
             ]);
         } catch (\Throwable $e) {
             error_log('[AdminController::getTripsPerDay] Exception: ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => [
+                    'code' => 'SERVER_ERROR',
+                    'message' => $e->getMessage()
+                ]
+            ]);
+        }
+    }
+
+    /**
+     * GET /api/admin/employees
+     * Liste les comptes employés existants
+     */
+    public static function listEmployees(Request $req): void
+    {
+        try {
+            $db = DatabaseFactory::getConnection();
+            $stmt = $db->query('
+                SELECT 
+                    utilisateur_id AS id,
+                    email,
+                    pseudo,
+                    type_utilisateur,
+                    date_creation,
+                    suspendu,
+                    CASE WHEN suspendu = 1 THEN "suspendu" ELSE "actif" END AS statut
+                FROM utilisateur
+                WHERE type_utilisateur = "employe"
+                ORDER BY date_creation DESC
+            ');
+            $employees = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+            Response::json(200, [
+                'success' => true,
+                'data' => [
+                    'employees' => $employees
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[AdminController::listEmployees] Exception: ' . $e->getMessage());
+            Response::json(500, [
+                'success' => false,
+                'error' => [
+                    'code' => 'SERVER_ERROR',
+                    'message' => $e->getMessage()
+                ]
+            ]);
+        }
+    }
+
+    /**
+     * GET /api/admin/users
+     * Liste tous les utilisateurs (administration)
+     */
+    public static function listUsers(Request $req): void
+    {
+        try {
+            $db = DatabaseFactory::getConnection();
+            $stmt = $db->query('
+                SELECT 
+                    utilisateur_id AS id,
+                    email,
+                    pseudo,
+                    type_utilisateur,
+                    date_creation,
+                    suspendu,
+                    CASE WHEN suspendu = 1 THEN "suspendu" ELSE "actif" END AS statut
+                FROM utilisateur
+                ORDER BY date_creation DESC
+            ');
+            $users = $stmt->fetchAll(\PDO::FETCH_ASSOC) ?: [];
+
+            Response::json(200, [
+                'success' => true,
+                'data' => [
+                    'users' => $users
+                ]
+            ]);
+        } catch (\Throwable $e) {
+            error_log('[AdminController::listUsers] Exception: ' . $e->getMessage());
             Response::json(500, [
                 'success' => false,
                 'error' => [
@@ -148,11 +230,11 @@ class AdminController
 
             $db = DatabaseFactory::getConnection();
             $sql = "
-                SELECT DATE(c.date_depart) as date, SUM(co.montant) as credits_earned
-                FROM covoiturage c
-                LEFT JOIN credit_operation co ON c.covoiturage_id = co.trip_id AND co.type = 'credit'
-                WHERE c.date_depart >= DATE_SUB(NOW(), INTERVAL :days DAY)
-                GROUP BY DATE(c.date_depart)
+                SELECT DATE(date_operation) as date,
+                       SUM(CASE WHEN type_operation = 'credit' THEN montant ELSE 0 END) as credits_earned
+                FROM credit_operation
+                WHERE date_operation >= DATE_SUB(NOW(), INTERVAL :days DAY)
+                GROUP BY DATE(date_operation)
                 ORDER BY date ASC
             ";
 
@@ -190,17 +272,20 @@ class AdminController
             $sql = "
                 SELECT COALESCE(SUM(montant), 0) as total_credits
                 FROM credit_operation
-                WHERE type = 'credit'
+                WHERE type_operation = 'credit'
             ";
 
             $stmt = $db->prepare($sql);
             $stmt->execute();
             $result = $stmt->fetch(\PDO::FETCH_ASSOC);
 
+            $total = (float)($result['total_credits'] ?? 0);
+
             Response::json(200, [
                 'success' => true,
                 'data' => [
-                    'total_credits' => (float)($result['total_credits'] ?? 0)
+                    'total' => $total,
+                    'total_credits' => $total
                 ]
             ]);
         } catch (\Throwable $e) {
@@ -237,7 +322,7 @@ class AdminController
             $db = DatabaseFactory::getConnection();
 
             // Vérifier que l'utilisateur existe
-            $checkStmt = $db->prepare('SELECT utilisateur_id, pseudo, statut FROM utilisateur WHERE utilisateur_id = :id');
+            $checkStmt = $db->prepare('SELECT utilisateur_id, pseudo, suspendu FROM utilisateur WHERE utilisateur_id = :id');
             $checkStmt->execute([':id' => $userId]);
             $user = $checkStmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -253,7 +338,7 @@ class AdminController
             }
 
             // Vérifier que l'utilisateur n'est pas déjà suspendu
-            if ($user['statut'] === 'suspendu') {
+            if ((int)$user['suspendu'] === 1) {
                 Response::json(400, [
                     'success' => false,
                     'error' => [
@@ -265,8 +350,8 @@ class AdminController
             }
 
             // Suspendre l'utilisateur
-            $updateStmt = $db->prepare('UPDATE utilisateur SET statut = :statut WHERE utilisateur_id = :id');
-            $updateStmt->execute([':statut' => 'suspendu', ':id' => $userId]);
+            $updateStmt = $db->prepare('UPDATE utilisateur SET suspendu = 1 WHERE utilisateur_id = :id');
+            $updateStmt->execute([':id' => $userId]);
 
             Response::json(200, [
                 'success' => true,
@@ -311,7 +396,7 @@ class AdminController
             $db = DatabaseFactory::getConnection();
 
             // Vérifier que l'utilisateur existe
-            $checkStmt = $db->prepare('SELECT utilisateur_id, pseudo, statut FROM utilisateur WHERE utilisateur_id = :id');
+            $checkStmt = $db->prepare('SELECT utilisateur_id, pseudo, suspendu FROM utilisateur WHERE utilisateur_id = :id');
             $checkStmt->execute([':id' => $userId]);
             $user = $checkStmt->fetch(\PDO::FETCH_ASSOC);
 
@@ -327,7 +412,7 @@ class AdminController
             }
 
             // Vérifier que l'utilisateur est suspendu
-            if ($user['statut'] !== 'suspendu') {
+            if ((int)$user['suspendu'] !== 1) {
                 Response::json(400, [
                     'success' => false,
                     'error' => [
@@ -339,8 +424,8 @@ class AdminController
             }
 
             // Réactiver l'utilisateur
-            $updateStmt = $db->prepare('UPDATE utilisateur SET statut = :statut WHERE utilisateur_id = :id');
-            $updateStmt->execute([':statut' => 'actif', ':id' => $userId]);
+            $updateStmt = $db->prepare('UPDATE utilisateur SET suspendu = 0 WHERE utilisateur_id = :id');
+            $updateStmt->execute([':id' => $userId]);
 
             Response::json(200, [
                 'success' => true,

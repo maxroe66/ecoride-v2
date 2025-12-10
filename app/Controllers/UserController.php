@@ -7,7 +7,6 @@ use App\Validators\UserProfileValidator;
 use App\Validators\VehicleValidator;
 use App\DTO\AddVehicleRequest;
 use App\DTO\UpdateProfileRequest;
-use App\Helpers\ControllerHelper;
 use App\Core\Request;
 use App\Core\Response;
 use Exception;
@@ -25,7 +24,7 @@ class UserController
     public static function getCredit(Request $req): void
     {
         try {
-            $userId = ControllerHelper::getAuthUserId();
+            $userId = $req->getAuthUserId();
 
             $userRepo = SL::getUserRepository();
             $credit = $userRepo->getCredit($userId);
@@ -43,7 +42,7 @@ class UserController
     public static function getCreditOperations(Request $req): void
     {
         try {
-            $userId = ControllerHelper::getAuthUserId();
+            $userId = $req->getAuthUserId();
 
             // Repository : Récupérer les données
             $userRepo = SL::getUserRepository();
@@ -76,7 +75,7 @@ class UserController
     public static function getPreferences(Request $req): void
     {
         try {
-            $userId = ControllerHelper::getAuthUserId();
+            $userId = $req->getAuthUserId();
 
             $userRepo = SL::getUserRepository();
             $prefs = $userRepo->getPreferences($userId);
@@ -93,7 +92,7 @@ class UserController
     public static function addVehicle(Request $req): void
     {
         try {
-            $userId = ControllerHelper::getAuthUserId();
+            $userId = $req->getAuthUserId();
 
             // 1. DTO : Transformer tableau → objet typé
             $vehicleDto = AddVehicleRequest::fromArray($req->getJsonBody());
@@ -140,7 +139,7 @@ class UserController
     public static function getVehicles(Request $req): void
     {
         try {
-            $userId = ControllerHelper::getAuthUserId();
+            $userId = $req->getAuthUserId();
 
             $vehicleRepo = SL::getVehicleRepository();
             $vehicles = $vehicleRepo->findByUserId($userId);
@@ -162,7 +161,7 @@ class UserController
         $query = $req->getQueryParams();
 
         try {
-            $userId = ControllerHelper::getAuthUserId();
+            $userId = $req->getAuthUserId();
             
             // Validation
             $vehicleId = VehicleValidator::validateVehicleId($query['id'] ?? 0);
@@ -208,7 +207,7 @@ class UserController
     {
         try {
             // 1. Récupérer l'utilisateur authentifié
-            $userId = ControllerHelper::getAuthUserId();
+            $userId = $req->getAuthUserId();
 
             // 2. DTO : Transformer tableau → objet typé
             $profileDto = UpdateProfileRequest::fromArray($req->getJsonBody());

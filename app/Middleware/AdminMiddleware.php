@@ -4,6 +4,8 @@ namespace App\Middleware;
 
 use App\Core\Request;
 use App\Core\Response;
+use App\Factories\DatabaseFactory;
+use PDO;
 
 /**
  * Middleware pour vérifier que l'utilisateur est administrateur
@@ -18,11 +20,9 @@ class AdminMiddleware
     public static function check(): \Closure
     {
         return function (Request $req) {
-            // Récupérer l'utilisateur authentifié
-            $authUser = $req->authUser ?? null;
+            $authUser = $req->getAuthUser();
 
-            // Vérifier que l'utilisateur est authentifié
-            if (empty($authUser)) {
+            if (!$authUser || !isset($authUser['user_id'])) {
                 Response::json(401, [
                     'success' => false,
                     'error' => [
@@ -33,19 +33,34 @@ class AdminMiddleware
                 exit;
             }
 
-            // Vérifier que l'utilisateur a le rôle admin
-            if (($authUser['type_utilisateur'] ?? null) !== 'admin') {
-                Response::json(403, [
+            try {
+                $db = DatabaseFactory::getConnection();
+                $stmt = $db->prepare('SELECT type_utilisateur FROM utilisateur WHERE utilisateur_id = :id LIMIT 1');
+                $stmt->execute([':id' => $authUser['user_id']]);
+                $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+                $allowedAdminTypes = ['administrateur', 'admin'];
+
+                if (!$user || !in_array($user['type_utilisateur'], $allowedAdminTypes, true)) {
+                    Response::json(403, [
+                        'success' => false,
+                        'error' => [
+                            'code' => 'FORBIDDEN',
+                            'message' => 'Accès réservé aux administrateurs'
+                        ]
+                    ]);
+                    exit;
+                }
+            } catch (\Throwable $e) {
+                Response::json(500, [
                     'success' => false,
                     'error' => [
-                        'code' => 'FORBIDDEN',
-                        'message' => 'Accès réservé aux administrateurs'
+                        'code' => 'SERVER_ERROR',
+                        'message' => 'Erreur lors de la vérification administrateur'
                     ]
                 ]);
                 exit;
             }
-
-            // Tout est OK, continuer
         };
     }
 }

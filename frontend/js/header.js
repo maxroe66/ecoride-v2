@@ -77,6 +77,8 @@ function initializeAuthMenu() {
   if (isAuthenticated && user) {
     // Menu utilisateur connecté
     const displayName = escapeHtml(getDisplayName(user));
+    const userType = user.type_utilisateur || 'standard';
+    const isAdmin = ['administrateur', 'admin'].includes(userType);
     
     // Construire le dropdown menu
     let dropdownItems = `
@@ -87,13 +89,13 @@ function initializeAuthMenu() {
     `;
     
     // Ajouter lien Espace Employé si type_utilisateur = 'employe'
-    if (user.type_utilisateur === 'employe') {
+    if (userType === 'employe') {
       dropdownItems += `<li class="dropdown-divider"></li>
       <li><a href="/employee" class="dropdown-link" style="color: #27ae60; font-weight: bold;">🛠️ Espace Employé</a></li>`;
     }
     
     // Ajouter lien Espace Admin si type_utilisateur = 'admin'
-    if (user.type_utilisateur === 'admin') {
+    if (isAdmin) {
       dropdownItems += `<li class="dropdown-divider"></li>
       <li><a href="/admin" class="dropdown-link" style="color: #667eea; font-weight: bold;">🔧 Espace Admin</a></li>`;
     }

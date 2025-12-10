@@ -14,12 +14,21 @@ const AdminSpace = {
      * Initialize admin dashboard
      */
     init() {
-        // Get current user from localStorage
-        this.currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-        
+        // Get current user from SessionManager (fallback to localStorage)
+        const managerUser = typeof SessionManager !== 'undefined' ? SessionManager.getUser() : null;
+        if (managerUser) {
+            this.currentUser = managerUser;
+        } else {
+            try {
+                this.currentUser = JSON.parse(localStorage.getItem('ecoride_user') || '{}') || {};
+            } catch (error) {
+                this.currentUser = {};
+            }
+        }
+
         // Check if user is admin
-        if (this.currentUser.type_utilisateur !== 'admin') {
-            window.location.href = '/frontend/pages/home.php';
+        if (!this.isAdminType(this.currentUser?.type_utilisateur)) {
+            window.location.href = '/login';
             return;
         }
 
@@ -34,7 +43,11 @@ const AdminSpace = {
     setupEventListeners() {
         // Navigation
         document.querySelectorAll('.nav-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => this.switchSection(e.target));
+            btn.addEventListener('click', (e) => {
+                // Get the button element (in case we clicked on a child element)
+                const button = e.currentTarget;
+                this.switchSection(button);
+            });
         });
 
         // Create Employee Form
@@ -76,7 +89,15 @@ const AdminSpace = {
         });
 
         const sectionId = button.getAttribute('data-section');
-        document.getElementById(sectionId).classList.add('active');
+        const sectionElement = document.getElementById(sectionId);
+        
+        // Check if section exists
+        if (!sectionElement) {
+            console.error(`Section with id "${sectionId}" not found`);
+            return;
+        }
+        
+        sectionElement.classList.add('active');
 
         // Load data for specific sections
         if (sectionId === 'statistics') {
@@ -135,7 +156,7 @@ const AdminSpace = {
                 await this.loadEmployeesList();
             } else {
                 this.showAlert('employeeAlert', 
-                    `Erreur: ${data.error?.message || 'Impossible de créer l'employé'}`, 
+                    `Erreur: ${data.error?.message || "Impossible de créer l'employé"}`, 
                     'error');
 
                 // Display specific field errors
@@ -233,38 +254,50 @@ const AdminSpace = {
      */
     async loadEmployeesList() {
         const container = document.getElementById('employeesList');
-        
+        if (!container) return;
+
+        container.innerHTML = this.renderLoader('Chargement des comptes...');
+
         try {
-            const response = await fetch('/api/users', {
+            const response = await fetch('/api/admin/employees', {
                 credentials: 'include'
             });
 
             const data = await response.json();
 
-            if (data.success && Array.isArray(data.data)) {
-                const employees = data.data.filter(user => user.type_utilisateur === 'employe');
-                
-                if (employees.length === 0) {
-                    container.innerHTML = '<p style="color: #999; text-align: center; padding: 1rem;">Aucun employé trouvé</p>';
-                } else {
-                    container.innerHTML = '<ul style="list-style: none; padding: 0;">' +
-                        employees.map(emp => `
-                            <li style="padding: 0.75rem 0; border-bottom: 1px solid #eee; display: flex; justify-content: space-between; align-items: center;">
-                                <div>
-                                    <strong>${emp.pseudo}</strong><br>
-                                    <small style="color: #999;">${emp.email}</small>
-                                </div>
-                                <span class="status-badge ${emp.statut === 'actif' ? 'status-active' : 'status-suspended'}">
-                                    ${emp.statut === 'actif' ? '✓ Actif' : '⊘ Suspendu'}
-                                </span>
-                            </li>
-                        `).join('') +
-                        '</ul>';
+            const employees = data?.data?.employees;
+
+            if (data.success && Array.isArray(employees)) {
+                const normalizedEmployees = employees
+                    .filter(user => user.type_utilisateur === 'employe')
+                    .sort((a, b) => (a.pseudo || '').localeCompare(b.pseudo || '', 'fr', { sensitivity: 'base' }));
+
+                if (normalizedEmployees.length === 0) {
+                    container.innerHTML = '<p class="admin-empty">Aucun employé enregistré pour le moment.</p>';
+                    return;
                 }
+
+                container.innerHTML = normalizedEmployees.map(emp => {
+                    const statusClass = emp.statut === 'actif'
+                        ? 'status-badge status-badge--active'
+                        : 'status-badge status-badge--suspended';
+                    const statusLabel = emp.statut === 'actif' ? '✓ Actif' : '⊘ Suspendu';
+
+                    return `
+                        <div class="admin-list__item">
+                            <div class="admin-list__identity">
+                                <strong>${emp.pseudo}</strong>
+                                <span>${emp.email}</span>
+                            </div>
+                            <span class="${statusClass}">${statusLabel}</span>
+                        </div>`;
+                }).join('');
+            } else {
+                container.innerHTML = '<p class="admin-empty">Impossible de récupérer la liste des employés.</p>';
             }
         } catch (error) {
             console.error('Error loading employees:', error);
-            container.innerHTML = '<p style="color: #dc3545; text-align: center; padding: 1rem;">Erreur lors du chargement</p>';
+            container.innerHTML = '<p class="admin-empty">Erreur lors du chargement des employés.</p>';
         }
     },
 
@@ -318,12 +351,12 @@ const AdminSpace = {
             const tripsData = await tripsResponse.json();
             const creditsData = await creditsResponse.json();
 
-            if (tripsData.success) {
-                this.renderTripsChart(tripsData.data);
+            if (tripsData.success && tripsData.data.trips_per_day) {
+                this.renderTripsChart(tripsData.data.trips_per_day);
             }
 
-            if (creditsData.success) {
-                this.renderCreditsChart(creditsData.data);
+            if (creditsData.success && creditsData.data.credits_per_day) {
+                this.renderCreditsChart(creditsData.data.credits_per_day);
             }
         } catch (error) {
             console.error('Error loading charts data:', error);
@@ -340,6 +373,12 @@ const AdminSpace = {
         // Destroy previous chart if exists
         if (this.charts.trips) {
             this.charts.trips.destroy();
+        }
+
+        // Check if data is an array
+        if (!Array.isArray(data)) {
+            console.error('renderTripsChart: data is not an array', data);
+            return;
         }
 
         const labels = data.map(d => this.formatDate(d.date));
@@ -396,8 +435,14 @@ const AdminSpace = {
             this.charts.credits.destroy();
         }
 
+        // Check if data is an array
+        if (!Array.isArray(data)) {
+            console.error('renderCreditsChart: data is not an array', data);
+            return;
+        }
+
         const labels = data.map(d => this.formatDate(d.date));
-        const values = data.map(d => parseFloat(d.total) || 0);
+        const values = data.map(d => parseFloat(d.credits_earned) || 0);
 
         this.charts.credits = new Chart(ctx, {
             type: 'bar',
@@ -445,14 +490,16 @@ const AdminSpace = {
      */
     async loadUsersData() {
         try {
-            const response = await fetch('/api/users', {
+            const response = await fetch('/api/admin/users', {
                 credentials: 'include'
             });
 
             const data = await response.json();
 
-            if (data.success && Array.isArray(data.data)) {
-                this.usersCache = data.data;
+            const users = data?.data?.users;
+
+            if (data.success && Array.isArray(users)) {
+                this.usersCache = users;
                 this.renderUsersTable(this.usersCache);
             }
         } catch (error) {
@@ -466,42 +513,35 @@ const AdminSpace = {
      */
     renderUsersTable(users) {
         const tbody = document.getElementById('usersTableBody');
+        if (!tbody) return;
 
         if (users.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; padding: 2rem; color: #999;">Aucun utilisateur trouvé</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="5"><p class="admin-empty">Aucun utilisateur trouvé</p></td></tr>';
             return;
         }
 
-        tbody.innerHTML = users.map(user => `
-            <tr>
-                <td>${user.email}</td>
-                <td>${user.pseudo}</td>
-                <td>
-                    <span style="font-size: 0.85rem; color: #667eea; font-weight: 500;">
-                        ${user.type_utilisateur === 'admin' ? '🔒 Admin' : 
-                          user.type_utilisateur === 'employe' ? '👔 Employé' : 
-                          '👤 Utilisateur'}
-                    </span>
-                </td>
-                <td>
-                    <span class="status-badge ${user.statut === 'actif' ? 'status-active' : 'status-suspended'}">
-                        ${user.statut === 'actif' ? '✓ Actif' : '⊘ Suspendu'}
-                    </span>
-                </td>
-                <td>
-                    <div class="actions">
-                        ${user.statut === 'actif' ? 
-                            `<button class="btn btn-small btn-danger" onclick="AdminSpace.confirmSuspend(${user.id}, '${user.pseudo}')">
-                                Suspendre
-                            </button>` :
-                            `<button class="btn btn-small btn-success" onclick="AdminSpace.confirmUnsuspend(${user.id}, '${user.pseudo}')">
-                                Réactiver
-                            </button>`
-                        }
-                    </div>
-                </td>
-            </tr>
-        `).join('');
+        tbody.innerHTML = users.map(user => {
+            const typeBadge = this.getUserTypeBadge(user.type_utilisateur);
+            const statusClass = user.statut === 'actif'
+                ? 'status-badge status-badge--active'
+                : 'status-badge status-badge--suspended';
+            const statusLabel = user.statut === 'actif' ? '✓ Actif' : '⊘ Suspendu';
+            const safePseudo = this.escapeQuotes(user.pseudo);
+
+            const actionButton = user.statut === 'actif'
+                ? `<button class="btn btn-small btn-danger" onclick="AdminSpace.confirmSuspend(${user.id}, '${safePseudo}')">Suspendre</button>`
+                : `<button class="btn btn-small btn-success" onclick="AdminSpace.confirmUnsuspend(${user.id}, '${safePseudo}')">Réactiver</button>`;
+
+            return `
+                <tr>
+                    <td>${user.email}</td>
+                    <td>${user.pseudo}</td>
+                    <td>${typeBadge}</td>
+                    <td><span class="${statusClass}">${statusLabel}</span></td>
+                    <td><div class="actions">${actionButton}</div></td>
+                </tr>
+            `;
+        }).join('');
     },
 
     /**
@@ -604,6 +644,33 @@ const AdminSpace = {
     },
 
     /**
+     * Build the badge element for user type
+     */
+    getUserTypeBadge(type) {
+        if (this.isAdminType(type)) {
+            return '<span class="user-type-badge user-type-badge--admin">🔒 Admin</span>';
+        }
+        if (type === 'employe') {
+            return '<span class="user-type-badge user-type-badge--employee">👔 Employé</span>';
+        }
+        return '<span class="user-type-badge user-type-badge--user">👤 Utilisateur</span>';
+    },
+
+    /**
+     * Escape single quotes for inline handlers
+     */
+    escapeQuotes(text = '') {
+        return String(text ?? '').replace(/'/g, "\\'");
+    },
+
+    /**
+     * Render loader snippet
+     */
+    renderLoader(message) {
+        return `<div class="admin-loader"><span class="loader-dot"></span><span>${message}</span></div>`;
+    },
+
+    /**
      * Show alert message
      */
     showAlert(elementId, message, type, duration = null) {
@@ -616,6 +683,13 @@ const AdminSpace = {
                 alert.classList.remove('show');
             }, duration);
         }
+    },
+
+    /**
+     * Helper to determine if a user type is admin
+     */
+    isAdminType(type) {
+        return ['administrateur', 'admin'].includes(type);
     }
 };
 
