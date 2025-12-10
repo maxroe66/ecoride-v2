@@ -318,8 +318,12 @@ class UserRepository implements UserRepositoryInterface
         $stmt->execute([':user_id' => $userId]);
         $result = $stmt->fetch(PDO::FETCH_ASSOC);
 
+        if (!$result) {
+            return 0.0;
+        }
+
         // Étape 3: Retourner le crédit (0 si utilisateur non trouvé)
-        return (float)($result['credit'] ?? 0.00);
+        return (float)$result['credit'];
     }
 
     /**

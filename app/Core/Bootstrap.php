@@ -11,8 +11,10 @@ use App\Controllers\UserController;
 use App\Controllers\HistoryController;
 use App\Controllers\ParticipationController;
 use App\Controllers\EmployeeController;
+use App\Controllers\AdminController;
 use App\Middleware\MiddlewareFactory as MW;
 use App\Middleware\EmployeeMiddleware;
+use App\Middleware\AdminMiddleware;
 
 // Nettoyage: suppression des anciens imports legacy non utilisés
 
@@ -118,6 +120,17 @@ class Bootstrap
         $router->add('GET', '/api/employee/incidents', [EmployeeController::class, 'getIncidents'], [MW::auth(), EmployeeMiddleware::check()]);
         $router->add('GET', '/api/employee/incidents/{id}', [EmployeeController::class, 'getIncidentDetail'], [MW::auth(), EmployeeMiddleware::check()]);
         $router->add('POST', '/api/employee/incidents/{id}/release', [EmployeeController::class, 'releaseIncidentFunds'], $authAndEmployeeMiddleware);
+
+        // Espace administrateur (US13) - Gestion employés, stats, suspension comptes
+        $authAndAdminMiddleware = [MW::auth(), AdminMiddleware::check(), MW::csrf()];
+        $router->add('GET', '/api/admin/employees', [AdminController::class, 'listEmployees'], [MW::auth(), AdminMiddleware::check()]);
+        $router->add('POST', '/api/admin/employees', [AdminController::class, 'createEmployee'], $authAndAdminMiddleware);
+        $router->add('GET', '/api/admin/stats/trips-per-day', [AdminController::class, 'getTripsPerDay'], [MW::auth(), AdminMiddleware::check()]);
+        $router->add('GET', '/api/admin/stats/credits-per-day', [AdminController::class, 'getCreditsPerDay'], [MW::auth(), AdminMiddleware::check()]);
+        $router->add('GET', '/api/admin/stats/total-credits', [AdminController::class, 'getTotalCredits'], [MW::auth(), AdminMiddleware::check()]);
+        $router->add('POST', '/api/admin/users/{id}/suspend', [AdminController::class, 'suspendUser'], $authAndAdminMiddleware);
+        $router->add('POST', '/api/admin/users/{id}/unsuspend', [AdminController::class, 'unsuspendUser'], $authAndAdminMiddleware);
+        $router->add('GET', '/api/admin/users', [AdminController::class, 'listUsers'], [MW::auth(), AdminMiddleware::check()]);
 
         header('Content-Type: application/json');
         if ($router->dispatch()) {

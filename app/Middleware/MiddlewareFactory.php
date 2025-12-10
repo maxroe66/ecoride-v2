@@ -47,6 +47,7 @@ class MiddlewareFactory
     public static function auth(): callable
     {
         return function(Request $req) {
+            error_log('[MiddlewareFactory::auth] Starting auth middleware');
             try {
                 $middleware = new AuthMiddleware();
                 $userData = $middleware->authenticate();
@@ -56,7 +57,9 @@ class MiddlewareFactory
                 
                 // Conserver aussi dans $_REQUEST pour compatibilité avec code existant
                 $_REQUEST['_auth_user'] = $userData;
+                error_log('[MiddlewareFactory::auth] Auth successful for user ' . ($userData['user_id'] ?? 'UNKNOWN'));
             } catch (\Exception $e) {
+                error_log('[MiddlewareFactory::auth] Auth failed: ' . $e->getMessage());
                 Response::json(401, ['success' => false, 'error' => ['code' => 'UNAUTHORIZED', 'message' => 'Authentification requise']]);
                 exit;
             }
