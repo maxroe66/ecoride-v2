@@ -92,6 +92,12 @@ function initializeAuthMenu() {
       <li><a href="/employee" class="dropdown-link" style="color: #27ae60; font-weight: bold;">🛠️ Espace Employé</a></li>`;
     }
     
+    // Ajouter lien Espace Admin si type_utilisateur = 'admin'
+    if (user.type_utilisateur === 'admin') {
+      dropdownItems += `<li class="dropdown-divider"></li>
+      <li><a href="/admin" class="dropdown-link" style="color: #667eea; font-weight: bold;">🔧 Espace Admin</a></li>`;
+    }
+    
     dropdownItems += `<li class="dropdown-divider"></li>
       <li><a href="#" class="dropdown-link logout" onclick="logout(); return false;">Déconnexion</a></li>`;
     
