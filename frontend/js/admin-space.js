@@ -13,7 +13,7 @@ const AdminSpace = {
     /**
      * Initialize admin dashboard
      */
-    init() {
+    async init() {
         // Get current user from SessionManager (fallback to localStorage)
         const managerUser = typeof SessionManager !== 'undefined' ? SessionManager.getUser() : null;
         if (managerUser) {
@@ -30,6 +30,12 @@ const AdminSpace = {
         if (!this.isAdminType(this.currentUser?.type_utilisateur)) {
             window.location.href = '/login';
             return;
+        }
+
+        // Preload CSRF token for admin operations
+        if (typeof SessionManager !== 'undefined' && SessionManager.refreshCsrfToken) {
+            await SessionManager.refreshCsrfToken();
+            console.log('CSRF token preloaded for admin operations');
         }
 
         this.setupEventListeners();
@@ -126,16 +132,25 @@ const AdminSpace = {
 
         // Submit to API
         try {
+            // Get CSRF token from SessionManager
+            const csrfHeaders = typeof SessionManager !== 'undefined' && SessionManager.csrfHeaders
+                ? await SessionManager.csrfHeaders()
+                : {};
+            
+            console.log('Create Employee - CSRF Headers:', csrfHeaders);
+            
             const response = await fetch('/api/admin/employees', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
+                    ...csrfHeaders
                 },
                 body: JSON.stringify({ email, pseudo }),
                 credentials: 'include'
             });
 
             const data = await response.json();
+            console.log('Create Employee - Response:', response.status, data);
 
             if (data.success) {
                 // Display password and success message
@@ -617,14 +632,26 @@ const AdminSpace = {
         const endpoint = type === 'suspend' ? 'suspend' : 'unsuspend';
 
         try {
+            // Get CSRF token from SessionManager
+            const csrfHeaders = typeof SessionManager !== 'undefined' && SessionManager.csrfHeaders
+                ? await SessionManager.csrfHeaders()
+                : {};
+            
+            console.log('CSRF Headers:', csrfHeaders);
+            
             const response = await fetch(`/api/admin/users/${userId}/${endpoint}`, {
                 method: 'POST',
-                credentials: 'include'
+                credentials: 'include',
+                headers: {
+                    'Content-Type': 'application/json',
+                    ...csrfHeaders
+                }
             });
 
             const data = await response.json();
+            console.log('Response:', response.status, data);
 
-            if (data.success) {
+            if (response.ok && data.success) {
                 this.showAlert('usersAlert', 
                     `✓ ${pseudo} a été ${type === 'suspend' ? 'suspendu' : 'réactivé'} avec succès!`, 
                     'success', 2000);

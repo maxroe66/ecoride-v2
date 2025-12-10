@@ -63,9 +63,12 @@ class JwtService
      */
     public function validate(string $token): array
     {
+        error_log('[JwtService] Validating token: ' . substr($token, 0, 50) . '...');
+        
         // Vérifier le format: header.payload.signature
         $parts = explode('.', $token);
         if (count($parts) !== 3) {
+            error_log('[JwtService] Invalid token format: ' . count($parts) . ' parts');
             throw new Exception('Format de token invalide');
         }
 
@@ -74,14 +77,17 @@ class JwtService
         // Vérifier la signature
         $expectedSignature = $this->sign("{$header}.{$payload}");
         if (!hash_equals($signature, $expectedSignature)) {
+            error_log('[JwtService] Invalid signature');
             throw new Exception('Signature du token invalide');
         }
 
         // Décoder le payload
         $decodedPayload = $this->decode($payload);
+        error_log('[JwtService] Token valid for user ' . ($decodedPayload['user_id'] ?? 'UNKNOWN'));
 
         // Vérifier l'expiration
         if (isset($decodedPayload['exp']) && $decodedPayload['exp'] < time()) {
+            error_log('[JwtService] Token expired');
             throw new Exception('Token expiré');
         }
 

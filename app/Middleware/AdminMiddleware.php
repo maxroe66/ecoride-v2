@@ -23,6 +23,7 @@ class AdminMiddleware
             $authUser = $req->getAuthUser();
 
             if (!$authUser || !isset($authUser['user_id'])) {
+                error_log('[AdminMiddleware] No auth user found: ' . json_encode($authUser));
                 Response::json(401, [
                     'success' => false,
                     'error' => [
@@ -39,14 +40,17 @@ class AdminMiddleware
                 $stmt->execute([':id' => $authUser['user_id']]);
                 $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
+                error_log('[AdminMiddleware] User ' . $authUser['user_id'] . ' type: ' . ($user['type_utilisateur'] ?? 'NULL'));
+
                 $allowedAdminTypes = ['administrateur', 'admin'];
 
                 if (!$user || !in_array($user['type_utilisateur'], $allowedAdminTypes, true)) {
+                    error_log('[AdminMiddleware] Access denied for user ' . $authUser['user_id'] . '. Type: ' . ($user['type_utilisateur'] ?? 'NULL'));
                     Response::json(403, [
                         'success' => false,
                         'error' => [
                             'code' => 'FORBIDDEN',
-                            'message' => 'Accès réservé aux administrateurs'
+                            'message' => 'Accès réservé aux administrateurs. Type utilisateur: ' . ($user['type_utilisateur'] ?? 'UNKNOWN')
                         ]
                     ]);
                     exit;

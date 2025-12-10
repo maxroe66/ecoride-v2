@@ -29,6 +29,11 @@ class CsrfService
     {
         self::ensureSession();
         $expected = $_SESSION[self::SESSION_KEY] ?? '';
-        return $provided !== null && $provided !== '' && $expected !== '' && hash_equals($expected, $provided);
+        error_log('[CsrfService::validate] Provided token: ' . ($provided ? substr($provided, 0, 20) : 'NULL'));
+        error_log('[CsrfService::validate] Expected token: ' . ($expected ? substr($expected, 0, 20) : 'EMPTY'));
+        error_log('[CsrfService::validate] Session ID: ' . session_id());
+        $isValid = $provided !== null && $provided !== '' && $expected !== '' && hash_equals($expected, $provided);
+        error_log('[CsrfService::validate] Result: ' . ($isValid ? 'VALID' : 'INVALID'));
+        return $isValid;
     }
 }
