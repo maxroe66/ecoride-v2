@@ -56,7 +56,7 @@ function initializeLeaveReviewListeners() {
   if (leaveReviewForm) {
     leaveReviewForm.addEventListener('submit', async (e) => {
       e.preventDefault();
-      await submitLeaveReview();
+      await submitLeaveReview(e);
     });
   }
 }
@@ -106,7 +106,7 @@ function resetReviewForm() {
 /**
  * Soumet l'avis au serveur
  */
-async function submitLeaveReview() {
+async function submitLeaveReview(evt = null) {
   if (!currentLeaveReviewTrajetId) return;
 
   const rating = document.getElementById('selectedRating').value;
@@ -117,7 +117,8 @@ async function submitLeaveReview() {
     return;
   }
 
-  const btn = event.target.querySelector('button[type="submit"]');
+  const form = document.getElementById('leaveReviewForm');
+  const btn = evt?.target?.querySelector('button[type="submit"]') || form?.querySelector('button[type="submit"]');
   const originalText = btn?.textContent || 'Soumettre l\'avis';
   
   try {

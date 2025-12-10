@@ -46,6 +46,8 @@
           <option value="en_cours">En cours</option>
           <option value="termine">Terminés</option>
           <option value="annule">Annulés</option>
+          <option value="validee">Validés</option>
+          <option value="probleme">Problèmes signalés</option>
         </select>
       </div>
 
@@ -121,52 +123,73 @@
     </div>
   </div>
 
-  <!-- US11 Modal: Valider Participation (Passager) -->
-  <div id="validateParticipationModal" class="modal">
-    <div class="modal-content">
+  <!-- US11 Modal: Finaliser / Signaler / Avis (Passager) -->
+  <div id="finalizeParticipationModal" class="modal">
+    <div class="modal-content finalize-modal">
       <div class="modal-header">
-        <h2>✅ Valider votre participation</h2>
-        <button class="close-btn">&times;</button>
+        <h2>✨ Finaliser ce trajet</h2>
+        <button class="close-btn finalize-close" type="button">&times;</button>
       </div>
       <div class="modal-body">
-        <p class="modal-text">Confirmez-vous que le trajet s'est bien passé ?</p>
-        <div class="modal-info">
-          ✓ Le chauffeur recevra ses crédits une fois cette validation confirmée. Vous pourrez ensuite soumettre un avis sur ce trajet.
+        <p class="modal-text">
+          Centralisez toutes vos actions post-trajet : valider le covoiturage, signaler un incident ou partager votre retour d'expérience.
+        </p>
+        <div class="finalize-status">
+          <div class="finalize-status-header">
+            <span class="finalize-status-chip" id="finalizeStatusBadge">Statut en attente</span>
+            <span class="finalize-status-label" id="finalizeStatusLabel"></span>
+          </div>
+          <p class="finalize-status-hint" id="finalizeStatusHint"></p>
         </div>
-        <div class="form-actions">
-          <button type="button" class="btn-cancel" id="closeValidateModal">Annuler</button>
-          <button type="button" class="btn-primary" id="confirmValidateParticipation">Valider la participation</button>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- US11 Modal: Signaler un Problème (Passager) -->
-  <div id="reportProblemModal" class="modal">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h2>⚠️ Signaler un problème</h2>
-        <button class="close-btn">&times;</button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-text">Le trajet ne s'est pas déroulé comme prévu ?</p>
-        <div class="modal-danger">
-          Un employé EcoRide vous contactera dans les plus brefs délais pour résoudre la situation avant la mise à jour des crédits du chauffeur.
+        <div class="finalize-grid">
+          <section class="finalize-card" id="finalizeValidateSection">
+            <h3>✅ Valider le trajet</h3>
+            <p>Confirmez que tout s'est bien passé pour débloquer les crédits du chauffeur.</p>
+            <div class="modal-info">
+              ✓ Une fois validé, vous pourrez immédiatement partager votre avis.
+            </div>
+            <button type="button" class="btn-primary finalize-action-button" id="confirmValidateParticipation">
+              Valider la participation
+            </button>
+            <small class="finalize-hint" id="finalizeValidateHint"></small>
+          </section>
+
+          <section class="finalize-card" id="finalizeProblemSection">
+            <h3>⚠️ Signaler un problème</h3>
+            <p>Décrivez toute situation nécessitant l'intervention d'un employé EcoRide.</p>
+            <div class="modal-danger">
+              Aucun crédit ne sera versé avant la résolution de l'incident par notre équipe.
+            </div>
+            <form id="reportProblemForm">
+              <div class="form-group">
+                <label for="problemReason">Décrivez brièvement le problème :</label>
+                <textarea id="problemReason"
+                          placeholder="Retard important, comportement inadapté, annulation tardive..."
+                          maxlength="500"
+                          required></textarea>
+                <span class="char-count" id="problemCharCount">0/500</span>
+              </div>
+              <button type="submit" class="btn-danger finalize-action-button">
+                Signaler ce trajet
+              </button>
+              <small class="finalize-hint" id="finalizeProblemHint"></small>
+            </form>
+          </section>
+
+          <section class="finalize-card review-card" id="finalizeReviewSection">
+            <h3>⭐ Laisser un avis</h3>
+            <p>Partagez votre ressenti une fois le trajet validé ou si un incident a été signalé.</p>
+            <button type="button" class="btn-secondary finalize-action-button" id="finalizeReviewCTA">
+              Ouvrir le formulaire d'avis
+            </button>
+            <small class="finalize-hint" id="finalizeReviewHint"></small>
+          </section>
         </div>
-        <form id="reportProblemForm">
-          <div class="form-group">
-            <label for="problemReason">Décrivez brièvement le problème rencontré :</label>
-            <textarea id="problemReason" 
-                      placeholder="Ex: Le chauffeur a pris un mauvais chemin, retard important de 30 minutes, détour inutile..."
-                      maxlength="500"
-                      required></textarea>
-            <span class="char-count" id="problemCharCount">0/500</span>
-          </div>
-          <div class="form-actions">
-            <button type="button" class="btn-cancel" id="closeReportModal">Annuler</button>
-            <button type="submit" class="btn-danger">Signaler le problème</button>
-          </div>
-        </form>
+
+        <div class="form-actions finalize-footer">
+          <button type="button" class="btn-cancel" id="closeFinalizeModal">Fermer</button>
+        </div>
       </div>
     </div>
   </div>

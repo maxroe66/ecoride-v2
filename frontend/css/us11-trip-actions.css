@@ -129,6 +129,31 @@
 }
 
 /* ============================================================================
+   BOUTON PASSAGER - FINALISER TRAJET
+   ============================================================================ */
+
+.btn.btn-finalize-trip {
+  background-image: linear-gradient(120deg, #1b5e20, #43a047);
+  color: var(--color-white);
+  padding: var(--space-xs) var(--space-lg);
+  font-size: 14rem;
+  font-weight: 600;
+  min-height: 42rem;
+  border: none;
+  box-shadow: 0 6rem 18rem rgba(33, 150, 83, 0.2);
+}
+
+.btn.btn-finalize-trip:hover {
+  background-image: linear-gradient(120deg, #134015, #2e7d32);
+  box-shadow: 0 8rem 20rem rgba(33, 150, 83, 0.3);
+}
+
+.btn.btn-finalize-trip:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
    AMÉLIORATION DES MODALS POUR US11
    ============================================================================ */
 
@@ -257,6 +282,115 @@
 }
 
 /* ============================================================================
+   FINALIZE MODAL LAYOUT
+   ============================================================================ */
+
+.modal-content.finalize-modal {
+  max-width: 960rem;
+}
+
+.finalize-status {
+  border: 1rem dashed var(--color-green-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  background-color: #f8fdf8;
+  margin-bottom: var(--space-lg);
+}
+
+.finalize-status-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+}
+
+.finalize-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xxs);
+  padding: 4rem 12rem;
+  border-radius: 999rem;
+  font-weight: 600;
+  font-size: 13rem;
+  background-color: var(--color-green-light);
+  color: var(--color-green-verydark);
+}
+
+.finalize-status-chip.validee {
+  background-color: #c8e6c9;
+  color: #1b5e20;
+}
+
+.finalize-status-chip.probleme {
+  background-color: #ffcdd2;
+  color: #c62828;
+}
+
+.finalize-status-label {
+  font-weight: 600;
+  color: var(--color-green-verydark);
+}
+
+.finalize-status-hint {
+  margin: var(--space-xs) 0 0 0;
+  color: var(--color-green-verydark);
+  opacity: 0.8;
+  font-size: 13rem;
+}
+
+.finalize-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260rem, 1fr));
+  gap: var(--space-md);
+}
+
+.finalize-card {
+  border: 1rem solid var(--color-green-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  background-color: #fff;
+  min-height: 100rem;
+}
+
+.finalize-card h3 {
+  margin: 0;
+  font-size: 16rem;
+  color: var(--color-green-dark);
+}
+
+.finalize-card p {
+  margin: 0;
+  color: var(--color-green-verydark);
+  font-size: 14rem;
+}
+
+.finalize-action-button {
+  width: 100%;
+  margin-top: auto;
+  min-height: 40rem;
+}
+
+.finalize-hint {
+  display: block;
+  margin-top: var(--space-xs);
+  font-size: 12rem;
+  color: var(--color-green-verydark);
+  opacity: 0.75;
+}
+
+.review-card {
+  background: #fefbf4;
+}
+
+#reportProblemForm textarea[readonly] {
+  background-color: #f7f7f7;
+  cursor: not-allowed;
+}
+
+/* ============================================================================
    ACTIONS DES MODALS (BOUTONS)
    ============================================================================ */
 
@@ -324,6 +458,21 @@
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  background-color: #f0f4f7;
+  color: var(--color-green-verydark);
+  border: 1rem solid var(--color-green-light);
+}
+
+.btn-secondary:hover {
+  background-color: #e4ecf2;
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ============================================================================
    RESPONSIVE
    ============================================================================ */
@@ -355,6 +504,10 @@
   .modal-text {
     font-size: 14rem;
   }
+
+  .finalize-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 768rem) {
@@ -366,6 +519,10 @@
 
   .form-actions button {
     width: 100%;
+  }
+
+  .modal-content.finalize-modal {
+    max-width: 100%;
   }
 }
 

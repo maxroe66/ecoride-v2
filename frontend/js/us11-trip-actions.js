@@ -8,6 +8,9 @@ let currentStartTripId = null;
 let currentEndTripId = null;
 let currentValidateParticipationId = null;
 let currentReportProblemParticipationId = null;
+let currentFinalizeParticipationId = null;
+let currentFinalizeTrajetId = null;
+let currentFinalizeStatus = null;
 
 /**
  * Initialiser les event listeners pour US11
@@ -46,6 +49,21 @@ function initializeUS11EventListeners() {
     });
   });
 
+  // Boutons finaliser / gérer trajet (passager)
+  document.querySelectorAll('.btn-finalize-trip').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const participationId = e.currentTarget.dataset.participationId;
+      const trajetId = e.currentTarget.dataset.trajetId;
+      const statut = e.currentTarget.dataset.statut;
+      if (!participationId) {
+        showMessage('Identifiant de participation manquant pour cette action.', 'error');
+        return;
+      }
+      openFinalizeParticipationModal(participationId, trajetId, statut);
+    });
+  });
+
   // Fermer modals par boutons X
   document.querySelectorAll('#startTripModal .close-btn').forEach(btn => {
     btn.addEventListener('click', closeStartModal);
@@ -63,16 +81,22 @@ function initializeUS11EventListeners() {
     btn.addEventListener('click', closeReportModal);
   });
 
+  document.querySelectorAll('#finalizeParticipationModal .close-btn').forEach(btn => {
+    btn.addEventListener('click', closeFinalizeModal);
+  });
+
   // Fermer modals par boutons Annuler
   document.getElementById('closeStartModal')?.addEventListener('click', closeStartModal);
   document.getElementById('closeEndModal')?.addEventListener('click', closeEndModal);
   document.getElementById('closeValidateModal')?.addEventListener('click', closeValidateModal);
   document.getElementById('closeReportModal')?.addEventListener('click', closeReportModal);
+  document.getElementById('closeFinalizeModal')?.addEventListener('click', closeFinalizeModal);
 
   // Confirmer actions
   document.getElementById('confirmStartTrip')?.addEventListener('click', confirmStartTrip);
   document.getElementById('confirmEndTrip')?.addEventListener('click', confirmEndTrip);
   document.getElementById('confirmValidateParticipation')?.addEventListener('click', confirmValidateParticipation);
+  document.getElementById('finalizeReviewCTA')?.addEventListener('click', handleFinalizeReviewCTA);
 
   // Form submission
   document.getElementById('reportProblemForm')?.addEventListener('submit', submitReportProblem);
@@ -106,6 +130,7 @@ function initializeUS11EventListeners() {
     const endModal = document.getElementById('endTripModal');
     const validateModal = document.getElementById('validateParticipationModal');
     const reportModal = document.getElementById('reportProblemModal');
+    const finalizeModal = document.getElementById('finalizeParticipationModal');
 
     if (event.target === startModal) {
       closeStartModal();
@@ -118,6 +143,9 @@ function initializeUS11EventListeners() {
     }
     if (event.target === reportModal) {
       closeReportModal();
+    }
+    if (event.target === finalizeModal) {
+      closeFinalizeModal();
     }
   });
 }
@@ -266,23 +294,226 @@ async function confirmEndTrip() {
 }
 
 /**
+ * MODAL: FINALISER TRAJET (PASSAGER)
+ */
+
+function openFinalizeParticipationModal(participationId, trajetId = null, statut = 'confirmee', focusSection = null) {
+  const parsedParticipationId = parseInt(participationId, 10);
+  if (Number.isNaN(parsedParticipationId)) {
+    showMessage('Participation invalide pour cette action.', 'error');
+    return;
+  }
+
+  const parsedTrajetId = trajetId ? parseInt(trajetId, 10) : null;
+  currentFinalizeParticipationId = parsedParticipationId;
+  currentFinalizeTrajetId = parsedTrajetId;
+  currentFinalizeStatus = statut || 'confirmee';
+
+  currentValidateParticipationId = parsedParticipationId;
+  currentReportProblemParticipationId = parsedParticipationId;
+
+  clearFinalizeHints();
+  resetFinalizeProblemForm();
+  updateFinalizeModalView();
+
+  const modal = document.getElementById('finalizeParticipationModal');
+  if (modal) {
+    modal.classList.add('show');
+    focusFinalizeSection(focusSection);
+  }
+}
+
+function closeFinalizeModal(resetState = true) {
+  const modal = document.getElementById('finalizeParticipationModal');
+  if (modal) {
+    modal.classList.remove('show');
+  }
+
+  if (!resetState) {
+    return;
+  }
+
+  currentFinalizeParticipationId = null;
+  currentFinalizeTrajetId = null;
+  currentFinalizeStatus = null;
+  currentValidateParticipationId = null;
+  currentReportProblemParticipationId = null;
+  clearFinalizeHints();
+  resetFinalizeProblemForm();
+}
+
+function resetFinalizeProblemForm() {
+  const form = document.getElementById('reportProblemForm');
+  if (form) {
+    form.reset();
+  }
+  const textarea = document.getElementById('problemReason');
+  if (textarea) {
+    textarea.readOnly = false;
+  }
+  const charCount = document.getElementById('problemCharCount');
+  if (charCount) {
+    charCount.textContent = '0/500';
+    charCount.classList.remove('warning', 'limit');
+  }
+}
+
+function clearFinalizeHints() {
+  ['finalizeValidateHint', 'finalizeProblemHint', 'finalizeReviewHint'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.textContent = '';
+    }
+  });
+}
+
+function updateFinalizeModalView() {
+  const status = currentFinalizeStatus || 'confirmee';
+  const formatStatus = typeof formatStatut === 'function'
+    ? formatStatut
+    : (value) => value;
+  const badge = document.getElementById('finalizeStatusBadge');
+  if (badge) {
+    badge.textContent = formatStatus(status);
+    badge.dataset.status = status;
+    badge.className = `finalize-status-chip ${status}`;
+  }
+
+  const { label, hint } = describeFinalizeStatus(status);
+  const labelEl = document.getElementById('finalizeStatusLabel');
+  if (labelEl) {
+    labelEl.textContent = label;
+  }
+  const hintEl = document.getElementById('finalizeStatusHint');
+  if (hintEl) {
+    hintEl.textContent = hint;
+  }
+
+  const canValidate = isPendingFinalizeStatus(status);
+  const validateBtn = document.getElementById('confirmValidateParticipation');
+  if (validateBtn) {
+    validateBtn.disabled = !canValidate;
+  }
+  const validateHint = document.getElementById('finalizeValidateHint');
+  if (validateHint) {
+    if (canValidate) {
+      validateHint.textContent = 'Cliquez pour débloquer les crédits du chauffeur.';
+    } else if (status === 'validee') {
+      validateHint.textContent = 'Trajet déjà validé.';
+    } else if (status === 'probleme') {
+      validateHint.textContent = 'Incident déclaré : validation suspendue.';
+    } else {
+      validateHint.textContent = '';
+    }
+  }
+
+  const problemForm = document.getElementById('reportProblemForm');
+  const problemHint = document.getElementById('finalizeProblemHint');
+  const canSignalProblem = status !== 'validee' && status !== 'probleme';
+  if (problemForm) {
+    const textarea = problemForm.querySelector('#problemReason');
+    const submitBtn = problemForm.querySelector('button[type="submit"]');
+    if (textarea) {
+      textarea.readOnly = !canSignalProblem;
+    }
+    if (submitBtn) {
+      submitBtn.disabled = !canSignalProblem;
+    }
+  }
+  if (problemHint) {
+    if (!canSignalProblem && status === 'validee') {
+      problemHint.textContent = 'Vous avez validé ce trajet. Le signalement n’est plus disponible.';
+    } else if (!canSignalProblem && status === 'probleme') {
+      problemHint.textContent = 'Incident déjà signalé. Notre équipe revient vers vous rapidement.';
+    } else {
+      problemHint.textContent = '';
+    }
+  }
+
+  const reviewBtn = document.getElementById('finalizeReviewCTA');
+  const reviewHint = document.getElementById('finalizeReviewHint');
+  const canReview = canLeaveReviewForStatus(status);
+  if (reviewBtn) {
+    reviewBtn.disabled = !canReview;
+  }
+  if (reviewHint) {
+    reviewHint.textContent = canReview
+      ? 'Merci de contribuer à la qualité de la communauté EcoRide.'
+      : 'Disponible après validation ou signalement d’un incident.';
+  }
+}
+
+function describeFinalizeStatus(status) {
+  switch (status) {
+    case 'validee':
+      return {
+        label: 'Trajet validé',
+        hint: 'Les crédits ont été envoyés au chauffeur. Vous pouvez maintenant laisser un avis.'
+      };
+    case 'probleme':
+      return {
+        label: 'Incident en cours',
+        hint: 'Un employé EcoRide analyse votre signalement avant tout paiement.'
+      };
+    case 'en_attente_validation':
+    case 'confirmee':
+    default:
+      return {
+        label: 'Action requise',
+        hint: 'Validez le trajet ou signalez un incident pour clôturer ce covoiturage.'
+      };
+  }
+}
+
+function isPendingFinalizeStatus(status) {
+  return ['confirmee', 'en_attente_validation'].includes(status);
+}
+
+function canLeaveReviewForStatus(status) {
+  return ['validee', 'probleme'].includes(status);
+}
+
+function handleFinalizeReviewCTA() {
+  if (!canLeaveReviewForStatus(currentFinalizeStatus)) {
+    showMessage('Validez ou signalez le trajet avant de laisser un avis.', 'info');
+    return;
+  }
+  if (!currentFinalizeTrajetId) {
+    showMessage('Impossible d’ouvrir le formulaire d’avis pour ce trajet.', 'error');
+    return;
+  }
+
+  const targetTrajetId = currentFinalizeTrajetId;
+  closeFinalizeModal();
+  if (typeof openLeaveReviewModal === 'function') {
+    openLeaveReviewModal(targetTrajetId);
+  } else {
+    showMessage('Le module d’avis est temporairement indisponible.', 'error');
+  }
+}
+
+function focusFinalizeSection(section) {
+  if (!section) {
+    return;
+  }
+  if (section === 'problem') {
+    document.getElementById('problemReason')?.focus();
+  }
+  if (section === 'validate') {
+    document.getElementById('confirmValidateParticipation')?.focus();
+  }
+}
+
+/**
  * MODAL: VALIDER PARTICIPATION (PASSAGER)
  */
 
 function openValidateParticipationModal(participationId) {
-  currentValidateParticipationId = participationId;
-  const modal = document.getElementById('validateParticipationModal');
-  if (modal) {
-    modal.classList.add('show');
-  }
+  openFinalizeParticipationModal(participationId, currentFinalizeTrajetId, currentFinalizeStatus || 'confirmee', 'validate');
 }
 
 function closeValidateModal() {
-  const modal = document.getElementById('validateParticipationModal');
-  if (modal) {
-    modal.classList.remove('show');
-  }
-  currentValidateParticipationId = null;
+  closeFinalizeModal();
 }
 
 async function confirmValidateParticipation() {
@@ -319,7 +550,9 @@ async function confirmValidateParticipation() {
     const montantCredit = data.data?.montant_credit || 0;
     
     showMessage('✅ Participation validée ! Le chauffeur a reçu ses crédits. Vous pouvez maintenant soumettre un avis.', 'success');
-    closeValidateModal();
+    currentFinalizeStatus = 'validee';
+    resetFinalizeProblemForm();
+    updateFinalizeModalView();
     
     // Rafraîchir l'historique
     setTimeout(() => {
@@ -342,27 +575,11 @@ async function confirmValidateParticipation() {
  */
 
 function openReportProblemModal(participationId) {
-  currentReportProblemParticipationId = participationId;
-  const modal = document.getElementById('reportProblemModal');
-  const form = document.getElementById('reportProblemForm');
-  
-  if (form) {
-    form.reset();
-    document.getElementById('problemCharCount').textContent = '0/500';
-    document.getElementById('problemCharCount').classList.remove('warning', 'limit');
-  }
-  
-  if (modal) {
-    modal.classList.add('show');
-  }
+  openFinalizeParticipationModal(participationId, currentFinalizeTrajetId, currentFinalizeStatus || 'confirmee', 'problem');
 }
 
 function closeReportModal() {
-  const modal = document.getElementById('reportProblemModal');
-  if (modal) {
-    modal.classList.remove('show');
-  }
-  currentReportProblemParticipationId = null;
+  closeFinalizeModal();
 }
 
 async function submitReportProblem(event) {
@@ -407,7 +624,9 @@ async function submitReportProblem(event) {
     const data = await response.json();
     
     showMessage('⚠️ Problème signalé avec succès. Un employé EcoRide vous contactera pour résoudre la situation.', 'success');
-    closeReportModal();
+    currentFinalizeStatus = 'probleme';
+    resetFinalizeProblemForm();
+    updateFinalizeModalView();
     
     // Rafraîchir l'historique
     setTimeout(() => {

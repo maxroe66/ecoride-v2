@@ -129,10 +129,7 @@ async function loadHistory() {
     const statusFilterEl = document.getElementById('statusFilter');
     const activeStatus = statusFilterEl ? statusFilterEl.value : '';
     if (activeStatus) {
-      const filtered = allTrips.filter(t => {
-        const s = t.statut || t.statut_participation || null;
-        return s === activeStatus;
-      });
+      const filtered = allTrips.filter(t => resolveTripStatus(t) === activeStatus);
       displayTrips(filtered);
     } else {
       displayTrips(allTrips);
@@ -181,7 +178,7 @@ function createTripCard(trip) {
   const formattedTime = trip.heure_depart || '00:00';
   
   // Déterminer le statut (trajet ou participation)
-  const statut = trip.statut || trip.statut_participation || 'inconnu';
+  const statut = resolveTripStatus(trip);
   const canCancel = ['planifie', 'en_cours'].includes(statut);
   
   // ID pour l'annulation
@@ -273,21 +270,16 @@ function createTripCard(trip) {
           </button>
         ` : ''}
         
-        <!-- US11: Boutons Passager -->
-        ${trip.role === 'passager' && trip.trajet_statut === 'termine' ? `
-          ${statut === 'confirmee' ? `
-            <button class="btn btn-validate-participation" data-participation-id="${trip.participation_id}">
-              ✅ Valider
+        <!-- US11: Actions Passager regroupées -->
+        ${trip.role === 'passager' && hasTripEnded(trip) ? `
+          ${shouldShowFinalizeActions(trip, statut) ? `
+            <button class="btn btn-finalize-trip"
+                    data-participation-id="${getParticipationId(trip)}"
+                    data-trajet-id="${getTripIdForActions(trip)}"
+                    data-statut="${statut}">
+              ${getFinalizeButtonLabel(statut)}
             </button>
           ` : ''}
-          ${statut === 'confirmee' ? `
-            <button class="btn btn-report-problem" data-participation-id="${trip.participation_id}">
-              ⚠️ Problème
-            </button>
-          ` : ''}
-          <button class="btn btn-leave-review" data-trajet-id="${trip.trajet_id}">
-            ⭐ Laisser un avis
-          </button>
         ` : ''}
         
         <button class="btn btn-primary" data-trip-id="${trip.trajet_id}" onclick="viewDetails(this)">
@@ -317,6 +309,51 @@ function formatStatut(statut) {
   return map[statut] || statut;
 }
 
+function resolveTripStatus(trip) {
+  if (!trip) {
+    return 'inconnu';
+  }
+  if (trip.role === 'passager') {
+    return trip.statut_participation || trip.statut || 'inconnu';
+  }
+  return trip.statut || trip.statut_participation || 'inconnu';
+}
+
+function hasTripEnded(trip) {
+  const state = trip.trajet_statut || trip.statut;
+  return state === 'termine';
+}
+
+function getParticipationId(trip) {
+  return trip.participation_id || trip.id;
+}
+
+function getTripIdForActions(trip) {
+  return trip.trajet_id || trip.covoiturage_id || trip.id;
+}
+
+function shouldShowFinalizeActions(trip, statut) {
+  if (trip.role !== 'passager' || !hasTripEnded(trip)) {
+    return false;
+  }
+  const usableStatuses = ['confirmee', 'en_attente_validation', 'validee', 'probleme'];
+  return usableStatuses.includes(statut);
+}
+
+function getFinalizeButtonLabel(statut) {
+  switch (statut) {
+    case 'validee':
+      return '⭐ Donner mon avis';
+    case 'probleme':
+      return '⚠️ Incident en cours';
+    case 'confirmee':
+    case 'en_attente_validation':
+      return '✨ Finaliser ce trajet';
+    default:
+      return 'Gérer ce trajet';
+  }
+}
+
 /**
  * Filtre les trajets par statut
  */
@@ -326,10 +363,7 @@ function filterTrips() {
   if (!statusFilter) {
     displayTrips(allTrips);
   } else {
-    const filtered = allTrips.filter(trip => {
-      const statut = trip.statut || trip.statut_participation || 'inconnu';
-      return statut === statusFilter;
-    });
+    const filtered = allTrips.filter(trip => resolveTripStatus(trip) === statusFilter);
     displayTrips(filtered);
   }
 }

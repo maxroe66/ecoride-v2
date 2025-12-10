@@ -114,7 +114,7 @@ class Bootstrap
         // Espace employé (US12) - Modération des avis et gestion des incidents
         $authAndEmployeeMiddleware = [MW::auth(), EmployeeMiddleware::check(), MW::csrf()];
         $router->add('GET', '/api/employee/reviews/pending', [EmployeeController::class, 'getPendingReviews'], [MW::auth(), EmployeeMiddleware::check()]);
-        $router->add('POST', '/api/employee/reviews/{id}/moderation', [EmployeeController::class, 'moderateReview'], $authAndEmployeeMiddleware);
+        $router->add('POST', '/api/employee/reviews/{slug}/moderation', [EmployeeController::class, 'moderateReview'], $authAndEmployeeMiddleware);
         $router->add('GET', '/api/employee/incidents', [EmployeeController::class, 'getIncidents'], [MW::auth(), EmployeeMiddleware::check()]);
         $router->add('GET', '/api/employee/incidents/{id}', [EmployeeController::class, 'getIncidentDetail'], [MW::auth(), EmployeeMiddleware::check()]);
 

@@ -146,7 +146,7 @@ class EmployeeController
 
     /**
      * GET /api/employee/incidents/{id}
-     * Récupère les détails d'un incident spécifique
+     * Récupère les détails d'un incident spécifique par participation_id
      */
     public static function getIncidentDetail(Request $req): void
     {
@@ -164,7 +164,7 @@ class EmployeeController
             $db = DatabaseFactory::getConnection();
             $incidentRepo = new IncidentRepository($db);
             
-            $incident = $incidentRepo->findById($participationId);
+            $incident = $incidentRepo->findDetailByParticipation($participationId);
             
             if (!$incident) {
                 Response::json(404, [

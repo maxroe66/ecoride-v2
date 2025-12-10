@@ -175,6 +175,7 @@ async function loadIncidents() {
           <p><strong>Conducteur :</strong> ${escapeHtml(incident.conducteur_pseudo || 'N/A')} (${escapeHtml(incident.conducteur_email || 'N/A')})</p>
           <p><strong>Trajet :</strong> ${escapeHtml(incident.lieu_depart || 'N/A')} → ${escapeHtml(incident.lieu_arrivee || 'N/A')}</p>
           <p><strong>Date de départ :</strong> ${incident.date_depart || 'N/A'} à ${incident.heure_depart || 'N/A'}</p>
+          <p><strong>Heure d'arrivée :</strong> ${incident.heure_arrivee || 'N/A'}</p>
           <p><strong>Problème :</strong> ${escapeHtml(incident.raison_probleme || incident.description || '(non décrit)')}</p>
           ${incident.statut ? `<p><strong>Statut :</strong> <span style="color: #27ae60;">${escapeHtml(incident.statut)}</span></p>` : ''}
         </div>

@@ -24,12 +24,16 @@ class HistoryService
         $trips = $this->trajetRepo->getTrajetsByUserId($userId);
         $trips = array_map(fn($trip) => $this->normalizeTrip($trip, 'chauffeur'), $trips);
 
-        // Participations en tant que passager
-        // Récupérer les participations confirmées ET validées (après fin du trajet)
-        $participationsConfirmee = $this->participationRepo->findByUserAndStatusWithTripStatus($userId, 'confirmee');
-        $participationsValidee = $this->participationRepo->findByUserAndStatusWithTripStatus($userId, 'validee');
-        $participations = array_merge($participationsConfirmee, $participationsValidee);
-        $participations = array_map(fn($p) => $this->normalizeParticipation($p), $participations);
+        // Participations en tant que passager (inclure tous les états post-trajet nécessaires)
+        $participationStatuses = ['confirmee', 'en_attente_validation', 'validee', 'probleme'];
+        $participationsRaw = [];
+        foreach ($participationStatuses as $status) {
+            $participationsRaw = array_merge(
+                $participationsRaw,
+                $this->participationRepo->findByUserAndStatusWithTripStatus($userId, $status)
+            );
+        }
+        $participations = array_map(fn($p) => $this->normalizeParticipation($p), $participationsRaw);
         
         // Fusionner les 2 listes
         $history = array_merge($trips, $participations);
