@@ -549,10 +549,10 @@ const AdminSpace = {
 
             return `
                 <tr>
-                    <td>${user.email}</td>
-                    <td>${user.pseudo}</td>
-                    <td>${typeBadge}</td>
-                    <td><span class="${statusClass}">${statusLabel}</span></td>
+                    <td data-label="Email">${user.email}</td>
+                    <td data-label="Pseudo">${user.pseudo}</td>
+                    <td data-label="Type">${typeBadge}</td>
+                    <td data-label="Statut"><span class="${statusClass}">${statusLabel}</span></td>
                     <td><div class="actions">${actionButton}</div></td>
                 </tr>
             `;
