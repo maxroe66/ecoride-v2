@@ -4,8 +4,6 @@ namespace App\Controllers;
 
 use App\Core\Request;
 use App\Core\Response;
-use App\Factories\ServiceLocator as SL;
-use App\Helpers\ControllerHelper;
 use App\Repositories\IncidentRepository;
 use App\Factories\DatabaseFactory;
 
@@ -24,7 +22,7 @@ class EmployeeController
     public static function getPendingReviews(Request $req): void
     {
         try {
-            $employeId = ControllerHelper::getAuthUserId();
+            $employeId = $req->getAuthUserId();
             
             // Récupérer les avis en attente via le repository résilient (Mongo + fallback MySQL)
             $avisRepo = \App\Factories\AvisRepositoryFactory::get();
@@ -62,7 +60,7 @@ class EmployeeController
     public static function moderateReview(Request $req): void
     {
         try {
-            $employeId = ControllerHelper::getAuthUserId();
+            $employeId = $req->getAuthUserId();
             $avisId = $req->getPathParam(0); // Depuis la route /api/employee/reviews/{id}/moderation
             
             if (!$avisId) {
