@@ -40,7 +40,7 @@ class EmployeeController
                     'items' => $pendingReviews
                 ]
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             error_log('[EmployeeController] Erreur: ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine());
             Response::json(500, [
                 'success' => false,
@@ -103,7 +103,7 @@ class EmployeeController
                     'error' => ['code' => 'PERSIST_ERROR', 'message' => 'Erreur lors de la modération']
                 ]);
             }
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Response::json(500, [
                 'success' => false,
                 'error' => [
@@ -133,7 +133,7 @@ class EmployeeController
                     'items' => $incidents
                 ]
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Response::json(500, [
                 'success' => false,
                 'error' => [
@@ -178,7 +178,7 @@ class EmployeeController
                 'success' => true,
                 'data' => $incident
             ]);
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             Response::json(500, [
                 'success' => false,
                 'error' => [

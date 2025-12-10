@@ -61,6 +61,8 @@ class EmployeeMiddleware
                 ]);
                 exit;
             }
+            
+            // L'utilisateur est un employé autorisé - continuer
         };
     }
 }

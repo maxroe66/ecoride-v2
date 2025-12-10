@@ -87,3 +87,4 @@ class MysqlAvisRepository implements AvisRepositoryInterface
         $stmt = $this->pdo->prepare($sql);
         return $stmt->execute([$action, $employeId, (int)$avisId]);
     }
+}
