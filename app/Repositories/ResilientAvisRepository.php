@@ -93,7 +93,6 @@ class ResilientAvisRepository implements AvisRepositoryInterface
                 $this->markMongoFailure();
             }
         }
-        // Pour MySQL, utiliser l'ID comme int
-        return $this->mysql->moderateReview((int)$avisId, $action, $employeId);
+        return $this->mysql->moderateReview($avisId, $action, $employeId);
     }
 }

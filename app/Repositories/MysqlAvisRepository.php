@@ -74,16 +74,16 @@ class MysqlAvisRepository implements AvisRepositoryInterface
 
     /**
      * Modère un avis (approuve ou refuse)
-     * @param int $avisId ID de l'avis à modérer
+     * @param string $avisId ID de l'avis à modérer (string pour compatibilité avec interface)
      * @param string $action 'approuve' ou 'refuse'
      * @param int $employeId ID de l'employé qui effectue la modération
      * @return bool true si succès
      */
-    public function moderateReview(int $avisId, string $action, int $employeId): bool
+    public function moderateReview(string $avisId, string $action, int $employeId): bool
     {
         $sql = "UPDATE {$this->table} 
                 SET statut_moderation=?, date_moderation=NOW(), employe_id=? 
                 WHERE avis_id=?";
         $stmt = $this->pdo->prepare($sql);
-        return $stmt->execute([$action, $employeId, $avisId]);
+        return $stmt->execute([$action, $employeId, (int)$avisId]);
     }

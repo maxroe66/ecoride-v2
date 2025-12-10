@@ -27,11 +27,13 @@ class EmployeeController
             $employeId = ControllerHelper::getAuthUserId();
             
             // Récupérer les avis en attente via le repository résilient (Mongo + fallback MySQL)
-            $avisRepo = SL::getReviewService()->getRepository(); // À adapter selon votre setup
-            // Fallback: utiliser AvisRepositoryFactory
             $avisRepo = \App\Factories\AvisRepositoryFactory::get();
             
+            error_log('[EmployeeController] Récupération des avis en attente pour employé ID: ' . $employeId);
+            
             $pendingReviews = $avisRepo->findPendingReviews();
+            
+            error_log('[EmployeeController] Avis en attente: ' . count($pendingReviews));
             
             Response::json(200, [
                 'success' => true,
@@ -41,6 +43,7 @@ class EmployeeController
                 ]
             ]);
         } catch (\Exception $e) {
+            error_log('[EmployeeController] Erreur: ' . $e->getMessage() . ' | ' . $e->getFile() . ':' . $e->getLine());
             Response::json(500, [
                 'success' => false,
                 'error' => [
